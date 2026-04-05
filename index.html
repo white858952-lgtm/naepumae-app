@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>내품애센터 스마트 관리 앱</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
@@ -15,11 +19,11 @@
         .modal-bg.active { display: flex; }
         #photo-preview { background-size: cover; background-position: center; transition: all 0.3s; }
         
-        /* 디자인 보존 레이아웃 (스크롤 및 터치 여백 완벽 보호) */
+        /* 디자인 보존 레이아웃 */
         .content-area { padding-bottom: 160px; position: relative; z-index: 10; }
         nav { z-index: 50; position: fixed; bottom: 0; left: 0; right: 0; height: 85px; background: white; border-top: 1px solid #ffe4e9; }
         
-        /* 버튼 터치 절대 보장 (방해 요소 원천 차단) */
+        /* 무적의 버튼 터치 보호막 */
         .save-btn { cursor: pointer; position: relative; z-index: 100; touch-action: manipulation; -webkit-appearance: none; }
         .save-btn:active { transform: scale(0.96); opacity: 0.9; }
     </style>
@@ -94,10 +98,42 @@
     </div>
 
     <script>
-        // 19마리 대용량 데이터를 담기 위한 완전히 새롭고 쾌적한 저장소
-        const STORAGE_ID = 'NAEPUMAE_DATA_PRO'; 
-        let animals = JSON.parse(localStorage.getItem(STORAGE_ID) || '[]');
+        // --- [트레이너님의 파이어베이스 열쇠 장착] ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyAitCQVYKsqytLzT_O9_k0lXT7bAsPhjLY",
+            authDomain: "naepumae-center.firebaseapp.com",
+            databaseURL: "https://naepumae-center-default-rtdb.firebaseio.com",
+            projectId: "naepumae-center",
+            storageBucket: "naepumae-center.firebasestorage.app",
+            messagingSenderId: "591209155709",
+            appId: "1:591209155709:web:348eb8e2aca66a355f7514"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        // ---------------------------------------------
+
+        let animals = [];
         let currentPhotoBase64 = null;
+
+        // [핵심] 클라우드 서버와 내 폰의 실시간 동기화 마법
+        database.ref('animals').on('value', (snapshot) => {
+            const data = snapshot.val();
+            animals = [];
+            if (data) {
+                // 서버에 있는 데이터를 배열로 변환
+                Object.keys(data).forEach(key => {
+                    animals.push(data[key]);
+                });
+                // 최신 등록된 아이가 맨 위로 오도록 정렬
+                animals.sort((a, b) => b.id - a.id);
+            }
+            
+            // 데이터가 바뀔 때마다 화면을 자동으로 새로고침
+            renderRegList();
+            if (!document.getElementById('view-list').classList.contains('hidden')) {
+                renderTasks();
+            }
+        });
 
         function showView(view) {
             document.getElementById('view-reg').classList.toggle('hidden', view !== 'reg');
@@ -108,7 +144,7 @@
             if(view === 'list') renderTasks();
         }
 
-        // [핵심 1] 초고효율 사진 압축 엔진 (19마리 대비용)
+        // 초고효율 압축 엔진 (디자인 유지)
         function handleFileSelect(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -120,8 +156,6 @@
                     const canvas = document.createElement('canvas');
                     let width = img.width;
                     let height = img.height;
-                    
-                    // 해상도를 500px로 제한하여 19마리 이상의 데이터도 가뿐히 저장
                     const max_size = 500; 
 
                     if (width > height) {
@@ -129,11 +163,9 @@
                     } else {
                         if (height > max_size) { width *= max_size / height; height = max_size; }
                     }
-                    canvas.width = width; 
-                    canvas.height = height;
+                    canvas.width = width; canvas.height = height;
                     canvas.getContext('2d').drawImage(img, 0, 0, width, height);
                     
-                    // 화질 0.5 압축 (화면에서 보기에 충분히 선명하면서 용량은 극도로 낮춤)
                     currentPhotoBase64 = canvas.toDataURL('image/jpeg', 0.5);
                     const previewArea = document.getElementById('photo-preview');
                     previewArea.style.backgroundImage = `url(${currentPhotoBase64})`;
@@ -154,9 +186,8 @@
             document.getElementById('in-photo').value = '';
         }
 
-        // [핵심 2] 무적의 저장 로직 (터치 간섭 및 키보드 에러 완벽 차단)
         function saveAnimal() {
-            // 키보드가 켜져 있다면 강제로 내려서 브라우저 튕김 현상 방지
+            // 키보드 강제 닫기 (오류 방지)
             document.querySelectorAll('input, textarea, select').forEach(el => el.blur());
 
             const nameEl = document.getElementById('in-name');
@@ -167,24 +198,21 @@
                 return;
             }
             
-            try {
-                const newAnimal = {
-                    id: Date.now(),
-                    photo: currentPhotoBase64,
-                    name: name,
-                    breed: document.getElementById('in-breed').value || '미상',
-                    gender: document.getElementById('in-gender').value || '미정',
-                    age: document.getElementById('in-age').value || '미상',
-                    personality: document.getElementById('in-personality').value || '정보없음',
-                    memo: document.getElementById('in-memo').value || '',
-                    tasks: { walk:false, clean:false, meal:false }
-                };
+            const newId = Date.now();
+            const newAnimal = {
+                id: newId,
+                photo: currentPhotoBase64,
+                name: name,
+                breed: document.getElementById('in-breed').value || '미상',
+                gender: document.getElementById('in-gender').value || '미정',
+                age: document.getElementById('in-age').value || '미상',
+                personality: document.getElementById('in-personality').value || '정보없음',
+                memo: document.getElementById('in-memo').value || '',
+                tasks: { walk:false, clean:false, meal:false }
+            };
 
-                // 새로운 아이를 리스트의 가장 위에 추가
-                animals.unshift(newAnimal);
-                localStorage.setItem(STORAGE_ID, JSON.stringify(animals));
-                
-                // 성공 시 입력창 초기화
+            // 서버로 데이터 전송!
+            database.ref('animals/' + newId).set(newAnimal).then(() => {
                 nameEl.value = "";
                 ['in-breed','in-age','in-personality','in-memo'].forEach(id => {
                     const el = document.getElementById(id);
@@ -193,17 +221,16 @@
                 document.getElementById('in-gender').value = "";
                 removePhoto(); 
                 
-                renderRegList();
-                openModal('success', '등록 성공! ✨', `${name}의 정보가 안전하게 저장되었습니다.`);
-            } catch (err) {
-                console.error(err);
-                openModal('error', '저장 공간 부족', '기기가 허용하는 용량을 초과했습니다. 기존 데이터를 확인해주세요.');
-            }
+                openModal('success', '클라우드 등록 성공! ✨', `${name}의 정보가 모든 직원에게 공유됩니다.`);
+            }).catch((error) => {
+                console.error(error);
+                openModal('error', '저장 오류', '인터넷 연결을 확인하거나 잠시 후 다시 시도해주세요.');
+            });
         }
 
         function renderRegList() {
             const container = document.getElementById('reg-list');
-            container.innerHTML = `<h3 class="font-bold text-gray-400 px-2 mt-8 mb-4 text-xs uppercase tracking-widest">보호 명단 (${animals.length})</h3>`;
+            container.innerHTML = `<h3 class="font-bold text-gray-400 px-2 mt-8 mb-4 text-xs uppercase tracking-widest">센터 전체 보호 명단 (${animals.length})</h3>`;
             animals.forEach(a => {
                 const photoHtml = a.photo ? `<div class="w-16 h-16 rounded-2xl bg-cover bg-center shrink-0 shadow-sm" style="background-image: url(${a.photo})"></div>` : `<div class="w-16 h-16 rounded-2xl bg-pink-50 flex items-center justify-center shrink-0 text-pink-200 text-2xl">🐾</div>`;
                 const tags = a.personality.split(',').map(tag => `<span class="text-[10px] bg-pink-100/50 text-pink-500 px-2 py-0.5 rounded-md font-bold">#${tag.trim()}</span>`).join(' ');
@@ -235,11 +262,23 @@
                 btns.innerHTML = `<button onclick="closeModal()" class="w-full py-4 pink-gradient text-white font-bold rounded-2xl">확인</button>`;
             }
         }
+        
         function closeModal() { document.getElementById('custom-modal').classList.remove('active'); }
-        function askDelete(id) { openModal('confirm', '삭제할까요?', '기록이 영구적으로 삭제됩니다.', () => { animals = animals.filter(a => a.id !== id); localStorage.setItem(STORAGE_ID, JSON.stringify(animals)); renderRegList(); }); }
-        function toggleTask(id, type) { const ani = animals.find(a => a.id === id); ani.tasks[type] = !ani.tasks[type]; localStorage.setItem(STORAGE_ID, JSON.stringify(animals)); renderTasks(); }
+        
+        function askDelete(id) { 
+            openModal('confirm', '정말 삭제할까요?', '클라우드 서버에서 영구적으로 삭제되어 다른 직원들도 볼 수 없게 됩니다.', () => { 
+                database.ref('animals/' + id).remove(); 
+            }); 
+        }
+        
+        function toggleTask(id, type) { 
+            const ani = animals.find(a => a.id === id); 
+            if(ani) {
+                // 클릭한 업무의 체크 상태를 반대로 뒤집어서 서버로 전송
+                database.ref('animals/' + id + '/tasks/' + type).set(!ani.tasks[type]);
+            }
+        }
 
-        renderRegList();
     </script>
 </body>
 </html>
