@@ -9,21 +9,21 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
-        body { font-family: 'Noto Sans KR', sans-serif; background-color: #fff5f7; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: #fff5f7; -webkit-tap-highlight-color: transparent; }
         .pink-gradient { background: linear-gradient(135deg, #ff69b4 0%, #ff85c0 100%); }
         .card { background: white; border-radius: 28px; padding: 20px; border: 1px solid #ffe4e9; box-shadow: 0 10px 20px rgba(255, 105, 180, 0.03); }
         .tab-active { color: #ff69b4; border-bottom: 3px solid #ff69b4; }
         .modal-bg { background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); z-index: 100; }
         #photo-preview { background-size: cover; background-position: center; transition: all 0.3s; }
-        /* 하단 바 높이만큼 여유 공간 확보 */
-        .content-area { padding-bottom: 120px; }
+        /* 하단 바와 겹치지 않게 충분한 여백 확보 */
+        .content-scroll-area { padding-bottom: 150px; }
     </style>
 </head>
-<body class="p-4 max-w-md mx-auto">
-    <div class="content-area">
+<body class="max-w-md mx-auto">
+    <div class="p-4 content-scroll-area">
         <header class="py-6 text-center">
             <h1 class="text-3xl font-black text-[#ff69b4] mb-1">내품애 센터</h1>
-            <p class="text-gray-500 text-sm">반려동물과 행복한 서대문</p>
+            <p class="text-gray-500 text-sm font-bold">반려동물과 행복한 서대문</p>
         </header>
 
         <div class="flex justify-around mb-6 bg-white rounded-2xl p-1 shadow-sm border border-pink-50">
@@ -35,32 +35,35 @@
             <div class="card space-y-4">
                 <h2 class="text-lg font-bold flex items-center gap-2 text-gray-700">📸 사진 및 정보 등록</h2>
                 
-                <div id="photo-preview" class="w-full h-56 rounded-3xl bg-pink-50 flex items-center justify-center border-2 border-dashed border-pink-200 relative overflow-hidden">
+                <div id="photo-preview" class="w-full h-52 rounded-3xl bg-pink-50 flex items-center justify-center border-2 border-dashed border-pink-200 relative overflow-hidden">
                     <div id="photo-placeholder" class="text-center text-pink-300">
                         <span class="text-5xl">📸</span>
-                        <p class="text-sm font-bold mt-2">이곳을 눌러 사진 선택</p>
+                        <p class="text-xs font-bold mt-2">터치하여 사진 선택</p>
                     </div>
                     <input type="file" id="in-photo" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer z-10" onchange="handleFileSelect(event)">
-                    <button id="del-photo-btn" onclick="removePhoto(event)" class="hidden absolute top-3 right-3 bg-white/90 text-pink-500 p-2 rounded-full text-xs shadow-md z-20 font-bold">삭제 X</button>
+                    <button id="del-photo-btn" onclick="removePhoto(event)" class="hidden absolute top-3 right-3 bg-white/90 text-pink-500 px-3 py-1.5 rounded-full text-[10px] shadow-sm z-20 font-black">삭제</button>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3 pt-2">
-                    <input type="text" id="in-name" placeholder="이름 (필수)" class="col-span-2 p-4 border border-pink-100 rounded-2xl outline-none focus:border-pink-400 bg-pink-50/30">
-                    <input type="text" id="in-breed" placeholder="견종" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-pink-50/30">
-                    <select id="in-gender" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-500">
+                    <input type="text" id="in-name" placeholder="강아지 이름 (필수)" class="col-span-2 p-4 border border-pink-100 rounded-2xl outline-none focus:border-pink-400 bg-pink-50/20 shadow-inner">
+                    <input type="text" id="in-breed" placeholder="견종" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-pink-50/20 text-sm">
+                    <select id="in-gender" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-400 text-sm">
                         <option value="" disabled selected>성별</option>
                         <option value="남아">남아</option>
                         <option value="여아">여아</option>
                     </select>
-                    <input type="text" id="in-age" placeholder="추정 나이" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-pink-50/30 text-sm">
-                    <input type="text" id="in-personality" placeholder="성격 (쉼표 구분)" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-pink-50/30 text-sm">
-                    <textarea id="in-memo" placeholder="구조 메모 및 특이사항" class="col-span-2 p-4 border border-pink-100 rounded-2xl outline-none h-24 bg-pink-50/30 text-sm"></textarea>
+                    <input type="text" id="in-age" placeholder="추정 나이" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-pink-50/20 text-sm">
+                    <input type="text" id="in-personality" placeholder="성격 (쉼표 구분)" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-pink-50/20 text-sm">
+                    <textarea id="in-memo" placeholder="메모 및 특이사항" class="col-span-2 p-4 border border-pink-100 rounded-2xl outline-none h-24 bg-pink-50/20 text-sm"></textarea>
                     
-                    <button onclick="saveAnimal()" class="col-span-2 py-5 pink-gradient text-white font-black rounded-2xl shadow-lg active:scale-95 transition-transform mt-4 mb-10 border-b-4 border-pink-700">
-                        보호견 등록 완료하기
-                    </button>
+                    <div class="col-span-2 py-4">
+                        <button onclick="saveAnimal()" class="w-full py-4 pink-gradient text-white font-black rounded-2xl shadow-lg active:scale-95 transition-all text-lg">
+                            보호견 등록하기
+                        </button>
+                    </div>
                 </div>
             </div>
+
             <div id="reg-list" class="space-y-4"></div>
         </div>
 
@@ -69,23 +72,23 @@
         </div>
     </div>
 
+    <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-pink-100 flex justify-around py-5 shadow-[0_-8px_20px_rgba(255,105,180,0.05)] z-[60] rounded-t-[32px]">
+        <button onclick="showView('reg')" class="flex flex-col items-center gap-1 group">
+            <span class="text-2xl">🐕</span><span class="text-[10px] font-black text-pink-500">아이들</span>
+        </button>
+        <button onclick="showView('list')" class="flex flex-col items-center gap-1 group">
+            <span class="text-2xl opacity-40 group-hover:opacity-100 transition-opacity">📋</span><span class="text-[10px] font-black text-gray-400">업무관리</span>
+        </button>
+    </nav>
+
     <div id="custom-modal" class="hidden fixed inset-0 flex items-center justify-center p-6 modal-bg">
-        <div class="bg-white w-full max-w-xs rounded-[32px] p-8 text-center shadow-2xl">
+        <div class="bg-white w-full max-w-xs rounded-[35px] p-8 text-center shadow-2xl animate-in fade-in zoom-in duration-300">
             <div id="modal-icon" class="text-5xl mb-4"></div>
-            <h3 id="modal-title" class="text-xl font-bold mb-2"></h3>
-            <p id="modal-desc" class="text-gray-500 text-sm mb-6"></p>
+            <h3 id="modal-title" class="text-xl font-black mb-2 text-gray-800"></h3>
+            <p id="modal-desc" class="text-gray-400 text-sm mb-6 leading-relaxed"></p>
             <div id="modal-btns" class="flex gap-2"></div>
         </div>
     </div>
-
-    <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-pink-100 flex justify-around py-4 shadow-[0_-5px_15px_rgba(0,0,0,0.03)] z-50 rounded-t-[30px]">
-        <button onclick="showView('reg')" class="flex flex-col items-center gap-1 group">
-            <span class="text-2xl group-active:scale-125 transition-transform">🐕</span><span class="text-[10px] font-bold text-pink-400">아이들</span>
-        </button>
-        <button onclick="showView('list')" class="flex flex-col items-center gap-1 group">
-            <span class="text-2xl group-active:scale-125 transition-transform">📋</span><span class="text-[10px] font-bold text-gray-400">업무관리</span>
-        </button>
-    </nav>
 
     <script>
         let animals = JSON.parse(localStorage.getItem('naepumae_v4') || '[]');
@@ -96,22 +99,18 @@
             document.getElementById('view-list').classList.toggle('hidden', view !== 'list');
             document.getElementById('tab-reg').className = view === 'reg' ? 'flex-1 py-3 text-sm font-bold tab-active' : 'flex-1 py-3 text-sm font-bold text-gray-400';
             document.getElementById('tab-list').className = view === 'list' ? 'flex-1 py-3 text-sm font-bold tab-active' : 'flex-1 py-3 text-sm font-bold text-gray-400';
-            window.scrollTo(0,0);
             if(view === 'list') renderTasks();
         }
 
-        // 사진 파일 처리 강화
         function handleFileSelect(event) {
             const file = event.target.files[0];
             if (!file) return;
-
             const reader = new FileReader();
             reader.onload = function(e) {
                 currentPhotoBase64 = e.target.result;
                 const previewArea = document.getElementById('photo-preview');
                 const placeholder = document.getElementById('photo-placeholder');
                 const delBtn = document.getElementById('del-photo-btn');
-                
                 previewArea.style.backgroundImage = `url(${currentPhotoBase64})`;
                 placeholder.classList.add('hidden');
                 delBtn.classList.remove('hidden');
@@ -126,63 +125,60 @@
             const placeholder = document.getElementById('photo-placeholder');
             const delBtn = document.getElementById('del-photo-btn');
             document.getElementById('in-photo').value = '';
-
             previewArea.style.backgroundImage = 'none';
             placeholder.classList.remove('hidden');
             delBtn.classList.add('hidden');
         }
 
         function saveAnimal() {
-            const nameInput = document.getElementById('in-name');
-            const name = nameInput.value.trim();
+            const name = document.getElementById('in-name').value.trim();
             if(!name) { alert('강아지 이름을 입력해주세요!'); return; }
             
             const newAnimal = {
                 id: Date.now(),
                 photo: currentPhotoBase64,
                 name,
-                breed: document.getElementById('in-breed').value || '견종 미확인',
-                gender: document.getElementById('in-gender').value || '성별 미확인',
-                age: document.getElementById('in-age').value || '나이 모름',
-                personality: document.getElementById('in-personality').value || '특이사항 없음',
+                breed: document.getElementById('in-breed').value || '견종 미상',
+                gender: document.getElementById('in-gender').value || '미정',
+                age: document.getElementById('in-age').value || '나이 미상',
+                personality: document.getElementById('in-personality').value || '순함',
                 memo: document.getElementById('in-memo').value || '',
                 tasks: { walk:false, clean:false, meal:false }
             };
 
-            animals.unshift(newAnimal); // 새 동물을 맨 위에 추가
+            animals.unshift(newAnimal);
             localStorage.setItem('naepumae_v4', JSON.stringify(animals));
             
-            // UI 초기화
             ['in-name','in-breed','in-age','in-personality','in-memo'].forEach(id => document.getElementById(id).value = '');
             document.getElementById('in-gender').value = "";
             removePhoto(); 
             renderRegList();
-            showModal('success', '등록 완료!', `${name}이가 무사히 보호소 앱에 등록되었습니다.`);
+            showModal('success', '등록 완료!', `${name}의 정보를 저장했습니다.`);
         }
 
         function renderRegList() {
             const container = document.getElementById('reg-list');
-            container.innerHTML = `<h3 class="font-black text-gray-400 px-2 mt-8 mb-4 text-sm">현재 보호 중인 아이들 (${animals.length})</h3>`;
+            container.innerHTML = `<h3 class="font-black text-pink-200 px-2 mt-8 mb-4 text-xs tracking-widest">보호 리스트 (${animals.length})</h3>`;
             
             animals.forEach(a => {
                 const photoHtml = a.photo 
-                    ? `<div class="w-20 h-20 rounded-[20px] bg-cover bg-center shrink-0 shadow-sm" style="background-image: url(${a.photo})"></div>`
-                    : `<div class="w-20 h-20 rounded-[20px] bg-pink-50 flex items-center justify-center shrink-0 text-pink-200 text-3xl">🐶</div>`;
+                    ? `<div class="w-20 h-20 rounded-[22px] bg-cover bg-center shrink-0 shadow-sm border border-pink-50" style="background-image: url(${a.photo})"></div>`
+                    : `<div class="w-20 h-20 rounded-[22px] bg-pink-50 flex items-center justify-center shrink-0 text-pink-200 text-3xl">🐶</div>`;
 
                 const tags = a.personality.split(',').map(tag => 
-                    `<span class="text-[10px] bg-pink-100/50 text-pink-500 px-2.5 py-1 rounded-full font-bold">#${tag.trim()}</span>`
+                    `<span class="text-[9px] bg-pink-50 text-pink-400 px-2 py-0.5 rounded-md font-bold italic">#${tag.trim()}</span>`
                 ).join(' ');
 
                 container.innerHTML += `
-                    <div class="card flex gap-4 relative overflow-hidden items-center animate-fadeIn border-pink-50 hover:border-pink-200">
+                    <div class="card flex gap-4 relative overflow-hidden items-center border-pink-50 shadow-sm">
                         ${photoHtml}
-                        <div class="flex-1 overflow-hidden">
-                            <div class="flex justify-between items-start">
-                                <h3 class="font-black text-xl text-gray-800 truncate">${a.name}</h3>
-                                <button onclick="askDelete(${a.id})" class="text-xl px-1 text-gray-300">×</button>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-center mb-0.5">
+                                <h3 class="font-black text-xl text-gray-800">${a.name}</h3>
+                                <button onclick="askDelete(${a.id})" class="text-xl text-gray-200 hover:text-red-300">×</button>
                             </div>
-                            <p class="text-[11px] text-gray-400 font-bold mb-2 uppercase">${a.breed} · ${a.gender} · ${a.age}</p>
-                            <div class="flex flex-wrap gap-1 mb-1">${tags}</div>
+                            <p class="text-[10px] text-gray-400 font-bold mb-2 uppercase tracking-tighter">${a.breed} · ${a.gender} · ${a.age}</p>
+                            <div class="flex flex-wrap gap-1">${tags}</div>
                         </div>
                     </div>`;
             });
@@ -191,28 +187,28 @@
         function renderTasks() {
             const container = document.getElementById('task-container');
             if(animals.length === 0) {
-                container.innerHTML = '<div class="text-center py-24 text-gray-300 px-10 font-bold">등록된 강아지가 없습니다.<br><span class="text-sm">먼저 아이들을 등록해주세요!</span></div>';
+                container.innerHTML = '<div class="text-center py-20 text-gray-300 font-bold">등록된 강아지가 없습니다.</div>';
                 return;
             }
             container.innerHTML = '';
             animals.forEach(a => {
                 const photoHtml = a.photo 
-                    ? `<div class="w-14 h-14 rounded-2xl bg-cover bg-center shrink-0" style="background-image: url(${a.photo})"></div>`
-                    : `<div class="w-14 h-14 rounded-2xl bg-pink-50 flex items-center justify-center shrink-0 text-pink-200 text-xl">🐶</div>`;
+                    ? `<div class="w-12 h-12 rounded-2xl bg-cover bg-center shrink-0" style="background-image: url(${a.photo})"></div>`
+                    : `<div class="w-12 h-12 rounded-2xl bg-pink-50 flex items-center justify-center shrink-0 text-pink-200 text-xl">🐶</div>`;
 
                 container.innerHTML += `
-                    <div class="card bg-white border-pink-50">
+                    <div class="card border-pink-50">
                         <div class="flex items-center gap-3 mb-4 pb-3 border-b border-pink-50">
                             ${photoHtml}
                             <div>
                                 <span class="font-black text-gray-700 text-lg">${a.name}</span>
-                                <p class="text-[10px] text-gray-400 font-bold">오늘의 일과를 체크해주세요</p>
+                                <p class="text-[10px] text-gray-300 font-bold italic">Daily Care Checklist</p>
                             </div>
                         </div>
                         <div class="grid grid-cols-3 gap-2">
                             ${['walk', 'clean', 'meal'].map(type => `
                                 <button onclick="toggleTask(${a.id}, '${type}')" 
-                                    class="py-4 rounded-2xl border-2 text-[13px] font-black transition-all active:scale-90 ${a.tasks[type] ? 'pink-gradient text-white border-pink-400 shadow-md' : 'bg-white border-pink-50 text-pink-200'}">
+                                    class="py-3.5 rounded-2xl border-2 text-[12px] font-black transition-all active:scale-95 ${a.tasks[type] ? 'pink-gradient text-white border-pink-400' : 'bg-white border-pink-50 text-pink-200'}">
                                     ${type === 'walk' ? '산책' : type === 'clean' ? '청소' : '급여'}
                                 </button>
                             `).join('')}
@@ -233,7 +229,7 @@
                 btns.innerHTML = `<button onclick="closeModal()" class="w-full py-4 pink-gradient text-white font-bold rounded-2xl shadow-md">확인</button>`;
             } else {
                 btns.innerHTML = `
-                    <button onclick="closeModal()" class="flex-1 py-4 bg-gray-100 text-gray-400 font-bold rounded-2xl">취소</button>
+                    <button onclick="closeModal()" class="flex-1 py-4 bg-gray-50 text-gray-300 font-bold rounded-2xl">취소</button>
                     <button id="modal-confirm-btn" class="flex-1 py-4 bg-red-500 text-white font-bold rounded-2xl shadow-md">삭제</button>
                 `;
                 document.getElementById('modal-confirm-btn').onclick = () => { onConfirm(); closeModal(); };
@@ -243,7 +239,7 @@
         function closeModal() { document.getElementById('custom-modal').classList.add('hidden'); }
 
         function askDelete(id) {
-            showModal('confirm', '정보를 지울까요?', '데이터가 영구적으로 삭제됩니다.', () => {
+            showModal('confirm', '삭제할까요?', '데이터를 다시 불러올 수 없습니다.', () => {
                 animals = animals.filter(a => a.id !== id);
                 localStorage.setItem('naepumae_v4', JSON.stringify(animals));
                 renderRegList();
