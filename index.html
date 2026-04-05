@@ -11,16 +11,17 @@
         .pink-gradient { background: linear-gradient(135deg, #ff69b4 0%, #ff85c0 100%); }
         .card { background: white; border-radius: 28px; padding: 20px; border: 1px solid #ffe4e9; box-shadow: 0 10px 20px rgba(255, 105, 180, 0.03); }
         .tab-active { color: #ff69b4; border-bottom: 3px solid #ff69b4; }
-        .modal-bg { background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(6px); z-index: 9999; position: fixed; inset: 0; display: none; align-items: center; justify-content: center; }
+        .modal-bg { background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(6px); z-index: 10000; position: fixed; inset: 0; display: none; align-items: center; justify-content: center; }
         .modal-bg.active { display: flex; }
         #photo-preview { background-size: cover; background-position: center; transition: all 0.3s; }
         
-        /* [중요] 버튼 터치 방해 방지 및 스크롤 여백 */
-        .content-area { padding-bottom: 160px; position: relative; z-index: 10; }
-        nav { z-index: 100; position: fixed; bottom: 0; left: 0; right: 0; height: 85px; }
+        /* 디자인 고정을 위한 기존 레이아웃 유지 */
+        .content-area { padding-bottom: 160px; position: relative; }
+        nav { z-index: 50; position: fixed; bottom: 0; left: 0; right: 0; }
         
-        /* 버튼 터치 최적화 */
-        .save-btn { position: relative; z-index: 20; pointer-events: auto !important; }
+        /* [핵심] 버튼 터치 우선순위 강제 조정 (디자인 변경 없음) */
+        .save-btn-container { position: relative; z-index: 100; }
+        .save-btn { pointer-events: auto !important; position: relative; z-index: 101; touch-action: manipulation; }
     </style>
 </head>
 <body class="max-w-md mx-auto p-4">
@@ -61,9 +62,11 @@
                     
                     <textarea id="in-memo" placeholder="메모 및 특이사항" class="col-span-2 p-4 border border-pink-100 rounded-2xl outline-none h-24 bg-pink-50/20 text-sm"></textarea>
                     
-                    <button onclick="saveAnimal()" class="save-btn col-span-2 py-5 pink-gradient text-white font-black rounded-2xl shadow-lg active:scale-95 transition-transform mt-2">
-                        보호견 등록하기
-                    </button>
+                    <div class="col-span-2 save-btn-container">
+                        <button id="main-save-btn" class="save-btn w-full py-5 pink-gradient text-white font-black rounded-2xl shadow-lg active:scale-95 transition-transform mt-2">
+                            보호견 등록하기
+                        </button>
+                    </div>
                 </div>
             </div>
             <div id="reg-list" class="space-y-4"></div>
@@ -95,6 +98,18 @@
     <script>
         let animals = JSON.parse(localStorage.getItem('naepumae_v4') || '[]');
         let currentPhotoBase64 = null;
+
+        // [핵심] 버튼 터치/클릭 통합 이벤트 바인딩
+        const btn = document.getElementById('main-save-btn');
+        const triggerSave = (e) => {
+            e.preventDefault();
+            document.activeElement.blur(); // 키보드 강제 닫기
+            saveAnimal();
+        };
+
+        // 터치 시작 시 즉각 반응하도록 바인딩
+        btn.addEventListener('touchstart', triggerSave, { passive: false });
+        btn.addEventListener('click', triggerSave);
 
         function showView(view) {
             document.getElementById('view-reg').classList.toggle('hidden', view !== 'reg');
