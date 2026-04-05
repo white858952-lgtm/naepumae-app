@@ -28,10 +28,8 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* 패널 애니메이션 */
         .slide-panel { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         
-        /* 토글/체크버튼 활성화 스타일 */
         .btn-active { background-color: #fbcfe8; color: #db2777; border-color: #f472b6; font-weight: 900; }
         .btn-inactive { background-color: #f9fafb; color: #9ca3af; border-color: #e5e7eb; }
     </style>
@@ -109,7 +107,7 @@
                 <div id="hp-header-info" class="flex items-center gap-2"></div>
             </div>
         </div>
-        <div id="hp-logs-container" class="flex-1 overflow-y-auto p-5 space-y-4 pb-10">
+        <div id="hp-logs-container" class="flex-1 overflow-y-auto p-5 pb-10">
             </div>
     </div>
 
@@ -119,6 +117,7 @@
                 <button onclick="closeRecordPanel()" class="text-gray-400 text-3xl font-black active:scale-90 transition-transform">&lsaquo;</button>
                 <div id="rp-header-info" class="flex items-center gap-2"></div>
             </div>
+            <button onclick="resetRecordForm()" class="text-xs bg-gray-100 text-gray-500 px-3 py-1.5 rounded-lg font-bold">초기화</button>
         </div>
 
         <div class="flex-1 overflow-y-auto p-5 space-y-8 pb-32">
@@ -126,60 +125,57 @@
                 <p class="text-xs font-bold text-pink-500">현재 <span class="font-black text-pink-600 underline" id="current-trainer-display"></span>님의 이름으로 자동 기록됩니다.</p>
             </div>
 
-            <section>
-                <h3 class="text-lg font-black text-gray-800 mb-3">🐕 산책 체크</h3>
+            <section class="border border-pink-100 p-4 rounded-2xl bg-white shadow-sm">
+                <h3 class="text-lg font-black text-gray-800 mb-3">🐕 산책 기록</h3>
                 <div class="flex gap-2 mb-3">
-                    <button type="button" onclick="toggleSelect(this, 'walk-time')" class="walk-time-btn flex-1 py-2 rounded-xl border btn-active">오전</button>
+                    <button type="button" onclick="toggleSelect(this, 'walk-time')" class="walk-time-btn flex-1 py-2 rounded-xl border btn-inactive">오전</button>
                     <button type="button" onclick="toggleSelect(this, 'walk-time')" class="walk-time-btn flex-1 py-2 rounded-xl border btn-inactive">오후</button>
                     <button type="button" onclick="toggleSelect(this, 'walk-time')" class="walk-time-btn flex-1 py-2 rounded-xl border btn-inactive">저녁</button>
                 </div>
-                <input type="number" id="walk-duration" placeholder="산책 시간 (분)" class="w-full p-4 border border-pink-100 rounded-2xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300 mb-3">
+                <input type="text" id="walk-duration" placeholder="산책 시간 (예: 45분, 10:00~10:45)" class="w-full p-4 border border-pink-100 rounded-2xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300 mb-3">
                 <p class="text-xs font-bold text-gray-500 mb-2">산책 간 아이의 컨디션</p>
                 <div class="flex gap-2">
-                    <button type="button" onclick="toggleSelect(this, 'walk-cond')" class="walk-cond-btn flex-1 py-3 rounded-2xl border btn-active text-xl">🟢 좋음</button>
+                    <button type="button" onclick="toggleSelect(this, 'walk-cond')" class="walk-cond-btn flex-1 py-3 rounded-2xl border btn-inactive text-xl">🟢 좋음</button>
                     <button type="button" onclick="toggleSelect(this, 'walk-cond')" class="walk-cond-btn flex-1 py-3 rounded-2xl border btn-inactive text-xl">🟡 평범</button>
                     <button type="button" onclick="toggleSelect(this, 'walk-cond')" class="walk-cond-btn flex-1 py-3 rounded-2xl border btn-inactive text-xl">🔴 나쁨</button>
                 </div>
             </section>
             
-            <hr class="border-pink-50">
-
-            <section>
-                <h3 class="text-lg font-black text-gray-800 mb-3">🥣 밥 급여 체크</h3>
+            <section class="border border-pink-100 p-4 rounded-2xl bg-white shadow-sm">
+                <h3 class="text-lg font-black text-gray-800 mb-3">🥣 밥 급여 기록</h3>
                 <div class="flex gap-2 mb-3">
-                    <button type="button" onclick="toggleSelect(this, 'meal-time')" class="meal-time-btn flex-1 py-2 rounded-xl border btn-active">아침</button>
+                    <button type="button" onclick="toggleSelect(this, 'meal-time')" class="meal-time-btn flex-1 py-2 rounded-xl border btn-inactive">아침</button>
                     <button type="button" onclick="toggleSelect(this, 'meal-time')" class="meal-time-btn flex-1 py-2 rounded-xl border btn-inactive">저녁</button>
                 </div>
-                <input type="number" id="meal-amount" placeholder="급여량 (g)" class="w-full p-4 border border-pink-100 rounded-2xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300 mb-3">
+                <input type="text" id="meal-amount" placeholder="급여량 (예: 150g, 종이컵 1컵)" class="w-full p-4 border border-pink-100 rounded-2xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300 mb-3">
                 <p class="text-xs font-bold text-gray-500 mb-2">밥 먹은 정도</p>
                 <div class="grid grid-cols-2 gap-2">
-                    <button type="button" onclick="toggleSelect(this, 'meal-status')" class="meal-status-btn py-2 rounded-xl border btn-active text-sm">완식</button>
+                    <button type="button" onclick="toggleSelect(this, 'meal-status')" class="meal-status-btn py-2 rounded-xl border btn-inactive text-sm">완식</button>
                     <button type="button" onclick="toggleSelect(this, 'meal-status')" class="meal-status-btn py-2 rounded-xl border btn-inactive text-sm">조금 남김</button>
                     <button type="button" onclick="toggleSelect(this, 'meal-status')" class="meal-status-btn py-2 rounded-xl border btn-inactive text-sm">많이 남김</button>
                     <button type="button" onclick="toggleSelect(this, 'meal-status')" class="meal-status-btn py-2 rounded-xl border btn-inactive text-sm">먹지 않음</button>
                 </div>
             </section>
 
-            <hr class="border-pink-50">
-
-            <section>
-                <h3 class="text-lg font-black text-gray-800 mb-3">💩 배변 체크</h3>
+            <section class="border border-pink-100 p-4 rounded-2xl bg-white shadow-sm">
+                <h3 class="text-lg font-black text-gray-800 mb-3">💩 배변 기록</h3>
                 <div class="flex gap-2 mb-3">
-                    <button type="button" onclick="toggleMulti(this)" id="potty-type-feces" class="potty-type-btn flex-1 py-3 rounded-2xl border btn-active">대변</button>
+                    <button type="button" onclick="toggleMulti(this)" id="potty-type-feces" class="potty-type-btn flex-1 py-3 rounded-2xl border btn-inactive">대변</button>
                     <button type="button" onclick="toggleMulti(this)" id="potty-type-urine" class="potty-type-btn flex-1 py-3 rounded-2xl border btn-inactive">소변</button>
                 </div>
-                <select id="potty-status" class="w-full p-4 border border-pink-100 rounded-2xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300 text-gray-600">
-                    <option value="정상" selected>정상 (형태가 잡힌 변/맑은 소변)</option>
-                    <option value="묽은 변">묽은 변</option>
-                    <option value="설사">설사</option>
-                    <option value="혈변/혈뇨">혈변/혈뇨 (주의)</option>
-                </select>
+                <div class="flex gap-2 mb-2 overflow-x-auto hide-scrollbar">
+                    <button type="button" onclick="setPottyMemo('정상 (양호)')" class="whitespace-nowrap px-3 py-1.5 rounded-lg border border-pink-100 text-xs font-bold bg-pink-50 text-pink-500 active:scale-95">정상 (양호)</button>
+                    <button type="button" onclick="setPottyMemo('묽은 변')" class="whitespace-nowrap px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-bold bg-white text-gray-600 active:scale-95">묽은 변</button>
+                    <button type="button" onclick="setPottyMemo('설사')" class="whitespace-nowrap px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-bold bg-white text-gray-600 active:scale-95">설사</button>
+                    <button type="button" onclick="setPottyMemo('혈변/혈뇨')" class="whitespace-nowrap px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-bold bg-white text-red-500 active:scale-95">혈변/혈뇨</button>
+                </div>
+                <input type="text" id="potty-memo" placeholder="세부 상태 입력 (예: 소변만 봄, 특이사항 없음 등)" class="w-full p-4 border border-pink-100 rounded-2xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300">
             </section>
         </div>
 
         <div class="absolute bottom-0 left-0 right-0 bg-white border-t border-pink-100 p-4 pb-[max(env(safe-area-inset-bottom),16px)] shadow-[0_-5px_15px_rgba(0,0,0,0.03)] z-20">
             <button onclick="saveDetailLog()" class="w-full py-4 pink-gradient text-white font-black text-lg rounded-2xl shadow-lg active:scale-95 transition-transform">
-                일일 기록 저장하기
+                작성한 항목만 저장하기
             </button>
             <input type="hidden" id="rp-animal-id" value="">
         </div>
@@ -325,7 +321,7 @@
             });
         }
 
-        // [수정된 부분] 업무 리스트 렌더링 - 기록 보기/작성 버튼 분리
+        // [수정됨] 용어 변경 반영
         function renderTasks() {
             const container = document.getElementById('task-container');
             const filteredAnimals = animals.filter(a => {
@@ -345,8 +341,6 @@
                 const photoHtml = a.photo ? `<div class="w-16 h-16 rounded-[18px] bg-cover bg-center shrink-0 shadow-sm border border-pink-50" style="background-image: url(${a.photo})"></div>` : `<div class="w-16 h-16 rounded-[18px] bg-pink-50 flex items-center justify-center shrink-0 text-pink-200 text-2xl">🐾</div>`;
                 const badgeColor = a.status && a.status.includes('입양 대기') ? 'bg-pink-500 text-white shadow-md' : (a.status && a.status.includes('훈련 중') ? 'bg-orange-400 text-white shadow-md' : 'bg-blue-50 text-blue-500');
                 
-                const logCount = a.daily_logs ? Object.keys(a.daily_logs).length : 0;
-
                 container.innerHTML += `
                     <div class="card border-pink-50 mb-4 hover:shadow-lg transition-all">
                         <div class="flex items-center gap-4 cursor-pointer active:scale-[0.98] transition-transform" onclick="openRecordPanel(${a.id})">
@@ -362,24 +356,24 @@
                         </div>
                         <div class="mt-4 pt-3 border-t border-pink-50 flex justify-between items-center">
                             <button onclick="openHistoryPanel(event, ${a.id})" class="text-xs font-bold text-gray-500 hover:text-pink-500 transition-colors flex items-center gap-1 active:scale-95">
-                                📝 누적 기록: <span class="text-pink-500 underline font-black">${logCount}건 보기</span>
+                                📅 <span class="text-pink-500 underline font-black">일과 기록 열람</span>
                             </button>
                             <button onclick="openRecordPanel(${a.id})" class="text-xs font-black text-pink-500 bg-pink-50 px-3 py-1.5 rounded-xl active:scale-95 transition-transform">
-                                일일 기록 작성 &rarr;
+                                기록 작성 &rarr;
                             </button>
                         </div>
                     </div>`;
             });
         }
 
-        /* --- [새로 추가된 로직] 기록 열람(History) 패널 기능 --- */
+        // [수정됨] 날짜별로 묶어주는 아코디언 기록 뷰
         function openHistoryPanel(event, id) {
-            event.stopPropagation(); // 카드 클릭(기록 작성)으로 넘어가는 것 방지
+            event.stopPropagation();
             const ani = animals.find(a => a.id === id);
             if(!ani) return;
             
             const photoHtml = ani.photo ? `<div class="w-10 h-10 rounded-full bg-cover bg-center border-2 border-pink-100" style="background-image: url(${ani.photo})"></div>` : `<div class="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center text-xl">🐾</div>`;
-            document.getElementById('hp-header-info').innerHTML = `${photoHtml}<div class="flex flex-col"><span class="font-black text-gray-800 text-lg leading-tight">${ani.name}</span><span class="text-[10px] text-pink-400 font-bold">과거 기록 열람</span></div>`;
+            document.getElementById('hp-header-info').innerHTML = `${photoHtml}<div class="flex flex-col"><span class="font-black text-gray-800 text-lg leading-tight">${ani.name}</span><span class="text-[10px] text-pink-400 font-bold">과거 일과 기록</span></div>`;
             
             renderHistory(ani);
             document.getElementById('history-panel').classList.remove('translate-x-full');
@@ -389,59 +383,79 @@
             document.getElementById('history-panel').classList.add('translate-x-full');
         }
 
+        function toggleAccordion(id) {
+            const el = document.getElementById(id);
+            el.classList.toggle('hidden');
+        }
+
         function renderHistory(ani) {
             const container = document.getElementById('hp-logs-container');
             
             if(!ani.daily_logs || Object.keys(ani.daily_logs).length === 0) {
-                container.innerHTML = `<div class="flex flex-col items-center justify-center h-full text-gray-400 font-bold mt-20"><span class="text-4xl mb-3">📭</span><p>아직 작성된 일일 기록이 없습니다.</p></div>`;
+                container.innerHTML = `<div class="flex flex-col items-center justify-center h-full text-gray-400 font-bold mt-20"><span class="text-4xl mb-3">📭</span><p>아직 작성된 일과 기록이 없습니다.</p></div>`;
                 return;
             }
 
-            // 최신 기록이 위로 오도록 정렬 (내림차순)
-            const logsArray = Object.values(ani.daily_logs).sort((a, b) => b.timestamp - a.timestamp);
+            // 날짜별로 데이터 그룹화
+            const logsByDate = {};
+            Object.values(ani.daily_logs).forEach(log => {
+                const dateKey = log.date_str || "날짜 미상";
+                if(!logsByDate[dateKey]) logsByDate[dateKey] = [];
+                logsByDate[dateKey].push(log);
+            });
 
-            container.innerHTML = logsArray.map(log => {
-                const condIcon = log.walk.condition === '좋음' ? '🟢' : (log.walk.condition === '나쁨' ? '🔴' : '🟡');
+            // 날짜 최신순 정렬
+            const sortedDates = Object.keys(logsByDate).sort((a, b) => b.localeCompare(a));
+
+            container.innerHTML = sortedDates.map((date, index) => {
+                // 해당 날짜 안에서 시간 역순 정렬
+                const logs = logsByDate[date].sort((a,b) => b.timestamp - a.timestamp);
+                const accId = `acc-date-${index}`;
+                const isOpen = index === 0; // 가장 최신 날짜만 기본으로 열어둠
+
+                const logsHtml = logs.map(log => {
+                    let content = '';
+                    if(log.walk) content += `<div class="flex items-start gap-2 mb-1"><span class="text-base">🐕</span> <p><strong class="text-gray-900">산책:</strong> ${log.walk.time} / ${log.walk.duration} / ${log.walk.condition}</p></div>`;
+                    if(log.meal) content += `<div class="flex items-start gap-2 mb-1"><span class="text-base">🥣</span> <p><strong class="text-gray-900">급여:</strong> ${log.meal.time} / ${log.meal.amount} / ${log.meal.status}</p></div>`;
+                    if(log.potty) content += `<div class="flex items-start gap-2 mb-1"><span class="text-base">💩</span> <p><strong class="text-gray-900">배변:</strong> ${log.potty.type} / ${log.potty.memo}</p></div>`;
+
+                    return `
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-pink-50 mb-3">
+                        <div class="flex justify-between items-center mb-2 pb-2 border-b border-gray-50">
+                            <span class="text-xs text-gray-500 font-bold">${log.time_str || ''}</span>
+                            <span class="text-[10px] bg-pink-50 text-pink-500 px-2 py-1 rounded-md font-black">작성: ${log.trainer_name}</span>
+                        </div>
+                        <div class="text-sm text-gray-700">${content}</div>
+                    </div>`;
+                }).join('');
+
                 return `
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-pink-100">
-                    <div class="flex justify-between items-center mb-3 pb-2 border-b border-gray-50">
-                        <span class="text-xs text-gray-500 font-bold">${log.date_str}</span>
-                        <span class="text-[10px] bg-pink-50 text-pink-500 px-2 py-1 rounded-md font-black">작성: ${log.trainer_name}</span>
-                    </div>
-                    <div class="space-y-2 text-sm text-gray-700">
-                        <div class="flex items-start gap-2"><span class="text-base">🐕</span> <p><strong class="text-gray-900">산책:</strong> ${log.walk.time} / ${log.walk.duration}분 / ${condIcon} ${log.walk.condition}</p></div>
-                        <div class="flex items-start gap-2"><span class="text-base">🥣</span> <p><strong class="text-gray-900">급여:</strong> ${log.meal.time} / ${log.meal.amount}g / ${log.meal.status}</p></div>
-                        <div class="flex items-start gap-2"><span class="text-base">💩</span> <p><strong class="text-gray-900">배변:</strong> ${log.potty.type} / ${log.potty.status}</p></div>
+                <div class="mb-4">
+                    <button onclick="toggleAccordion('${accId}')" class="w-full flex justify-between items-center bg-pink-100 text-pink-600 px-4 py-3 rounded-2xl font-black shadow-sm active:scale-95 transition-all">
+                        <span>📅 ${date}</span>
+                        <span class="text-xs bg-white px-2 py-1 rounded-lg text-pink-400">${logs.length}건 기록 ▼</span>
+                    </button>
+                    <div id="${accId}" class="${isOpen ? '' : 'hidden'} mt-3 pl-2 border-l-2 border-pink-100">
+                        ${logsHtml}
                     </div>
                 </div>`;
             }).join('');
         }
 
-        /* --- 기존 상세 기록 작성 로직 --- */
-        function openRecordPanel(id) {
-            const ani = animals.find(a => a.id === id);
-            if(!ani) return;
-            document.getElementById('rp-animal-id').value = id;
-            
-            const photoHtml = ani.photo ? `<div class="w-10 h-10 rounded-full bg-cover bg-center border-2 border-pink-100" style="background-image: url(${ani.photo})"></div>` : `<div class="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center text-xl">🐾</div>`;
-            document.getElementById('rp-header-info').innerHTML = `${photoHtml}<div class="flex flex-col"><span class="font-black text-gray-800 text-lg leading-tight">${ani.name}</span><span class="text-[10px] text-pink-400 font-bold">일일 상태 기록 작성</span></div>`;
-            
-            resetRecordForm();
-            document.getElementById('record-panel').classList.remove('translate-x-full');
-        }
-
-        function closeRecordPanel() {
-            document.getElementById('record-panel').classList.add('translate-x-full');
-            document.activeElement.blur();
-        }
-
+        /* --- [수정됨] 토글 로직 (재클릭 시 선택 해제 가능) --- */
         function toggleSelect(clickedBtn, groupClass) {
+            const wasActive = clickedBtn.classList.contains('btn-active');
+            
             document.querySelectorAll(`.${groupClass}-btn`).forEach(btn => {
                 btn.classList.remove('btn-active');
                 btn.classList.add('btn-inactive');
             });
-            clickedBtn.classList.remove('btn-inactive');
-            clickedBtn.classList.add('btn-active');
+            
+            // 이미 켜져 있던 버튼을 누른 게 아니라면 활성화 (즉, 껐다 켰다 가능)
+            if (!wasActive) {
+                clickedBtn.classList.remove('btn-inactive');
+                clickedBtn.classList.add('btn-active');
+            }
         }
 
         function toggleMulti(clickedBtn) {
@@ -454,56 +468,105 @@
             }
         }
 
+        function setPottyMemo(text) {
+            document.getElementById('potty-memo').value = text;
+        }
+
+        // [수정됨] 폼 오픈 시 모든 버튼 비활성화 (독립 기록을 위해)
         function resetRecordForm() {
-            toggleSelect(document.querySelector('.walk-time-btn'), 'walk-time');
-            toggleSelect(document.querySelector('.walk-cond-btn'), 'walk-cond');
-            toggleSelect(document.querySelector('.meal-time-btn'), 'meal-time');
-            toggleSelect(document.querySelector('.meal-status-btn'), 'meal-status');
+            ['walk-time', 'walk-cond', 'meal-time', 'meal-status'].forEach(cls => {
+                document.querySelectorAll(`.${cls}-btn`).forEach(b => {
+                    b.classList.remove('btn-active');
+                    b.classList.add('btn-inactive');
+                });
+            });
             
-            document.getElementById('potty-type-feces').className = 'potty-type-btn flex-1 py-3 rounded-2xl border btn-active';
+            document.getElementById('potty-type-feces').className = 'potty-type-btn flex-1 py-3 rounded-2xl border btn-inactive';
             document.getElementById('potty-type-urine').className = 'potty-type-btn flex-1 py-3 rounded-2xl border btn-inactive';
             
             document.getElementById('walk-duration').value = '';
             document.getElementById('meal-amount').value = '';
-            document.getElementById('potty-status').value = '정상';
+            document.getElementById('potty-memo').value = '';
         }
 
+        function openRecordPanel(id) {
+            const ani = animals.find(a => a.id === id);
+            if(!ani) return;
+            document.getElementById('rp-animal-id').value = id;
+            
+            const photoHtml = ani.photo ? `<div class="w-10 h-10 rounded-full bg-cover bg-center border-2 border-pink-100" style="background-image: url(${ani.photo})"></div>` : `<div class="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center text-xl">🐾</div>`;
+            document.getElementById('rp-header-info').innerHTML = `${photoHtml}<div class="flex flex-col"><span class="font-black text-gray-800 text-lg leading-tight">${ani.name}</span><span class="text-[10px] text-pink-400 font-bold">일과 기록 작성</span></div>`;
+            
+            resetRecordForm();
+            document.getElementById('record-panel').classList.remove('translate-x-full');
+        }
+
+        function closeRecordPanel() {
+            document.getElementById('record-panel').classList.add('translate-x-full');
+            document.activeElement.blur();
+        }
+
+        // [수정됨] 선택된 데이터만 부분적으로 저장하는 로직
         function saveDetailLog() {
             const id = document.getElementById('rp-animal-id').value;
             if(!id) return;
 
-            const walkTime = document.querySelector('.walk-time-btn.btn-active').innerText;
-            const walkDuration = document.getElementById('walk-duration').value || "0";
-            const walkCond = document.querySelector('.walk-cond-btn.btn-active').innerText.split(' ')[1]; 
+            // 1. 산책 데이터 체크
+            const walkTimeBtn = document.querySelector('.walk-time-btn.btn-active');
+            const walkTime = walkTimeBtn ? walkTimeBtn.innerText : null;
+            const walkDuration = document.getElementById('walk-duration').value.trim();
+            const walkCondBtn = document.querySelector('.walk-cond-btn.btn-active');
+            const walkCond = walkCondBtn ? walkCondBtn.innerText.split(' ')[1] : null;
 
-            const mealTime = document.querySelector('.meal-time-btn.btn-active').innerText;
-            const mealAmount = document.getElementById('meal-amount').value || "0";
-            const mealStatus = document.querySelector('.meal-status-btn.btn-active').innerText;
+            // 2. 급여 데이터 체크
+            const mealTimeBtn = document.querySelector('.meal-time-btn.btn-active');
+            const mealTime = mealTimeBtn ? mealTimeBtn.innerText : null;
+            const mealAmount = document.getElementById('meal-amount').value.trim();
+            const mealStatusBtn = document.querySelector('.meal-status-btn.btn-active');
+            const mealStatus = mealStatusBtn ? mealStatusBtn.innerText : null;
 
+            // 3. 배변 데이터 체크
             const pottyTypes = [];
             if(document.getElementById('potty-type-feces').classList.contains('btn-active')) pottyTypes.push("대변");
             if(document.getElementById('potty-type-urine').classList.contains('btn-active')) pottyTypes.push("소변");
-            const pottyStatus = document.getElementById('potty-status').value;
+            const pottyMemo = document.getElementById('potty-memo').value.trim();
 
-            // 기록 시간에 년월일 및 시간(분)까지 보기 좋게 포맷팅
+            // 아무것도 입력 안 하고 누르면 튕겨냄
+            if(!walkTime && !walkDuration && !mealTime && !mealAmount && pottyTypes.length === 0 && !pottyMemo) {
+                openModal('error', '빈 기록입니다', '최소 하나 이상의 항목(산책, 급여, 배변)을 작성해주세요.');
+                return;
+            }
+
+            // 날짜 및 시간 분리 저장 (아코디언 정렬용)
             const now = new Date();
-            const formattedDate = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+            const dateStr = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`;
+            const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
 
             const logData = {
                 timestamp: Date.now(),
                 trainer_name: CURRENT_TRAINER,
-                walk: { time: walkTime, duration: walkDuration, condition: walkCond },
-                meal: { time: mealTime, amount: mealAmount, status: mealStatus },
-                potty: { type: pottyTypes.join(', ') || '없음', status: pottyStatus },
-                date_str: formattedDate
+                date_str: dateStr,
+                time_str: timeStr
             };
+
+            // 작성된 항목만 데이터 객체에 추가
+            if(walkTime || walkDuration || walkCond) {
+                logData.walk = { time: walkTime || '-', duration: walkDuration || '-', condition: walkCond || '-' };
+            }
+            if(mealTime || mealAmount || mealStatus) {
+                logData.meal = { time: mealTime || '-', amount: mealAmount || '-', status: mealStatus || '-' };
+            }
+            if(pottyTypes.length > 0 || pottyMemo) {
+                logData.potty = { type: pottyTypes.join(', ') || '-', memo: pottyMemo || '특이사항 없음' };
+            }
 
             database.ref('animals/' + id + '/daily_logs/' + Date.now()).set(logData).then(() => {
                 closeRecordPanel();
-                openModal('success', '기록 완료!', `${CURRENT_TRAINER}님의 이름으로 데이터가 안전하게 저장되었습니다.`);
+                openModal('success', '기록 완료!', `작성하신 항목이 ${CURRENT_TRAINER}님의 이름으로 저장되었습니다.`);
             });
         }
 
+        /* --- 공통 모달 및 삭제 로직 --- */
         function openModal(type, title, desc, onConfirm) {
             const modal = document.getElementById('custom-modal');
             const btns = document.getElementById('modal-btns');
