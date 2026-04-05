@@ -15,13 +15,13 @@
         .modal-bg.active { display: flex; }
         #photo-preview { background-size: cover; background-position: center; transition: all 0.3s; }
         
-        /* 디자인 고정을 위한 기존 레이아웃 유지 */
+        /* 디자인 보존 레이아웃 */
         .content-area { padding-bottom: 160px; position: relative; }
         nav { z-index: 50; position: fixed; bottom: 0; left: 0; right: 0; }
         
-        /* [핵심] 버튼 터치 우선순위 강제 조정 (디자인 변경 없음) */
-        .save-btn-container { position: relative; z-index: 100; }
-        .save-btn { pointer-events: auto !important; position: relative; z-index: 101; touch-action: manipulation; }
+        /* 버튼 탭감 및 터치 우선순위 */
+        .save-btn { cursor: pointer; touch-action: auto; position: relative; z-index: 101; }
+        .save-btn:active { transform: scale(0.95); opacity: 0.9; }
     </style>
 </head>
 <body class="max-w-md mx-auto p-4">
@@ -62,11 +62,9 @@
                     
                     <textarea id="in-memo" placeholder="메모 및 특이사항" class="col-span-2 p-4 border border-pink-100 rounded-2xl outline-none h-24 bg-pink-50/20 text-sm"></textarea>
                     
-                    <div class="col-span-2 save-btn-container">
-                        <button id="main-save-btn" class="save-btn w-full py-5 pink-gradient text-white font-black rounded-2xl shadow-lg active:scale-95 transition-transform mt-2">
-                            보호견 등록하기
-                        </button>
-                    </div>
+                    <button id="real-save-btn" onclick="saveAnimal()" class="save-btn col-span-2 py-5 pink-gradient text-white font-black rounded-2xl shadow-lg mt-2 transition-all">
+                        보호견 등록하기
+                    </button>
                 </div>
             </div>
             <div id="reg-list" class="space-y-4"></div>
@@ -96,20 +94,10 @@
     </div>
 
     <script>
-        let animals = JSON.parse(localStorage.getItem('naepumae_v4') || '[]');
+        // 데이터 키를 하나로 확실히 통일 (버그 방지)
+        const DATA_KEY = 'naepumae_v4';
+        let animals = JSON.parse(localStorage.getItem(DATA_KEY) || '[]');
         let currentPhotoBase64 = null;
-
-        // [핵심] 버튼 터치/클릭 통합 이벤트 바인딩
-        const btn = document.getElementById('main-save-btn');
-        const triggerSave = (e) => {
-            e.preventDefault();
-            document.activeElement.blur(); // 키보드 강제 닫기
-            saveAnimal();
-        };
-
-        // 터치 시작 시 즉각 반응하도록 바인딩
-        btn.addEventListener('touchstart', triggerSave, { passive: false });
-        btn.addEventListener('click', triggerSave);
 
         function showView(view) {
             document.getElementById('view-reg').classList.toggle('hidden', view !== 'reg');
@@ -161,15 +149,24 @@
             document.getElementById('in-photo').value = '';
         }
 
+        // [최종 수정 핵심] 등록 로직의 안정성 확보
         function saveAnimal() {
+            // 키보드 강제 닫기 (좌표 어긋남 방지)
+            document.activeElement.blur();
+
             const nameEl = document.getElementById('in-name');
             const name = nameEl.value.trim();
-            if(!name) { openModal('error', '이름을 입력해주세요!', '강아지 이름을 적어야 등록이 가능합니다.'); return; }
             
+            if(!name) {
+                openModal('error', '이름을 입력해주세요!', '아이의 이름을 적어야 등록이 가능합니다.');
+                return;
+            }
+            
+            // 데이터 객체 생성
             const newAnimal = {
                 id: Date.now(),
                 photo: currentPhotoBase64,
-                name,
+                name: name,
                 breed: document.getElementById('in-breed').value || '미상',
                 gender: document.getElementById('in-gender').value || '미정',
                 age: document.getElementById('in-age').value || '미상',
@@ -178,19 +175,31 @@
                 tasks: { walk:false, clean:false, meal:false }
             };
 
-            animals.unshift(newAnimal);
-            localStorage.setItem('naepumae_v4', JSON.stringify(animals));
-            nameEl.value = "";
-            ['in-breed','in-age','in-personality','in-memo'].forEach(id => document.getElementById(id).value = '');
-            document.getElementById('in-gender').value = "";
-            removePhoto(); 
-            renderRegList();
-            openModal('success', '등록 완료!', `${name}의 정보를 저장했습니다.`);
+            // 데이터 저장 실행
+            try {
+                animals.unshift(newAnimal);
+                localStorage.setItem(DATA_KEY, JSON.stringify(animals));
+                
+                // 입력창 초기화
+                nameEl.value = "";
+                ['in-breed','in-age','in-personality','in-memo'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if(el) el.value = '';
+                });
+                document.getElementById('in-gender').value = "";
+                removePhoto(); 
+                
+                // 리스트 새로고침 및 성공 알림
+                renderRegList();
+                openModal('success', '등록 완료!', `${name}의 정보를 안전하게 저장했습니다.`);
+            } catch (e) {
+                alert("저장 공간이 부족하거나 오류가 발생했습니다.");
+            }
         }
 
         function renderRegList() {
             const container = document.getElementById('reg-list');
-            container.innerHTML = `<h3 class="font-bold text-gray-400 px-2 mt-8 mb-4 text-xs">보호 명단 (${animals.length})</h3>`;
+            container.innerHTML = `<h3 class="font-bold text-gray-400 px-2 mt-8 mb-4 text-xs uppercase tracking-wider">보호 명단 (${animals.length})</h3>`;
             animals.forEach(a => {
                 const photoHtml = a.photo ? `<div class="w-16 h-16 rounded-2xl bg-cover bg-center shrink-0 shadow-sm" style="background-image: url(${a.photo})"></div>` : `<div class="w-16 h-16 rounded-2xl bg-pink-50 flex items-center justify-center shrink-0 text-pink-200 text-2xl">🐶</div>`;
                 const tags = a.personality.split(',').map(tag => `<span class="text-[10px] bg-pink-100/50 text-pink-500 px-2 py-0.5 rounded-md font-bold">#${tag.trim()}</span>`).join(' ');
@@ -211,7 +220,7 @@
         function askDelete(id) {
             openModal('confirm', '삭제할까요?', '기록이 영구적으로 삭제됩니다.', () => {
                 animals = animals.filter(a => a.id !== id);
-                localStorage.setItem('naepumae_v4', JSON.stringify(animals));
+                localStorage.setItem(DATA_KEY, JSON.stringify(animals));
                 renderRegList();
             });
         }
@@ -219,10 +228,11 @@
         function toggleTask(id, type) {
             const ani = animals.find(a => a.id === id);
             ani.tasks[type] = !ani.tasks[type];
-            localStorage.setItem('naepumae_v4', JSON.stringify(animals));
+            localStorage.setItem(DATA_KEY, JSON.stringify(animals));
             renderTasks();
         }
 
+        // 초기 실행
         renderRegList();
     </script>
 </body>
