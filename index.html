@@ -14,12 +14,11 @@
         body { font-family: 'Noto Sans KR', sans-serif; background-color: #fff5f7; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; overflow-x: hidden; }
         .pink-gradient { background: linear-gradient(135deg, #ff69b4 0%, #ff85c0 100%); }
         .card { background: white; border-radius: 28px; padding: 20px; border: 1px solid #ffe4e9; box-shadow: 0 10px 20px rgba(255, 105, 180, 0.03); }
-        .tab-active { color: #ff69b4; border-bottom: 3px solid #ff69b4; }
         .modal-bg { background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(6px); z-index: 10000; position: fixed; inset: 0; display: none; align-items: center; justify-content: center; }
         .modal-bg.active { display: flex; }
         #photo-preview { background-size: cover; background-position: center; transition: all 0.3s; }
         
-        .content-area { padding-bottom: 160px; position: relative; z-index: 10; }
+        .content-area { padding-bottom: 100px; position: relative; z-index: 10; }
         nav { z-index: 50; position: fixed; bottom: 0; left: 0; right: 0; height: 85px; background: white; border-top: 1px solid #ffe4e9; box-shadow: 0 -5px 20px rgba(255,105,180,0.05); }
         
         .save-btn { cursor: pointer; position: relative; z-index: 100; touch-action: manipulation; -webkit-appearance: none; }
@@ -41,11 +40,6 @@
             <p class="text-gray-500 text-sm font-bold">반려동물과 행복한 서대문</p>
         </header>
 
-        <div class="flex justify-around mb-6 bg-white rounded-2xl p-1 shadow-sm border border-pink-50">
-            <button onclick="showView('list')" id="tab-list" class="flex-1 py-3 text-sm font-bold tab-active">업무 관리 (목록)</button>
-            <button onclick="showView('reg')" id="tab-reg" class="flex-1 py-3 text-sm font-bold text-gray-400">신규 아이 등록</button>
-        </div>
-
         <div id="view-list" class="space-y-4">
             <div id="filter-container" class="flex gap-2 px-2 overflow-x-auto hide-scrollbar mb-4"></div>
             <div id="task-container" class="space-y-4"></div>
@@ -53,7 +47,10 @@
 
         <div id="view-reg" class="hidden space-y-6">
             <div class="card space-y-4">
-                <h2 class="text-lg font-bold text-gray-700">📸 신규 보호 동물 등록</h2>
+                <div class="flex justify-between items-center">
+                    <h2 id="reg-title" class="text-lg font-bold text-gray-700">📸 신규 보호 동물 등록</h2>
+                    <button id="btn-cancel-edit" onclick="cancelEdit()" class="hidden text-xs bg-gray-100 text-gray-500 px-3 py-1 rounded-full font-bold">수정 취소</button>
+                </div>
                 
                 <div id="photo-preview" onclick="document.getElementById('in-photo').click()" class="w-full h-52 rounded-3xl bg-pink-50 flex items-center justify-center border-2 border-dashed border-pink-200 relative overflow-hidden cursor-pointer">
                     <div id="photo-placeholder" class="text-center text-pink-300">
@@ -83,7 +80,7 @@
                     <input type="text" id="in-personality" placeholder="성격 (쉼표 구분)" class="col-span-2 p-4 border border-pink-100 rounded-2xl outline-none bg-pink-50/20 text-sm font-bold w-full">
                     <textarea id="in-memo" placeholder="구조 경위 및 초기 메모" class="col-span-2 p-4 border border-pink-100 rounded-2xl outline-none h-24 bg-pink-50/20 text-sm font-bold"></textarea>
                     
-                    <button type="button" onclick="saveAnimal(); return false;" class="save-btn col-span-2 py-5 pink-gradient text-white font-black rounded-2xl shadow-lg mt-2 transition-transform text-lg">
+                    <button id="btn-save-animal" type="button" onclick="saveAnimal(); return false;" class="save-btn col-span-2 py-5 pink-gradient text-white font-black rounded-2xl shadow-lg mt-2 transition-transform text-lg">
                         보호 동물 등록하기
                     </button>
                 </div>
@@ -91,14 +88,57 @@
         </div>
     </div>
 
-    <nav class="flex justify-around py-4 shadow-lg rounded-t-[32px]">
-        <button onclick="showView('list')" class="flex flex-col items-center gap-1">
-            <span class="text-2xl">📋</span><span class="text-[10px] font-black text-pink-500">업무관리</span>
+    <nav class="flex justify-around py-3 shadow-lg rounded-t-[32px] items-center">
+        <button id="nav-list" onclick="showView('list')" class="flex flex-col items-center gap-1 w-1/2 opacity-100 transition-opacity">
+            <span class="text-2xl">📋</span><span class="text-[11px] font-black text-pink-500">개체 관리</span>
         </button>
-        <button onclick="showView('reg')" class="flex flex-col items-center gap-1">
-            <span class="text-2xl opacity-30 hover:opacity-100 transition-opacity">🐾</span><span class="text-[10px] font-black text-gray-400">아이등록</span>
+        <div class="w-[1px] h-10 bg-pink-100"></div>
+        <button id="nav-reg" onclick="showView('reg')" class="flex flex-col items-center gap-1 w-1/2 opacity-40 hover:opacity-100 transition-opacity">
+            <span class="text-2xl">🐾</span><span class="text-[11px] font-black text-pink-500">신규 아이 등록</span>
         </button>
     </nav>
+
+    <div id="profile-panel" class="slide-panel fixed inset-0 bg-gray-50 z-[120] transform translate-x-full flex flex-col h-full overflow-hidden">
+        <div class="px-5 py-4 bg-white border-b border-pink-100 flex justify-between items-center shadow-sm sticky top-0 z-10 pt-[max(env(safe-area-inset-top),16px)]">
+            <button onclick="closeProfilePanel()" class="text-gray-400 text-3xl font-black active:scale-90 transition-transform">&lsaquo;</button>
+            <span class="font-black text-gray-700">개체 관리 카드</span>
+            <div class="w-6"></div> </div>
+        
+        <div class="flex-1 overflow-y-auto p-5 pb-32 space-y-6">
+            <div class="bg-white rounded-3xl p-6 shadow-sm border border-pink-100 relative">
+                <div class="absolute top-4 right-4 flex gap-2">
+                    <button onclick="editAnimalProfile()" class="text-[11px] px-3 py-1.5 bg-pink-50 text-pink-600 rounded-lg font-bold shadow-sm active:scale-95">정보 수정</button>
+                </div>
+
+                <div class="flex flex-col items-center mt-2">
+                    <div id="pp-photo" class="w-28 h-28 rounded-full bg-cover bg-center shadow-md border-4 border-pink-50 mb-4 flex items-center justify-center bg-pink-100 text-4xl">🐾</div>
+                    <span id="pp-status" class="px-3 py-1 rounded-full text-[10px] font-black bg-pink-500 text-white shadow-sm mb-2">보호 중</span>
+                    <h2 id="pp-name" class="text-3xl font-black text-gray-800 mb-1">이름</h2>
+                    <p id="pp-info" class="text-xs text-gray-500 font-bold mb-4">견종 · 성별 · 나이</p>
+                    <div id="pp-tags" class="flex flex-wrap gap-1 justify-center mb-6"></div>
+                </div>
+
+                <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                    <p class="text-[10px] text-gray-400 font-black mb-1">구조 경위 및 메모</p>
+                    <p id="pp-memo" class="text-sm font-bold text-gray-700 leading-relaxed min-h-[40px]">메모가 없습니다.</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="openRecordFromProfile()" class="bg-white border-2 border-pink-400 text-pink-500 py-4 rounded-2xl font-black shadow-sm active:scale-95 transition-all flex flex-col items-center gap-1">
+                    <span class="text-2xl">📝</span>
+                    <span>일과 기록 작성</span>
+                </button>
+                <button onclick="openHistoryFromProfile()" class="bg-pink-500 text-white py-4 rounded-2xl font-black shadow-md active:scale-95 transition-all flex flex-col items-center gap-1">
+                    <span class="text-2xl">📅</span>
+                    <span>일과 기록 열람</span>
+                </button>
+            </div>
+            
+            <button onclick="askDeleteAnimal()" class="w-full py-3 mt-4 text-xs text-red-400 font-bold underline active:scale-95">이 동물의 프로필 영구 삭제하기</button>
+        </div>
+        <input type="hidden" id="pp-animal-id" value="">
+    </div>
 
     <div id="history-panel" class="slide-panel fixed inset-0 bg-gray-50 z-[150] transform translate-x-full flex flex-col h-full overflow-hidden">
         <div class="px-5 py-4 bg-white border-b border-pink-100 flex justify-between items-center shadow-sm sticky top-0 z-10 pt-[max(env(safe-area-inset-top),16px)]">
@@ -107,8 +147,7 @@
                 <div id="hp-header-info" class="flex items-center gap-2"></div>
             </div>
         </div>
-        <div id="hp-logs-container" class="flex-1 overflow-y-auto p-5 pb-10">
-            </div>
+        <div id="hp-logs-container" class="flex-1 overflow-y-auto p-5 pb-10"></div>
         <input type="hidden" id="hp-animal-id" value="">
     </div>
 
@@ -194,9 +233,10 @@
     <script>
         const CURRENT_TRAINER = "김현우 훈련사";
         
-        // [수정/삭제] 현재 수정 중인 로그 정보를 담는 전역 변수
+        // 데이터 상태 변수
         let editingLogId = null;
         let editingLogOriginalData = null;
+        let editingAnimalProfileId = null; // 프로필 정보 수정용 변수 추가
 
         const firebaseConfig = {
             apiKey: "AIzaSyAitCQVYKsqytLzT_O9_k0lXT7bAsPhjLY",
@@ -229,7 +269,14 @@
             renderFilters();
             if (!document.getElementById('view-list').classList.contains('hidden')) renderTasks();
 
-            // [추가] 히스토리 패널이 열려있으면 실시간으로 리렌더링 (삭제/수정 즉각 반영)
+            // 열려있는 패널들 실시간 동기화
+            const profilePanel = document.getElementById('profile-panel');
+            if(!profilePanel.classList.contains('translate-x-full')) {
+                const activeId = document.getElementById('pp-animal-id').value;
+                const activeAni = animals.find(a => a.id == activeId);
+                if(activeAni) populateProfilePanel(activeAni); // 프로필 화면 갱신
+            }
+
             const historyPanel = document.getElementById('history-panel');
             if(!historyPanel.classList.contains('translate-x-full')) {
                 const activeId = document.getElementById('hp-animal-id').value;
@@ -238,19 +285,27 @@
             }
         });
 
+        // 네비게이션 뷰 컨트롤 (상단 탭 제거, 하단 탭만 사용)
         function showView(view) {
             document.getElementById('view-reg').classList.toggle('hidden', view !== 'reg');
             document.getElementById('view-list').classList.toggle('hidden', view !== 'list');
             
-            document.getElementById('tab-list').className = view === 'list' ? 'flex-1 py-3 text-sm font-bold tab-active' : 'flex-1 py-3 text-sm font-bold text-gray-400';
-            document.getElementById('tab-reg').className = view === 'reg' ? 'flex-1 py-3 text-sm font-bold tab-active' : 'flex-1 py-3 text-sm font-bold text-gray-400';
+            const navList = document.getElementById('nav-list');
+            const navReg = document.getElementById('nav-reg');
             
-            const navButtons = document.querySelectorAll('nav button span.text-2xl');
-            navButtons[0].classList.toggle('opacity-30', view !== 'list');
-            navButtons[1].classList.toggle('opacity-30', view !== 'reg');
+            navList.classList.toggle('opacity-40', view !== 'list');
+            navList.classList.toggle('opacity-100', view === 'list');
+            navReg.classList.toggle('opacity-40', view !== 'reg');
+            navReg.classList.toggle('opacity-100', view === 'reg');
 
             window.scrollTo(0,0);
-            if(view === 'list') renderTasks();
+            
+            if(view === 'list') {
+                renderTasks();
+            } else if (view === 'reg' && !editingAnimalProfileId) {
+                // 단순 신규 등록 버튼을 눌렀을 때 폼 초기화
+                resetRegForm();
+            }
         }
 
         function setFilter(filterType) {
@@ -271,6 +326,7 @@
             `).join('');
         }
 
+        /* --- 등록 및 프로필 수정 로직 --- */
         function handleFileSelect(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -305,35 +361,71 @@
             document.getElementById('in-photo').value = '';
         }
 
+        function resetRegForm() {
+            editingAnimalProfileId = null;
+            document.getElementById('reg-title').innerText = "📸 신규 보호 동물 등록";
+            document.getElementById('btn-save-animal').innerText = "보호 동물 등록하기";
+            document.getElementById('btn-cancel-edit').classList.add('hidden');
+            
+            document.getElementById('in-name').value = "";
+            ['in-breed','in-age','in-personality','in-memo'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+            document.getElementById('in-gender').value = "";
+            document.getElementById('in-status').value = "보호 중 🏡";
+            removePhoto(); 
+        }
+
+        function cancelEdit() {
+            resetRegForm();
+            showView('list');
+            document.getElementById('profile-panel').classList.remove('translate-x-full'); // 프로필 패널로 복귀
+        }
+
         function saveAnimal() {
             document.querySelectorAll('input, textarea, select').forEach(el => el.blur());
             const nameEl = document.getElementById('in-name');
             const name = nameEl.value.trim();
-            if(!name) { openModal('error', '이름을 적어주세요!', '아이의 이름을 입력해야 등록이 완료됩니다.'); return; }
+            if(!name) { openModal('error', '이름을 적어주세요!', '아이의 이름을 입력해야 완료됩니다.'); return; }
             
-            const newId = Date.now();
-            const newAnimal = {
-                id: newId, photo: currentPhotoBase64, name: name,
+            const targetId = editingAnimalProfileId ? editingAnimalProfileId : Date.now();
+            
+            let saveObj = {
+                id: targetId, 
+                photo: currentPhotoBase64, 
+                name: name,
                 breed: document.getElementById('in-breed').value || '미상',
                 gender: document.getElementById('in-gender').value || '미정',
                 age: document.getElementById('in-age').value || '미상',
                 status: document.getElementById('in-status').value || '보호 중 🏡',
                 personality: document.getElementById('in-personality').value || '정보없음',
-                memo: document.getElementById('in-memo').value || '',
-                daily_logs: {} 
+                memo: document.getElementById('in-memo').value || ''
             };
 
-            database.ref('animals/' + newId).set(newAnimal).then(() => {
-                nameEl.value = "";
-                ['in-breed','in-age','in-personality','in-memo'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
-                document.getElementById('in-gender').value = "";
-                document.getElementById('in-status').value = "보호 중 🏡";
-                removePhoto(); 
-                openModal('success', '등록 성공! ✨', `${name}의 정보가 클라우드에 공유됩니다.`);
+            if(editingAnimalProfileId) {
+                // 수정일 경우 기존 로그 데이터 보존
+                const existingAni = animals.find(a => a.id === editingAnimalProfileId);
+                if(existingAni && existingAni.daily_logs) {
+                    saveObj.daily_logs = existingAni.daily_logs;
+                }
+                // 사진을 수정하지 않았고 기존 사진이 있다면 보존
+                if(!currentPhotoBase64 && existingAni && existingAni.photo) {
+                    saveObj.photo = existingAni.photo;
+                }
+            }
+
+            database.ref('animals/' + targetId).set(saveObj).then(() => {
+                const msgTitle = editingAnimalProfileId ? '수정 완료!' : '등록 성공! ✨';
+                resetRegForm();
+                openModal('success', msgTitle, `${name}의 정보가 클라우드에 공유됩니다.`);
                 showView('list');
+                
+                // 수정 모드였다면 프로필 패널 다시 열기
+                if(editingAnimalProfileId) {
+                    document.getElementById('profile-panel').classList.remove('translate-x-full');
+                }
             });
         }
 
+        // [핵심 변경] 리스트 렌더링 - 카드를 누르면 상세 프로필이 뜸
         function renderTasks() {
             const container = document.getElementById('task-container');
             const filteredAnimals = animals.filter(a => {
@@ -353,37 +445,117 @@
                 const photoHtml = a.photo ? `<div class="w-16 h-16 rounded-[18px] bg-cover bg-center shrink-0 shadow-sm border border-pink-50" style="background-image: url(${a.photo})"></div>` : `<div class="w-16 h-16 rounded-[18px] bg-pink-50 flex items-center justify-center shrink-0 text-pink-200 text-2xl">🐾</div>`;
                 const badgeColor = a.status && a.status.includes('입양 대기') ? 'bg-pink-500 text-white shadow-md' : (a.status && a.status.includes('훈련 중') ? 'bg-orange-400 text-white shadow-md' : 'bg-blue-50 text-blue-500');
                 
+                // 카드 전체 클릭 시 -> 프로필 오픈 (openProfilePanel)
                 container.innerHTML += `
-                    <div class="card border-pink-50 mb-4 hover:shadow-lg transition-all">
-                        <div class="flex items-center gap-4 cursor-pointer active:scale-[0.98] transition-transform" onclick="openRecordPanel(${a.id})">
+                    <div class="card border-pink-50 mb-4 hover:shadow-lg transition-all cursor-pointer active:scale-[0.98]" onclick="openProfilePanel(${a.id})">
+                        <div class="flex items-center gap-4">
                             ${photoHtml}
                             <div class="flex-1 min-w-0">
                                 <div class="flex justify-between items-start mb-1">
                                     <span class="px-2 py-0.5 rounded-md text-[9px] font-black ${badgeColor}">${a.status || '보호 중 🏡'}</span>
-                                    <button onclick="askDelete(event, ${a.id})" class="text-xl text-gray-200 hover:text-pink-500 transition-colors z-10">&times;</button>
+                                    <span class="text-gray-300 text-xl">&rsaquo;</span>
                                 </div>
                                 <h3 class="font-black text-lg text-gray-800 truncate">${a.name}</h3>
                                 <p class="text-[10px] text-gray-400 font-bold">${a.breed} · ${a.gender}</p>
                             </div>
                         </div>
-                        <div class="mt-4 pt-3 border-t border-pink-50 flex justify-between items-center">
-                            <button onclick="openHistoryPanel(event, ${a.id})" class="text-xs font-bold text-gray-500 hover:text-pink-500 transition-colors flex items-center gap-1 active:scale-95">
-                                📅 <span class="text-pink-500 underline font-black">일과 기록 열람</span>
-                            </button>
-                            <button onclick="openRecordPanel(${a.id})" class="text-xs font-black text-pink-500 bg-pink-50 px-3 py-1.5 rounded-xl active:scale-95 transition-transform">
-                                기록 작성 &rarr;
-                            </button>
-                        </div>
                     </div>`;
             });
         }
 
+        /* --- 개체 상세 프로필 패널 로직 --- */
+        function openProfilePanel(id) {
+            const ani = animals.find(a => a.id === id);
+            if(!ani) return;
+            document.getElementById('pp-animal-id').value = id;
+            populateProfilePanel(ani);
+            document.getElementById('profile-panel').classList.remove('translate-x-full');
+        }
+
+        function closeProfilePanel() {
+            document.getElementById('profile-panel').classList.add('translate-x-full');
+        }
+
+        function populateProfilePanel(ani) {
+            if(ani.photo) {
+                document.getElementById('pp-photo').style.backgroundImage = `url(${ani.photo})`;
+                document.getElementById('pp-photo').innerText = '';
+            } else {
+                document.getElementById('pp-photo').style.backgroundImage = 'none';
+                document.getElementById('pp-photo').innerText = '🐾';
+            }
+            
+            document.getElementById('pp-status').innerText = ani.status || '보호 중';
+            document.getElementById('pp-name').innerText = ani.name;
+            document.getElementById('pp-info').innerText = `${ani.breed} · ${ani.gender} · ${ani.age}`;
+            
+            const tagsHtml = ani.personality.split(',').map(t => `<span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-[10px] font-black">#${t.trim()}</span>`).join('');
+            document.getElementById('pp-tags').innerHTML = tagsHtml;
+            
+            document.getElementById('pp-memo').innerText = ani.memo || '메모가 없습니다.';
+        }
+
+        // 프로필 안에서 액션 버튼들 연결
+        function openRecordFromProfile() {
+            const id = document.getElementById('pp-animal-id').value;
+            openRecordPanel(Number(id));
+        }
+
+        function openHistoryFromProfile() {
+            const id = document.getElementById('pp-animal-id').value;
+            openHistoryPanel(null, Number(id)); // event는 null 처리
+        }
+
+        function editAnimalProfile() {
+            const id = document.getElementById('pp-animal-id').value;
+            const ani = animals.find(a => a.id == id);
+            if(!ani) return;
+
+            editingAnimalProfileId = ani.id;
+            
+            // 폼에 기존 데이터 채우기
+            document.getElementById('in-name').value = ani.name;
+            document.getElementById('in-breed').value = ani.breed;
+            document.getElementById('in-gender').value = ani.gender;
+            document.getElementById('in-age').value = ani.age;
+            document.getElementById('in-status').value = ani.status;
+            document.getElementById('in-personality').value = ani.personality;
+            document.getElementById('in-memo').value = ani.memo;
+
+            if(ani.photo) {
+                currentPhotoBase64 = ani.photo; // 유지
+                document.getElementById('photo-preview').style.backgroundImage = `url(${ani.photo})`;
+                document.getElementById('photo-placeholder').classList.add('hidden');
+                document.getElementById('del-photo-btn').classList.remove('hidden');
+            } else {
+                removePhoto();
+            }
+
+            // UI 변경
+            document.getElementById('reg-title').innerText = "📝 보호 동물 정보 수정";
+            document.getElementById('btn-save-animal').innerText = "수정 완료하기";
+            document.getElementById('btn-cancel-edit').classList.remove('hidden');
+
+            closeProfilePanel();
+            showView('reg');
+        }
+
+        function askDeleteAnimal() {
+            const id = document.getElementById('pp-animal-id').value;
+            openModal('confirm', '아이 정보 영구 삭제', '이 동물의 프로필과 모든 일과 기록이 완전히 삭제됩니다. 진행할까요?', () => { 
+                database.ref('animals/' + id).remove(); 
+                closeProfilePanel();
+            });
+        }
+
+
+        /* --- 이하 과거 일과 기록 / 작성 로직 (기존과 완벽 동일, 오류 개선 반영) --- */
         function openHistoryPanel(event, id) {
-            event.stopPropagation();
+            if(event) event.stopPropagation();
             const ani = animals.find(a => a.id === id);
             if(!ani) return;
             
-            document.getElementById('hp-animal-id').value = id; // 상태 저장용
+            document.getElementById('hp-animal-id').value = id; 
 
             const photoHtml = ani.photo ? `<div class="w-10 h-10 rounded-full bg-cover bg-center border-2 border-pink-100" style="background-image: url(${ani.photo})"></div>` : `<div class="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center text-xl">🐾</div>`;
             document.getElementById('hp-header-info').innerHTML = `${photoHtml}<div class="flex flex-col"><span class="font-black text-gray-800 text-lg leading-tight">${ani.name}</span><span class="text-[10px] text-pink-400 font-bold">과거 일과 기록</span></div>`;
@@ -410,7 +582,6 @@
             }
 
             const logsByDate = {};
-            // [수정] 객체를 배열로 변환 시 Firebase Key를 유지
             Object.entries(ani.daily_logs).forEach(([logKey, log]) => {
                 log.id = logKey; 
                 const dateKey = log.date_str || "날짜 미상";
@@ -431,7 +602,6 @@
                     if(log.meal) content += `<div class="flex items-start gap-2 mb-1"><span class="text-base">🥣</span> <p><strong class="text-gray-900">급여:</strong> ${log.meal.time} / ${log.meal.amount} / ${log.meal.status}</p></div>`;
                     if(log.potty) content += `<div class="flex items-start gap-2 mb-1"><span class="text-base">💩</span> <p><strong class="text-gray-900">배변:</strong> ${log.potty.type} / ${log.potty.memo}</p></div>`;
 
-                    // [수정] 수정/삭제 버튼 추가
                     return `
                     <div class="bg-white p-4 rounded-2xl shadow-sm border border-pink-50 mb-3 relative group">
                         <div class="flex justify-between items-center mb-2 pb-2 border-b border-gray-50">
@@ -461,7 +631,6 @@
             }).join('');
         }
 
-        // [추가] 기록 삭제 경고 로직
         function askDeleteLog(event, animalId, logId) {
             event.stopPropagation();
             openModal('confirm', '기록을 삭제할까요?', '해당 시간의 일과 기록이 영구적으로 삭제됩니다.', () => {
@@ -469,15 +638,12 @@
             });
         }
 
-        // [추가] 기록 수정 연동 로직
         function editLog(event, animalId, logId) {
             event.stopPropagation();
             const ani = animals.find(a => a.id === animalId);
             if(!ani || !ani.daily_logs || !ani.daily_logs[logId]) return;
 
             const log = ani.daily_logs[logId];
-            
-            // 전역 변수에 수정 모드 세팅
             editingLogId = logId;
             editingLogOriginalData = log;
 
@@ -489,7 +655,6 @@
             document.getElementById('record-action-text').innerText = '수정';
             document.getElementById('btn-save-record').innerText = '수정된 내용 저장하기';
 
-            // 폼을 먼저 초기화한 후 기존 데이터 덮어씌우기
             clearFormFields(); 
 
             if(log.walk) {
@@ -514,7 +679,6 @@
             document.getElementById('record-panel').classList.remove('translate-x-full');
         }
 
-        // 특정 텍스트를 가진 버튼 활성화 (수정 모드 데이터 바인딩용)
         function setToggleState(selector, text, isPartial = false) {
             document.querySelectorAll(selector).forEach(btn => {
                 if(isPartial ? btn.innerText.includes(text) : btn.innerText === text) {
@@ -557,7 +721,6 @@
             document.getElementById('potty-memo').value = text;
         }
 
-        // [수정됨] 폼 닫기 및 초기화 로직 분리
         function clearFormFields() {
             ['walk-time', 'walk-cond', 'meal-time', 'meal-status'].forEach(cls => {
                 document.querySelectorAll(`.${cls}-btn`).forEach(b => {
@@ -574,12 +737,10 @@
         }
 
         function resetRecordForm() {
-            // 새 기록 모드로 변수 초기화
             editingLogId = null;
             editingLogOriginalData = null;
             document.getElementById('record-action-text').innerText = '기록';
             document.getElementById('btn-save-record').innerText = '작성한 항목만 저장하기';
-            
             clearFormFields();
         }
 
@@ -591,7 +752,7 @@
             const photoHtml = ani.photo ? `<div class="w-10 h-10 rounded-full bg-cover bg-center border-2 border-pink-100" style="background-image: url(${ani.photo})"></div>` : `<div class="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center text-xl">🐾</div>`;
             document.getElementById('rp-header-info').innerHTML = `${photoHtml}<div class="flex flex-col"><span class="font-black text-gray-800 text-lg leading-tight">${ani.name}</span><span class="text-[10px] text-pink-400 font-bold">일과 기록 작성</span></div>`;
             
-            resetRecordForm(); // 작성 시 깨끗한 폼 유지
+            resetRecordForm(); 
             document.getElementById('record-panel').classList.remove('translate-x-full');
         }
 
@@ -600,7 +761,6 @@
             document.activeElement.blur();
         }
 
-        // [수정됨] 저장 및 업데이트 통합 처리
         function saveDetailLog() {
             const id = document.getElementById('rp-animal-id').value;
             if(!id) return;
@@ -629,7 +789,6 @@
 
             let logData = { trainer_name: CURRENT_TRAINER };
 
-            // 수정 모드인 경우 기존의 작성 일자/시간을 그대로 유지
             if(editingLogId && editingLogOriginalData) {
                 logData.timestamp = editingLogOriginalData.timestamp;
                 logData.date_str = editingLogOriginalData.date_str;
@@ -643,7 +802,7 @@
 
             if(walkTime || walkDuration || walkCond) {
                 logData.walk = { time: walkTime || '-', duration: walkDuration || '-', condition: walkCond || '-' };
-            } else { logData.walk = null; } // 수정을 통해 항목을 완전히 해제한 경우 Firebase에서 지움
+            } else { logData.walk = null; } 
 
             if(mealTime || mealAmount || mealStatus) {
                 logData.meal = { time: mealTime || '-', amount: mealAmount || '-', status: mealStatus || '-' };
@@ -653,7 +812,6 @@
                 logData.potty = { type: pottyTypes.join(', ') || '-', memo: pottyMemo || '특이사항 없음' };
             } else { logData.potty = null; }
 
-            // 수정 모드면 기존 ID(editingLogId)에 덮어쓰고, 아니면 새 ID(Date.now)로 저장
             const targetLogId = editingLogId ? editingLogId : Date.now();
 
             database.ref('animals/' + id + '/daily_logs/' + targetLogId).update(logData).then(() => {
@@ -681,13 +839,6 @@
             }
         }
         function closeModal() { document.getElementById('custom-modal').classList.remove('active'); }
-        
-        function askDelete(event, id) { 
-            event.stopPropagation();
-            openModal('confirm', '아이 정보 삭제', '모든 일지와 기록이 서버에서 영구 삭제됩니다.', () => { 
-                database.ref('animals/' + id).remove(); 
-            }); 
-        }
     </script>
 </body>
 </html>
