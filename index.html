@@ -11,11 +11,16 @@
         .pink-gradient { background: linear-gradient(135deg, #ff69b4 0%, #ff85c0 100%); }
         .card { background: white; border-radius: 28px; padding: 20px; border: 1px solid #ffe4e9; box-shadow: 0 10px 20px rgba(255, 105, 180, 0.03); }
         .tab-active { color: #ff69b4; border-bottom: 3px solid #ff69b4; }
-        .modal-bg { background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(6px); z-index: 1000; position: fixed; inset: 0; display: none; align-items: center; justify-content: center; }
+        .modal-bg { background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(6px); z-index: 9999; position: fixed; inset: 0; display: none; align-items: center; justify-content: center; }
         .modal-bg.active { display: flex; }
         #photo-preview { background-size: cover; background-position: center; transition: all 0.3s; }
-        /* 하단 바 공간 확보 */
-        .content-area { padding-bottom: 120px; }
+        
+        /* [중요] 버튼 터치 방해 방지 및 스크롤 여백 */
+        .content-area { padding-bottom: 160px; position: relative; z-index: 10; }
+        nav { z-index: 100; position: fixed; bottom: 0; left: 0; right: 0; height: 85px; }
+        
+        /* 버튼 터치 최적화 */
+        .save-btn { position: relative; z-index: 20; pointer-events: auto !important; }
     </style>
 </head>
 <body class="max-w-md mx-auto p-4">
@@ -52,11 +57,11 @@
                         <option value="여아">여아</option>
                     </select>
                     <input type="text" id="in-age" placeholder="추정 나이" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-pink-50/20 text-sm">
-                    <input type="text" id="in-personality" placeholder="성격 (쉼표 구분)" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-pink-50/20 text-sm">
+                    <input type="text" id="in-personality" placeholder="성격 (쉼표 구분)" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-pink-50/20 text-sm w-full">
                     
                     <textarea id="in-memo" placeholder="메모 및 특이사항" class="col-span-2 p-4 border border-pink-100 rounded-2xl outline-none h-24 bg-pink-50/20 text-sm"></textarea>
                     
-                    <button onclick="saveAnimal()" class="col-span-2 py-5 pink-gradient text-white font-black rounded-2xl shadow-lg active:scale-95 transition-transform mt-2">
+                    <button onclick="saveAnimal()" class="save-btn col-span-2 py-5 pink-gradient text-white font-black rounded-2xl shadow-lg active:scale-95 transition-transform mt-2">
                         보호견 등록하기
                     </button>
                 </div>
@@ -69,7 +74,7 @@
         </div>
     </div>
 
-    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-pink-100 flex justify-around py-4 shadow-lg z-50 rounded-t-3xl">
+    <nav class="bg-white border-t border-pink-100 flex justify-around py-4 shadow-lg rounded-t-3xl">
         <button onclick="showView('reg')" class="flex flex-col items-center gap-1">
             <span class="text-2xl">🐕</span><span class="text-[10px] font-bold text-pink-500">아이들</span>
         </button>
@@ -109,10 +114,7 @@
             modal.classList.add('active');
 
             if (type === 'confirm') {
-                btns.innerHTML = `
-                    <button onclick="closeModal()" class="flex-1 py-4 bg-gray-100 text-gray-400 font-bold rounded-2xl">취소</button>
-                    <button id="modal-confirm-btn" class="flex-1 py-4 bg-red-500 text-white font-bold rounded-2xl">삭제</button>
-                `;
+                btns.innerHTML = `<button onclick="closeModal()" class="flex-1 py-4 bg-gray-100 text-gray-400 font-bold rounded-2xl">취소</button><button id="modal-confirm-btn" class="flex-1 py-4 bg-red-500 text-white font-bold rounded-2xl">삭제</button>`;
                 document.getElementById('modal-confirm-btn').onclick = () => { onConfirm(); closeModal(); };
             } else {
                 btns.innerHTML = `<button onclick="closeModal()" class="w-full py-4 pink-gradient text-white font-bold rounded-2xl">확인</button>`;
@@ -147,11 +149,7 @@
         function saveAnimal() {
             const nameEl = document.getElementById('in-name');
             const name = nameEl.value.trim();
-            
-            if(!name) {
-                openModal('error', '이름을 입력해주세요!', '강아지 이름을 적어야 등록이 가능합니다.');
-                return;
-            }
+            if(!name) { openModal('error', '이름을 입력해주세요!', '강아지 이름을 적어야 등록이 가능합니다.'); return; }
             
             const newAnimal = {
                 id: Date.now(),
@@ -167,7 +165,6 @@
 
             animals.unshift(newAnimal);
             localStorage.setItem('naepumae_v4', JSON.stringify(animals));
-            
             nameEl.value = "";
             ['in-breed','in-age','in-personality','in-memo'].forEach(id => document.getElementById(id).value = '');
             document.getElementById('in-gender').value = "";
