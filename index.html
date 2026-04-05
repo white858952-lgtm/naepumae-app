@@ -109,6 +109,7 @@
         </div>
         <div id="hp-logs-container" class="flex-1 overflow-y-auto p-5 pb-10">
             </div>
+        <input type="hidden" id="hp-animal-id" value="">
     </div>
 
     <div id="record-panel" class="slide-panel fixed inset-0 bg-white z-[200] transform translate-x-full flex flex-col h-full overflow-hidden">
@@ -117,12 +118,12 @@
                 <button onclick="closeRecordPanel()" class="text-gray-400 text-3xl font-black active:scale-90 transition-transform">&lsaquo;</button>
                 <div id="rp-header-info" class="flex items-center gap-2"></div>
             </div>
-            <button onclick="resetRecordForm()" class="text-xs bg-gray-100 text-gray-500 px-3 py-1.5 rounded-lg font-bold">초기화</button>
+            <button onclick="resetRecordForm()" class="text-xs bg-gray-100 text-gray-500 px-3 py-1.5 rounded-lg font-bold">선택 해제</button>
         </div>
 
         <div class="flex-1 overflow-y-auto p-5 space-y-8 pb-32">
             <div class="bg-pink-50 rounded-xl p-3 text-center">
-                <p class="text-xs font-bold text-pink-500">현재 <span class="font-black text-pink-600 underline" id="current-trainer-display"></span>님의 이름으로 자동 기록됩니다.</p>
+                <p class="text-xs font-bold text-pink-500">현재 <span class="font-black text-pink-600 underline" id="current-trainer-display"></span>님의 이름으로 <span id="record-action-text">기록</span>됩니다.</p>
             </div>
 
             <section class="border border-pink-100 p-4 rounded-2xl bg-white shadow-sm">
@@ -174,7 +175,7 @@
         </div>
 
         <div class="absolute bottom-0 left-0 right-0 bg-white border-t border-pink-100 p-4 pb-[max(env(safe-area-inset-bottom),16px)] shadow-[0_-5px_15px_rgba(0,0,0,0.03)] z-20">
-            <button onclick="saveDetailLog()" class="w-full py-4 pink-gradient text-white font-black text-lg rounded-2xl shadow-lg active:scale-95 transition-transform">
+            <button id="btn-save-record" onclick="saveDetailLog()" class="w-full py-4 pink-gradient text-white font-black text-lg rounded-2xl shadow-lg active:scale-95 transition-transform">
                 작성한 항목만 저장하기
             </button>
             <input type="hidden" id="rp-animal-id" value="">
@@ -192,6 +193,10 @@
 
     <script>
         const CURRENT_TRAINER = "김현우 훈련사";
+        
+        // [수정/삭제] 현재 수정 중인 로그 정보를 담는 전역 변수
+        let editingLogId = null;
+        let editingLogOriginalData = null;
 
         const firebaseConfig = {
             apiKey: "AIzaSyAitCQVYKsqytLzT_O9_k0lXT7bAsPhjLY",
@@ -223,6 +228,14 @@
             }
             renderFilters();
             if (!document.getElementById('view-list').classList.contains('hidden')) renderTasks();
+
+            // [추가] 히스토리 패널이 열려있으면 실시간으로 리렌더링 (삭제/수정 즉각 반영)
+            const historyPanel = document.getElementById('history-panel');
+            if(!historyPanel.classList.contains('translate-x-full')) {
+                const activeId = document.getElementById('hp-animal-id').value;
+                const activeAni = animals.find(a => a.id == activeId);
+                if(activeAni) renderHistory(activeAni);
+            }
         });
 
         function showView(view) {
@@ -321,7 +334,6 @@
             });
         }
 
-        // [수정됨] 용어 변경 반영
         function renderTasks() {
             const container = document.getElementById('task-container');
             const filteredAnimals = animals.filter(a => {
@@ -366,12 +378,13 @@
             });
         }
 
-        // [수정됨] 날짜별로 묶어주는 아코디언 기록 뷰
         function openHistoryPanel(event, id) {
             event.stopPropagation();
             const ani = animals.find(a => a.id === id);
             if(!ani) return;
             
+            document.getElementById('hp-animal-id').value = id; // 상태 저장용
+
             const photoHtml = ani.photo ? `<div class="w-10 h-10 rounded-full bg-cover bg-center border-2 border-pink-100" style="background-image: url(${ani.photo})"></div>` : `<div class="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center text-xl">🐾</div>`;
             document.getElementById('hp-header-info').innerHTML = `${photoHtml}<div class="flex flex-col"><span class="font-black text-gray-800 text-lg leading-tight">${ani.name}</span><span class="text-[10px] text-pink-400 font-bold">과거 일과 기록</span></div>`;
             
@@ -396,22 +409,21 @@
                 return;
             }
 
-            // 날짜별로 데이터 그룹화
             const logsByDate = {};
-            Object.values(ani.daily_logs).forEach(log => {
+            // [수정] 객체를 배열로 변환 시 Firebase Key를 유지
+            Object.entries(ani.daily_logs).forEach(([logKey, log]) => {
+                log.id = logKey; 
                 const dateKey = log.date_str || "날짜 미상";
                 if(!logsByDate[dateKey]) logsByDate[dateKey] = [];
                 logsByDate[dateKey].push(log);
             });
 
-            // 날짜 최신순 정렬
             const sortedDates = Object.keys(logsByDate).sort((a, b) => b.localeCompare(a));
 
             container.innerHTML = sortedDates.map((date, index) => {
-                // 해당 날짜 안에서 시간 역순 정렬
                 const logs = logsByDate[date].sort((a,b) => b.timestamp - a.timestamp);
                 const accId = `acc-date-${index}`;
-                const isOpen = index === 0; // 가장 최신 날짜만 기본으로 열어둠
+                const isOpen = index === 0; 
 
                 const logsHtml = logs.map(log => {
                     let content = '';
@@ -419,11 +431,18 @@
                     if(log.meal) content += `<div class="flex items-start gap-2 mb-1"><span class="text-base">🥣</span> <p><strong class="text-gray-900">급여:</strong> ${log.meal.time} / ${log.meal.amount} / ${log.meal.status}</p></div>`;
                     if(log.potty) content += `<div class="flex items-start gap-2 mb-1"><span class="text-base">💩</span> <p><strong class="text-gray-900">배변:</strong> ${log.potty.type} / ${log.potty.memo}</p></div>`;
 
+                    // [수정] 수정/삭제 버튼 추가
                     return `
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-pink-50 mb-3">
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-pink-50 mb-3 relative group">
                         <div class="flex justify-between items-center mb-2 pb-2 border-b border-gray-50">
-                            <span class="text-xs text-gray-500 font-bold">${log.time_str || ''}</span>
-                            <span class="text-[10px] bg-pink-50 text-pink-500 px-2 py-1 rounded-md font-black">작성: ${log.trainer_name}</span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs text-gray-500 font-bold">${log.time_str || ''}</span>
+                                <span class="text-[10px] bg-pink-50 text-pink-500 px-2 py-1 rounded-md font-black">작성: ${log.trainer_name}</span>
+                            </div>
+                            <div class="flex gap-1">
+                                <button onclick="editLog(event, ${ani.id}, '${log.id}')" class="text-[10px] px-2 py-1 bg-gray-50 text-gray-500 rounded-md font-bold active:scale-95 hover:bg-gray-100">수정</button>
+                                <button onclick="askDeleteLog(event, ${ani.id}, '${log.id}')" class="text-[10px] px-2 py-1 bg-red-50 text-red-500 rounded-md font-bold active:scale-95 hover:bg-red-100">삭제</button>
+                            </div>
                         </div>
                         <div class="text-sm text-gray-700">${content}</div>
                     </div>`;
@@ -442,16 +461,82 @@
             }).join('');
         }
 
-        /* --- [수정됨] 토글 로직 (재클릭 시 선택 해제 가능) --- */
+        // [추가] 기록 삭제 경고 로직
+        function askDeleteLog(event, animalId, logId) {
+            event.stopPropagation();
+            openModal('confirm', '기록을 삭제할까요?', '해당 시간의 일과 기록이 영구적으로 삭제됩니다.', () => {
+                database.ref('animals/' + animalId + '/daily_logs/' + logId).remove();
+            });
+        }
+
+        // [추가] 기록 수정 연동 로직
+        function editLog(event, animalId, logId) {
+            event.stopPropagation();
+            const ani = animals.find(a => a.id === animalId);
+            if(!ani || !ani.daily_logs || !ani.daily_logs[logId]) return;
+
+            const log = ani.daily_logs[logId];
+            
+            // 전역 변수에 수정 모드 세팅
+            editingLogId = logId;
+            editingLogOriginalData = log;
+
+            document.getElementById('rp-animal-id').value = animalId;
+            
+            const photoHtml = ani.photo ? `<div class="w-10 h-10 rounded-full bg-cover bg-center border-2 border-pink-100" style="background-image: url(${ani.photo})"></div>` : `<div class="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center text-xl">🐾</div>`;
+            document.getElementById('rp-header-info').innerHTML = `${photoHtml}<div class="flex flex-col"><span class="font-black text-gray-800 text-lg leading-tight">${ani.name}</span><span class="text-[10px] text-pink-400 font-bold">일과 기록 수정</span></div>`;
+            
+            document.getElementById('record-action-text').innerText = '수정';
+            document.getElementById('btn-save-record').innerText = '수정된 내용 저장하기';
+
+            // 폼을 먼저 초기화한 후 기존 데이터 덮어씌우기
+            clearFormFields(); 
+
+            if(log.walk) {
+                if(log.walk.time !== '-') setToggleState('.walk-time-btn', log.walk.time);
+                if(log.walk.duration !== '-') document.getElementById('walk-duration').value = log.walk.duration;
+                if(log.walk.condition !== '-') setToggleState('.walk-cond-btn', log.walk.condition, true);
+            }
+            if(log.meal) {
+                if(log.meal.time !== '-') setToggleState('.meal-time-btn', log.meal.time);
+                if(log.meal.amount !== '-') document.getElementById('meal-amount').value = log.meal.amount;
+                if(log.meal.status !== '-') setToggleState('.meal-status-btn', log.meal.status);
+            }
+            if(log.potty) {
+                if(log.potty.type && log.potty.type !== '-') {
+                    if(log.potty.type.includes('대변')) forceMultiState('potty-type-feces', true);
+                    if(log.potty.type.includes('소변')) forceMultiState('potty-type-urine', true);
+                }
+                if(log.potty.memo && log.potty.memo !== '특이사항 없음') document.getElementById('potty-memo').value = log.potty.memo;
+            }
+
+            closeHistoryPanel();
+            document.getElementById('record-panel').classList.remove('translate-x-full');
+        }
+
+        // 특정 텍스트를 가진 버튼 활성화 (수정 모드 데이터 바인딩용)
+        function setToggleState(selector, text, isPartial = false) {
+            document.querySelectorAll(selector).forEach(btn => {
+                if(isPartial ? btn.innerText.includes(text) : btn.innerText === text) {
+                    btn.classList.remove('btn-inactive');
+                    btn.classList.add('btn-active');
+                }
+            });
+        }
+        function forceMultiState(id, isActive) {
+            const btn = document.getElementById(id);
+            if(isActive) {
+                btn.classList.remove('btn-inactive');
+                btn.classList.add('btn-active');
+            }
+        }
+
         function toggleSelect(clickedBtn, groupClass) {
             const wasActive = clickedBtn.classList.contains('btn-active');
-            
             document.querySelectorAll(`.${groupClass}-btn`).forEach(btn => {
                 btn.classList.remove('btn-active');
                 btn.classList.add('btn-inactive');
             });
-            
-            // 이미 켜져 있던 버튼을 누른 게 아니라면 활성화 (즉, 껐다 켰다 가능)
             if (!wasActive) {
                 clickedBtn.classList.remove('btn-inactive');
                 clickedBtn.classList.add('btn-active');
@@ -472,21 +557,30 @@
             document.getElementById('potty-memo').value = text;
         }
 
-        // [수정됨] 폼 오픈 시 모든 버튼 비활성화 (독립 기록을 위해)
-        function resetRecordForm() {
+        // [수정됨] 폼 닫기 및 초기화 로직 분리
+        function clearFormFields() {
             ['walk-time', 'walk-cond', 'meal-time', 'meal-status'].forEach(cls => {
                 document.querySelectorAll(`.${cls}-btn`).forEach(b => {
                     b.classList.remove('btn-active');
                     b.classList.add('btn-inactive');
                 });
             });
-            
             document.getElementById('potty-type-feces').className = 'potty-type-btn flex-1 py-3 rounded-2xl border btn-inactive';
             document.getElementById('potty-type-urine').className = 'potty-type-btn flex-1 py-3 rounded-2xl border btn-inactive';
             
             document.getElementById('walk-duration').value = '';
             document.getElementById('meal-amount').value = '';
             document.getElementById('potty-memo').value = '';
+        }
+
+        function resetRecordForm() {
+            // 새 기록 모드로 변수 초기화
+            editingLogId = null;
+            editingLogOriginalData = null;
+            document.getElementById('record-action-text').innerText = '기록';
+            document.getElementById('btn-save-record').innerText = '작성한 항목만 저장하기';
+            
+            clearFormFields();
         }
 
         function openRecordPanel(id) {
@@ -497,7 +591,7 @@
             const photoHtml = ani.photo ? `<div class="w-10 h-10 rounded-full bg-cover bg-center border-2 border-pink-100" style="background-image: url(${ani.photo})"></div>` : `<div class="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center text-xl">🐾</div>`;
             document.getElementById('rp-header-info').innerHTML = `${photoHtml}<div class="flex flex-col"><span class="font-black text-gray-800 text-lg leading-tight">${ani.name}</span><span class="text-[10px] text-pink-400 font-bold">일과 기록 작성</span></div>`;
             
-            resetRecordForm();
+            resetRecordForm(); // 작성 시 깨끗한 폼 유지
             document.getElementById('record-panel').classList.remove('translate-x-full');
         }
 
@@ -506,67 +600,72 @@
             document.activeElement.blur();
         }
 
-        // [수정됨] 선택된 데이터만 부분적으로 저장하는 로직
+        // [수정됨] 저장 및 업데이트 통합 처리
         function saveDetailLog() {
             const id = document.getElementById('rp-animal-id').value;
             if(!id) return;
 
-            // 1. 산책 데이터 체크
             const walkTimeBtn = document.querySelector('.walk-time-btn.btn-active');
             const walkTime = walkTimeBtn ? walkTimeBtn.innerText : null;
             const walkDuration = document.getElementById('walk-duration').value.trim();
             const walkCondBtn = document.querySelector('.walk-cond-btn.btn-active');
             const walkCond = walkCondBtn ? walkCondBtn.innerText.split(' ')[1] : null;
 
-            // 2. 급여 데이터 체크
             const mealTimeBtn = document.querySelector('.meal-time-btn.btn-active');
             const mealTime = mealTimeBtn ? mealTimeBtn.innerText : null;
             const mealAmount = document.getElementById('meal-amount').value.trim();
             const mealStatusBtn = document.querySelector('.meal-status-btn.btn-active');
             const mealStatus = mealStatusBtn ? mealStatusBtn.innerText : null;
 
-            // 3. 배변 데이터 체크
             const pottyTypes = [];
             if(document.getElementById('potty-type-feces').classList.contains('btn-active')) pottyTypes.push("대변");
             if(document.getElementById('potty-type-urine').classList.contains('btn-active')) pottyTypes.push("소변");
             const pottyMemo = document.getElementById('potty-memo').value.trim();
 
-            // 아무것도 입력 안 하고 누르면 튕겨냄
             if(!walkTime && !walkDuration && !mealTime && !mealAmount && pottyTypes.length === 0 && !pottyMemo) {
                 openModal('error', '빈 기록입니다', '최소 하나 이상의 항목(산책, 급여, 배변)을 작성해주세요.');
                 return;
             }
 
-            // 날짜 및 시간 분리 저장 (아코디언 정렬용)
-            const now = new Date();
-            const dateStr = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`;
-            const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+            let logData = { trainer_name: CURRENT_TRAINER };
 
-            const logData = {
-                timestamp: Date.now(),
-                trainer_name: CURRENT_TRAINER,
-                date_str: dateStr,
-                time_str: timeStr
-            };
+            // 수정 모드인 경우 기존의 작성 일자/시간을 그대로 유지
+            if(editingLogId && editingLogOriginalData) {
+                logData.timestamp = editingLogOriginalData.timestamp;
+                logData.date_str = editingLogOriginalData.date_str;
+                logData.time_str = editingLogOriginalData.time_str;
+            } else {
+                const now = new Date();
+                logData.timestamp = Date.now();
+                logData.date_str = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`;
+                logData.time_str = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+            }
 
-            // 작성된 항목만 데이터 객체에 추가
             if(walkTime || walkDuration || walkCond) {
                 logData.walk = { time: walkTime || '-', duration: walkDuration || '-', condition: walkCond || '-' };
-            }
+            } else { logData.walk = null; } // 수정을 통해 항목을 완전히 해제한 경우 Firebase에서 지움
+
             if(mealTime || mealAmount || mealStatus) {
                 logData.meal = { time: mealTime || '-', amount: mealAmount || '-', status: mealStatus || '-' };
-            }
+            } else { logData.meal = null; }
+
             if(pottyTypes.length > 0 || pottyMemo) {
                 logData.potty = { type: pottyTypes.join(', ') || '-', memo: pottyMemo || '특이사항 없음' };
-            }
+            } else { logData.potty = null; }
 
-            database.ref('animals/' + id + '/daily_logs/' + Date.now()).set(logData).then(() => {
+            // 수정 모드면 기존 ID(editingLogId)에 덮어쓰고, 아니면 새 ID(Date.now)로 저장
+            const targetLogId = editingLogId ? editingLogId : Date.now();
+
+            database.ref('animals/' + id + '/daily_logs/' + targetLogId).update(logData).then(() => {
                 closeRecordPanel();
-                openModal('success', '기록 완료!', `작성하신 항목이 ${CURRENT_TRAINER}님의 이름으로 저장되었습니다.`);
+                if(editingLogId) {
+                    openModal('success', '수정 완료!', '기록이 성공적으로 수정되었습니다.');
+                } else {
+                    openModal('success', '기록 완료!', `작성하신 항목이 저장되었습니다.`);
+                }
             });
         }
 
-        /* --- 공통 모달 및 삭제 로직 --- */
         function openModal(type, title, desc, onConfirm) {
             const modal = document.getElementById('custom-modal');
             const btns = document.getElementById('modal-btns');
@@ -575,7 +674,7 @@
             document.getElementById('modal-desc').innerText = desc;
             modal.classList.add('active');
             if (type === 'confirm') {
-                btns.innerHTML = `<button onclick="closeModal()" class="flex-1 py-4 bg-gray-50 text-gray-400 font-black rounded-2xl">취소</button><button id="modal-confirm-btn" class="flex-1 py-4 bg-red-500 text-white font-black rounded-2xl shadow-md">삭제</button>`;
+                btns.innerHTML = `<button onclick="closeModal()" class="flex-1 py-4 bg-gray-50 text-gray-400 font-black rounded-2xl">취소</button><button id="modal-confirm-btn" class="flex-1 py-4 bg-red-500 text-white font-black rounded-2xl shadow-md">확인</button>`;
                 document.getElementById('modal-confirm-btn').onclick = () => { onConfirm(); closeModal(); };
             } else {
                 btns.innerHTML = `<button onclick="closeModal()" class="w-full py-4 pink-gradient text-white font-black rounded-2xl shadow-md">확인</button>`;
@@ -585,7 +684,7 @@
         
         function askDelete(event, id) { 
             event.stopPropagation();
-            openModal('confirm', '정말 삭제할까요?', '모든 일지와 기록이 서버에서 영구 삭제됩니다.', () => { 
+            openModal('confirm', '아이 정보 삭제', '모든 일지와 기록이 서버에서 영구 삭제됩니다.', () => { 
                 database.ref('animals/' + id).remove(); 
             }); 
         }
