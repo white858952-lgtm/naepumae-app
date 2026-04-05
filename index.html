@@ -9,123 +9,104 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
-        body { font-family: 'Noto Sans KR', sans-serif; background-color: #fff5f7; -webkit-tap-highlight-color: transparent; padding-bottom: 100px; }
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: #fff5f7; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
         .pink-gradient { background: linear-gradient(135deg, #ff69b4 0%, #ff85c0 100%); }
-        .card { background: white; border-radius: 28px; padding: 20px; border: 1px solid #ffe4e9; box-shadow: 0 10px 20px rgba(255, 105, 180, 0.03); transition: all 0.3s; }
+        .card { background: white; border-radius: 28px; padding: 20px; border: 1px solid #ffe4e9; box-shadow: 0 10px 20px rgba(255, 105, 180, 0.03); }
         .tab-active { color: #ff69b4; border-bottom: 3px solid #ff69b4; }
-        .modal-bg { background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); transition: opacity 0.3s; }
-        /* 사진 업로드 영역 스타일 */
-        #photo-preview { background-size: cover; background-position: center; }
-        .photo-btn { background-color: rgba(255, 255, 255, 0.8); backdrop-filter: blur(2px); color: #ff69b4; }
+        .modal-bg { background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); z-index: 100; }
+        #photo-preview { background-size: cover; background-position: center; transition: all 0.3s; }
+        /* 하단 바 높이만큼 여유 공간 확보 */
+        .content-area { padding-bottom: 120px; }
     </style>
 </head>
 <body class="p-4 max-w-md mx-auto">
-    <header class="py-6 text-center">
-        <h1 class="text-3xl font-black text-[#ff69b4] mb-1">내품애 센터</h1>
-        <p class="text-gray-500 text-sm">반려동물과 행복한 서대문</p>
-    </header>
+    <div class="content-area">
+        <header class="py-6 text-center">
+            <h1 class="text-3xl font-black text-[#ff69b4] mb-1">내품애 센터</h1>
+            <p class="text-gray-500 text-sm">반려동물과 행복한 서대문</p>
+        </header>
 
-    <div class="flex justify-around mb-6 bg-white rounded-2xl p-1 shadow-sm border border-pink-50">
-        <button onclick="showView('reg')" id="tab-reg" class="flex-1 py-3 text-sm font-bold tab-active">개체 등록</button>
-        <button onclick="showView('list')" id="tab-list" class="flex-1 py-3 text-sm font-bold text-gray-400">업무 관리</button>
-    </div>
-
-    <div id="view-reg" class="space-y-6">
-        <div class="card space-y-4">
-            <h2 class="text-lg font-bold flex items-center gap-2">📸 사진 및 정보 등록</h2>
-            
-            <div id="photo-preview" class="w-full h-48 rounded-3xl bg-pink-50 flex items-center justify-center border-2 border-dashed border-pink-100 relative overflow-hidden">
-                <div id="photo-placeholder" class="text-center text-pink-200">
-                    <span class="text-4xl">📷</span>
-                    <p class="text-xs font-bold mt-2">사진을 등록해주세요</p>
-                </div>
-                <input type="file" id="in-photo" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="previewPhoto(this)">
-                <button id="del-photo-btn" onclick="removePhoto()" class="hidden absolute top-2 right-2 photo-btn p-2 rounded-full text-xs">❌</button>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-                <input type="text" id="in-name" placeholder="이름 (필수)" class="col-span-2 p-3 border border-pink-100 rounded-xl outline-none focus:border-pink-400 text-sm">
-                <input type="text" id="in-breed" placeholder="견종" class="col-span-1 p-3 border border-pink-100 rounded-xl outline-none text-sm">
-                <select id="in-gender" class="col-span-1 p-3 border border-pink-100 rounded-xl outline-none text-sm bg-white text-gray-500">
-                    <option value="" disabled selected>성별</option>
-                    <option value="남아">남아</option>
-                    <option value="여아">여아</option>
-                </select>
-                <input type="text" id="in-age" placeholder="추정 나이" class="col-span-1 p-3 border border-pink-100 rounded-xl outline-none text-sm">
-                <input type="text" id="in-personality" placeholder="성격 태그 (쉼표 분리)" class="col-span-1 p-3 border border-pink-100 rounded-xl outline-none text-sm">
-                <textarea id="in-memo" placeholder="구조 경위 및 특이사항 메모" class="col-span-2 p-3 border border-pink-100 rounded-xl outline-none text-sm h-16"></textarea>
-                <button onclick="saveAnimal()" class="col-span-2 py-4 pink-gradient text-white font-bold rounded-2xl shadow-lg active:scale-95 transition-transform mt-2">보호견 등록하기</button>
-            </div>
+        <div class="flex justify-around mb-6 bg-white rounded-2xl p-1 shadow-sm border border-pink-50">
+            <button onclick="showView('reg')" id="tab-reg" class="flex-1 py-3 text-sm font-bold tab-active">개체 등록</button>
+            <button onclick="showView('list')" id="tab-list" class="flex-1 py-3 text-sm font-bold text-gray-400">업무 관리</button>
         </div>
-        <div id="reg-list" class="space-y-4"></div>
+
+        <div id="view-reg" class="space-y-6">
+            <div class="card space-y-4">
+                <h2 class="text-lg font-bold flex items-center gap-2 text-gray-700">📸 사진 및 정보 등록</h2>
+                
+                <div id="photo-preview" class="w-full h-56 rounded-3xl bg-pink-50 flex items-center justify-center border-2 border-dashed border-pink-200 relative overflow-hidden">
+                    <div id="photo-placeholder" class="text-center text-pink-300">
+                        <span class="text-5xl">📸</span>
+                        <p class="text-sm font-bold mt-2">이곳을 눌러 사진 선택</p>
+                    </div>
+                    <input type="file" id="in-photo" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer z-10" onchange="handleFileSelect(event)">
+                    <button id="del-photo-btn" onclick="removePhoto(event)" class="hidden absolute top-3 right-3 bg-white/90 text-pink-500 p-2 rounded-full text-xs shadow-md z-20 font-bold">삭제 X</button>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 pt-2">
+                    <input type="text" id="in-name" placeholder="이름 (필수)" class="col-span-2 p-4 border border-pink-100 rounded-2xl outline-none focus:border-pink-400 bg-pink-50/30">
+                    <input type="text" id="in-breed" placeholder="견종" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-pink-50/30">
+                    <select id="in-gender" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-500">
+                        <option value="" disabled selected>성별</option>
+                        <option value="남아">남아</option>
+                        <option value="여아">여아</option>
+                    </select>
+                    <input type="text" id="in-age" placeholder="추정 나이" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-pink-50/30 text-sm">
+                    <input type="text" id="in-personality" placeholder="성격 (쉼표 구분)" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-pink-50/30 text-sm">
+                    <textarea id="in-memo" placeholder="구조 메모 및 특이사항" class="col-span-2 p-4 border border-pink-100 rounded-2xl outline-none h-24 bg-pink-50/30 text-sm"></textarea>
+                    
+                    <button onclick="saveAnimal()" class="col-span-2 py-5 pink-gradient text-white font-black rounded-2xl shadow-lg active:scale-95 transition-transform mt-4 mb-10 border-b-4 border-pink-700">
+                        보호견 등록 완료하기
+                    </button>
+                </div>
+            </div>
+            <div id="reg-list" class="space-y-4"></div>
+        </div>
+
+        <div id="view-list" class="hidden space-y-4">
+            <div id="task-container" class="space-y-4"></div>
+        </div>
     </div>
 
-    <div id="view-list" class="hidden space-y-4 text-center">
-        <div id="task-container" class="space-y-4 text-left"></div>
-    </div>
-
-    <div id="custom-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-6 modal-bg">
-        <div class="bg-white w-full max-w-xs rounded-[32px] p-7 text-center shadow-2xl scale-up">
-            <div id="modal-icon" class="text-4xl mb-4"></div>
+    <div id="custom-modal" class="hidden fixed inset-0 flex items-center justify-center p-6 modal-bg">
+        <div class="bg-white w-full max-w-xs rounded-[32px] p-8 text-center shadow-2xl">
+            <div id="modal-icon" class="text-5xl mb-4"></div>
             <h3 id="modal-title" class="text-xl font-bold mb-2"></h3>
             <p id="modal-desc" class="text-gray-500 text-sm mb-6"></p>
             <div id="modal-btns" class="flex gap-2"></div>
         </div>
     </div>
 
-    <nav class="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t border-pink-50 flex justify-around py-4 shadow-xl md:hidden rounded-t-3xl z-40">
-        <button onclick="showView('reg')" class="flex flex-col items-center gap-1">
-            <span class="text-2xl">🐶</span><span class="text-[10px] font-bold">아이들</span>
+    <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-pink-100 flex justify-around py-4 shadow-[0_-5px_15px_rgba(0,0,0,0.03)] z-50 rounded-t-[30px]">
+        <button onclick="showView('reg')" class="flex flex-col items-center gap-1 group">
+            <span class="text-2xl group-active:scale-125 transition-transform">🐕</span><span class="text-[10px] font-bold text-pink-400">아이들</span>
         </button>
-        <button onclick="showView('list')" class="flex flex-col items-center gap-1">
-            <span class="text-2xl">📋</span><span class="text-[10px] font-bold">오늘의 업무</span>
+        <button onclick="showView('list')" class="flex flex-col items-center gap-1 group">
+            <span class="text-2xl group-active:scale-125 transition-transform">📋</span><span class="text-[10px] font-bold text-gray-400">업무관리</span>
         </button>
     </nav>
 
     <script>
-        // 데이터 버전 업데이트 (사진 추가로 인한 포맷 변경)
-        let animals = JSON.parse(localStorage.getItem('naepumae_v3') || '[]');
+        let animals = JSON.parse(localStorage.getItem('naepumae_v4') || '[]');
         let currentPhotoBase64 = null;
-
-        function showModal(type, title, desc, onConfirm) {
-            const modal = document.getElementById('custom-modal');
-            const icon = document.getElementById('modal-icon');
-            const btns = document.getElementById('modal-btns');
-            
-            document.getElementById('modal-title').innerText = title;
-            document.getElementById('modal-desc').innerText = desc;
-            modal.classList.remove('hidden');
-
-            if (type === 'success') {
-                icon.innerText = '✨';
-                btns.innerHTML = `<button onclick="closeModal()" class="w-full py-3 pink-gradient text-white font-bold rounded-2xl">확인</button>`;
-            } else if (type === 'confirm') {
-                icon.innerText = '🗑️';
-                btns.innerHTML = `
-                    <button onclick="closeModal()" class="flex-1 py-3 bg-gray-100 text-gray-500 font-bold rounded-2xl">취소</button>
-                    <button id="modal-confirm-btn" class="flex-1 py-3 bg-red-500 text-white font-bold rounded-2xl">삭제</button>
-                `;
-                document.getElementById('modal-confirm-btn').onclick = () => { onConfirm(); closeModal(); };
-            }
-        }
-
-        function closeModal() { document.getElementById('custom-modal').classList.add('hidden'); }
 
         function showView(view) {
             document.getElementById('view-reg').classList.toggle('hidden', view !== 'reg');
             document.getElementById('view-list').classList.toggle('hidden', view !== 'list');
             document.getElementById('tab-reg').className = view === 'reg' ? 'flex-1 py-3 text-sm font-bold tab-active' : 'flex-1 py-3 text-sm font-bold text-gray-400';
             document.getElementById('tab-list').className = view === 'list' ? 'flex-1 py-3 text-sm font-bold tab-active' : 'flex-1 py-3 text-sm font-bold text-gray-400';
+            window.scrollTo(0,0);
             if(view === 'list') renderTasks();
         }
 
-        // 사진 미리보기 및 Base64 변환
-        function previewPhoto(input) {
-            const file = input.files[0];
-            if(!file) return;
+        // 사진 파일 처리 강화
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
 
             const reader = new FileReader();
-            reader.onload = (e) => {
+            reader.onload = function(e) {
                 currentPhotoBase64 = e.target.result;
                 const previewArea = document.getElementById('photo-preview');
                 const placeholder = document.getElementById('photo-placeholder');
@@ -138,12 +119,13 @@
             reader.readAsDataURL(file);
         }
 
-        function removePhoto() {
+        function removePhoto(event) {
+            if(event) event.stopPropagation();
             currentPhotoBase64 = null;
             const previewArea = document.getElementById('photo-preview');
             const placeholder = document.getElementById('photo-placeholder');
             const delBtn = document.getElementById('del-photo-btn');
-            document.getElementById('in-photo').value = ''; // input 초기화
+            document.getElementById('in-photo').value = '';
 
             previewArea.style.backgroundImage = 'none';
             placeholder.classList.remove('hidden');
@@ -153,74 +135,54 @@
         function saveAnimal() {
             const nameInput = document.getElementById('in-name');
             const name = nameInput.value.trim();
-            if(!name) { alert('이름은 꼭 입력해주세요!'); nameInput.focus(); return; }
+            if(!name) { alert('강아지 이름을 입력해주세요!'); return; }
             
             const newAnimal = {
                 id: Date.now(),
-                photo: currentPhotoBase64, // 사진 데이터 저장
+                photo: currentPhotoBase64,
                 name,
-                breed: document.getElementById('in-breed').value || '모름',
-                gender: document.getElementById('in-gender').value || '미정',
-                age: document.getElementById('in-age').value || '미정',
-                personality: document.getElementById('in-personality').value || '정보없음',
+                breed: document.getElementById('in-breed').value || '견종 미확인',
+                gender: document.getElementById('in-gender').value || '성별 미확인',
+                age: document.getElementById('in-age').value || '나이 모름',
+                personality: document.getElementById('in-personality').value || '특이사항 없음',
                 memo: document.getElementById('in-memo').value || '',
                 tasks: { walk:false, clean:false, meal:false }
             };
 
-            animals.push(newAnimal);
-            // v3로 데이터 버전 업그레이드
-            localStorage.setItem('naepumae_v3', JSON.stringify(animals));
+            animals.unshift(newAnimal); // 새 동물을 맨 위에 추가
+            localStorage.setItem('naepumae_v4', JSON.stringify(animals));
             
-            // 입력창 및 사진 초기화
-            ['in-name','in-breed','in-age','in-personality','in-memo','in-gender'].forEach(id => document.getElementById(id).value = '');
+            // UI 초기화
+            ['in-name','in-breed','in-age','in-personality','in-memo'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('in-gender').value = "";
             removePhoto(); 
             renderRegList();
-            showModal('success', '등록 완료!', `${name}이가 무사히 보호 명단에 올랐습니다.`);
-        }
-
-        function askDelete(id) {
-            showModal('confirm', '정보를 삭제하시겠습니까?', '한번 지우면 되돌릴 수 없어요.', () => {
-                animals = animals.filter(a => a.id !== id);
-                localStorage.setItem('naepumae_v3', JSON.stringify(animals));
-                renderRegList();
-            });
-        }
-
-        function toggleTask(aniId, type) {
-            const ani = animals.find(a => a.id === aniId);
-            ani.tasks[type] = !ani.tasks[type];
-            localStorage.setItem('naepumae_v3', JSON.stringify(animals));
-            renderTasks();
+            showModal('success', '등록 완료!', `${name}이가 무사히 보호소 앱에 등록되었습니다.`);
         }
 
         function renderRegList() {
             const container = document.getElementById('reg-list');
-            container.innerHTML = `<h3 class="font-bold text-gray-400 px-2 mt-4 mb-2 text-sm">보호 명단 (${animals.length})</h3>`;
+            container.innerHTML = `<h3 class="font-black text-gray-400 px-2 mt-8 mb-4 text-sm">현재 보호 중인 아이들 (${animals.length})</h3>`;
             
             animals.forEach(a => {
-                // 사진이 없을 경우 기본 분홍색 배경
                 const photoHtml = a.photo 
-                    ? `<div class="w-16 h-16 rounded-3xl bg-cover bg-center shrink-0" style="background-image: url(${a.photo})"></div>`
-                    : `<div class="w-16 h-16 rounded-3xl bg-pink-100 flex items-center justify-center shrink-0 text-pink-300 text-2xl">🐶</div>`;
+                    ? `<div class="w-20 h-20 rounded-[20px] bg-cover bg-center shrink-0 shadow-sm" style="background-image: url(${a.photo})"></div>`
+                    : `<div class="w-20 h-20 rounded-[20px] bg-pink-50 flex items-center justify-center shrink-0 text-pink-200 text-3xl">🐶</div>`;
 
-                // 성격 태그를 예쁘게 뱃지 형태로 변환
                 const tags = a.personality.split(',').map(tag => 
-                    `<span class="text-[10px] bg-pink-50 text-pink-400 px-2 py-0.5 rounded-full font-bold">${tag.trim()}</span>`
+                    `<span class="text-[10px] bg-pink-100/50 text-pink-500 px-2.5 py-1 rounded-full font-bold">#${tag.trim()}</span>`
                 ).join(' ');
 
                 container.innerHTML += `
-                    <div class="card flex gap-4 relative overflow-hidden items-center transition-all hover:border-pink-200">
+                    <div class="card flex gap-4 relative overflow-hidden items-center animate-fadeIn border-pink-50 hover:border-pink-200">
                         ${photoHtml}
-                        <div class="flex-1">
-                            <div class="flex justify-between items-start mb-1">
-                                <div>
-                                    <h3 class="font-black text-xl text-gray-800">${a.name}</h3>
-                                    <p class="text-xs text-gray-400 -mt-0.5">${a.breed} | ${a.gender} | ${a.age}</p>
-                                </div>
-                                <button onclick="askDelete(${a.id})" class="p-2 -mr-3 -mt-3 text-gray-300 hover:text-red-400 transition-colors">🗑️</button>
+                        <div class="flex-1 overflow-hidden">
+                            <div class="flex justify-between items-start">
+                                <h3 class="font-black text-xl text-gray-800 truncate">${a.name}</h3>
+                                <button onclick="askDelete(${a.id})" class="text-xl px-1 text-gray-300">×</button>
                             </div>
-                            <div class="flex flex-wrap gap-1 mb-2">${tags}</div>
-                            <p class="text-xs text-gray-400 italic line-clamp-1">${a.memo || '구조 메모 없음'}</p>
+                            <p class="text-[11px] text-gray-400 font-bold mb-2 uppercase">${a.breed} · ${a.gender} · ${a.age}</p>
+                            <div class="flex flex-wrap gap-1 mb-1">${tags}</div>
                         </div>
                     </div>`;
             });
@@ -229,10 +191,66 @@
         function renderTasks() {
             const container = document.getElementById('task-container');
             if(animals.length === 0) {
-                container.innerHTML = '<div class="text-center py-20 text-gray-400 px-10">보호 중인 아이가 없어요.<br>먼저 아이들을 등록해 주세요!</div>';
+                container.innerHTML = '<div class="text-center py-24 text-gray-300 px-10 font-bold">등록된 강아지가 없습니다.<br><span class="text-sm">먼저 아이들을 등록해주세요!</span></div>';
                 return;
             }
             container.innerHTML = '';
             animals.forEach(a => {
                 const photoHtml = a.photo 
-                    ? `<div class="w-12 h-12 rounded-2xl bg-cover bg-center shrink-0" style="background-image: url(${a.photo})"></div>`
+                    ? `<div class="w-14 h-14 rounded-2xl bg-cover bg-center shrink-0" style="background-image: url(${a.photo})"></div>`
+                    : `<div class="w-14 h-14 rounded-2xl bg-pink-50 flex items-center justify-center shrink-0 text-pink-200 text-xl">🐶</div>`;
+
+                container.innerHTML += `
+                    <div class="card bg-white border-pink-50">
+                        <div class="flex items-center gap-3 mb-4 pb-3 border-b border-pink-50">
+                            ${photoHtml}
+                            <div>
+                                <span class="font-black text-gray-700 text-lg">${a.name}</span>
+                                <p class="text-[10px] text-gray-400 font-bold">오늘의 일과를 체크해주세요</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                            ${['walk', 'clean', 'meal'].map(type => `
+                                <button onclick="toggleTask(${a.id}, '${type}')" 
+                                    class="py-4 rounded-2xl border-2 text-[13px] font-black transition-all active:scale-90 ${a.tasks[type] ? 'pink-gradient text-white border-pink-400 shadow-md' : 'bg-white border-pink-50 text-pink-200'}">
+                                    ${type === 'walk' ? '산책' : type === 'clean' ? '청소' : '급여'}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>`;
+            });
+        }
+
+        function showModal(type, title, desc, onConfirm) {
+            const modal = document.getElementById('custom-modal');
+            const btns = document.getElementById('modal-btns');
+            document.getElementById('modal-icon').innerText = type === 'success' ? '✨' : '🗑️';
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-desc').innerText = desc;
+            modal.classList.remove('hidden');
+
+            if (type === 'success') {
+                btns.innerHTML = `<button onclick="closeModal()" class="w-full py-4 pink-gradient text-white font-bold rounded-2xl shadow-md">확인</button>`;
+            } else {
+                btns.innerHTML = `
+                    <button onclick="closeModal()" class="flex-1 py-4 bg-gray-100 text-gray-400 font-bold rounded-2xl">취소</button>
+                    <button id="modal-confirm-btn" class="flex-1 py-4 bg-red-500 text-white font-bold rounded-2xl shadow-md">삭제</button>
+                `;
+                document.getElementById('modal-confirm-btn').onclick = () => { onConfirm(); closeModal(); };
+            }
+        }
+
+        function closeModal() { document.getElementById('custom-modal').classList.add('hidden'); }
+
+        function askDelete(id) {
+            showModal('confirm', '정보를 지울까요?', '데이터가 영구적으로 삭제됩니다.', () => {
+                animals = animals.filter(a => a.id !== id);
+                localStorage.setItem('naepumae_v4', JSON.stringify(animals));
+                renderRegList();
+            });
+        }
+
+        renderRegList();
+    </script>
+</body>
+</html>
