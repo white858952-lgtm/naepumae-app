@@ -14,12 +14,8 @@
         .modal-bg { background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(6px); z-index: 10000; position: fixed; inset: 0; display: none; align-items: center; justify-content: center; }
         .modal-bg.active { display: flex; }
         #photo-preview { background-size: cover; background-position: center; transition: all 0.3s; }
-        
-        /* 디자인 보존 레이아웃 */
         .content-area { padding-bottom: 160px; position: relative; z-index: 10; }
         nav { z-index: 50; position: fixed; bottom: 0; left: 0; right: 0; height: 85px; background: white; border-top: 1px solid #ffe4e9; }
-        
-        /* [중요] 버튼 터치 우선순위 및 실행 보장 */
         .save-btn { cursor: pointer; position: relative; z-index: 100; touch-action: manipulation; -webkit-appearance: none; }
         .save-btn:active { transform: scale(0.96); opacity: 0.9; }
     </style>
@@ -59,10 +55,9 @@
                     </select>
                     <input type="text" id="in-age" placeholder="추정 나이" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-pink-50/20 text-sm font-bold">
                     <input type="text" id="in-personality" placeholder="성격 (쉼표 구분)" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-pink-50/20 text-sm font-bold w-full">
-                    
                     <textarea id="in-memo" placeholder="메모 및 특이사항" class="col-span-2 p-4 border border-pink-100 rounded-2xl outline-none h-24 bg-pink-50/20 text-sm font-bold"></textarea>
                     
-                    <button type="button" onclick="saveAnimal(); return false;" class="save-btn col-span-2 py-5 pink-gradient text-white font-black rounded-2xl shadow-lg mt-2 transition-all">
+                    <button type="button" onclick="saveAnimal();" class="save-btn col-span-2 py-5 pink-gradient text-white font-black rounded-2xl shadow-lg mt-2 transition-all">
                         보호견 등록하기
                     </button>
                 </div>
@@ -94,8 +89,7 @@
     </div>
 
     <script>
-        // [중요] 저장소 키를 고유하게 설정하여 데이터 충돌 방지
-        const STORAGE_ID = 'NAEPUMAE_FINAL_DATA';
+        const STORAGE_ID = 'NAEPUMAE_DATA_V5'; // 새로운 저장소로 쾌적하게 시작
         let animals = JSON.parse(localStorage.getItem(STORAGE_ID) || '[]');
         let currentPhotoBase64 = null;
 
@@ -108,34 +102,36 @@
             if(view === 'list') renderTasks();
         }
 
-        function openModal(type, title, desc, onConfirm) {
-            const modal = document.getElementById('custom-modal');
-            const btns = document.getElementById('modal-btns');
-            document.getElementById('modal-icon').innerText = type === 'success' ? '✨' : (type === 'error' ? '💡' : '🗑️');
-            document.getElementById('modal-title').innerText = title;
-            document.getElementById('modal-desc').innerText = desc;
-            modal.classList.add('active');
-
-            if (type === 'confirm') {
-                btns.innerHTML = `<button onclick="closeModal()" class="flex-1 py-4 bg-gray-100 text-gray-400 font-bold rounded-2xl">취소</button><button id="modal-confirm-btn" class="flex-1 py-4 bg-red-500 text-white font-bold rounded-2xl">삭제</button>`;
-                document.getElementById('modal-confirm-btn').onclick = () => { onConfirm(); closeModal(); };
-            } else {
-                btns.innerHTML = `<button onclick="closeModal()" class="w-full py-4 pink-gradient text-white font-bold rounded-2xl">확인</button>`;
-            }
-        }
-
-        function closeModal() { document.getElementById('custom-modal').classList.remove('active'); }
-
+        // [핵심] 사진 압축 함수 (디자인 영향 없음)
         function handleFileSelect(event) {
             const file = event.target.files[0];
             if (!file) return;
+
             const reader = new FileReader();
             reader.onload = (e) => {
-                currentPhotoBase64 = e.target.result;
-                const previewArea = document.getElementById('photo-preview');
-                previewArea.style.backgroundImage = `url(${currentPhotoBase64})`;
-                document.getElementById('photo-placeholder').classList.add('hidden');
-                document.getElementById('del-photo-btn').classList.remove('hidden');
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    const max_size = 600; // 최대 해상도 제한으로 용량 다이어트
+
+                    if (width > height) {
+                        if (width > max_size) { height *= max_size / width; width = max_size; }
+                    } else {
+                        if (height > max_size) { width *= max_size / height; height = max_size; }
+                    }
+                    canvas.width = width; canvas.height = height;
+                    canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                    
+                    // 화질을 0.6 정도로 낮춰서 용량을 획기적으로 줄임
+                    currentPhotoBase64 = canvas.toDataURL('image/jpeg', 0.6);
+                    const previewArea = document.getElementById('photo-preview');
+                    previewArea.style.backgroundImage = `url(${currentPhotoBase64})`;
+                    document.getElementById('photo-placeholder').classList.add('hidden');
+                    document.getElementById('del-photo-btn').classList.remove('hidden');
+                };
+                img.src = e.target.result;
             };
             reader.readAsDataURL(file);
         }
@@ -149,21 +145,12 @@
             document.getElementById('in-photo').value = '';
         }
 
-        // [최종 로직 수리] 
         function saveAnimal() {
-            // 1. 키보드 강제 종료 (아이폰 좌표 오류 방지)
             document.querySelectorAll('input, textarea').forEach(el => el.blur());
-
             const nameEl = document.getElementById('in-name');
             const name = nameEl.value.trim();
+            if(!name) { openModal('error', '이름을 적어주세요!', '이름 입력은 필수입니다.'); return; }
             
-            // 2. 필수값 체크
-            if(!name) {
-                openModal('error', '이름을 적어주세요!', '아이의 이름을 입력해야 등록이 완료됩니다.');
-                return;
-            }
-            
-            // 3. 데이터 생성 및 저장 (try-catch로 안전성 확보)
             try {
                 const newAnimal = {
                     id: Date.now(),
@@ -176,33 +163,24 @@
                     memo: document.getElementById('in-memo').value || '',
                     tasks: { walk:false, clean:false, meal:false }
                 };
-
-                // 배열 최상단에 추가
                 animals.unshift(newAnimal);
                 localStorage.setItem(STORAGE_ID, JSON.stringify(animals));
                 
-                // 4. 입력창 리셋
                 nameEl.value = "";
-                ['in-breed','in-age','in-personality','in-memo'].forEach(id => {
-                    const el = document.getElementById(id);
-                    if(el) el.value = '';
-                });
-                const genderEl = document.getElementById('in-gender');
-                if(genderEl) genderEl.value = "";
+                ['in-breed','in-age','in-personality','in-memo'].forEach(id => { document.getElementById(id).value = ''; });
+                document.getElementById('in-gender').value = "";
                 removePhoto(); 
-                
-                // 5. 화면 갱신 및 팝업
                 renderRegList();
-                openModal('success', '등록 성공! ✨', `${name}의 정보가 안전하게 저장되었습니다.`);
+                openModal('success', '등록 성공!', `${name}의 정보가 저장되었습니다.`);
             } catch (err) {
-                console.error(err);
-                alert("저장 공간이 부족하거나 오류가 발생했습니다.");
+                // 용량 초과 시 알림
+                openModal('error', '저장 공간 부족', '기존 데이터를 일부 삭제하거나 사진 크기를 줄여주세요.');
             }
         }
 
         function renderRegList() {
             const container = document.getElementById('reg-list');
-            container.innerHTML = `<h3 class="font-bold text-gray-400 px-2 mt-8 mb-4 text-xs uppercase tracking-widest">보호 명단 (${animals.length})</h3>`;
+            container.innerHTML = `<h3 class="font-bold text-gray-400 px-2 mt-8 mb-4 text-xs uppercase">보호 명단 (${animals.length})</h3>`;
             animals.forEach(a => {
                 const photoHtml = a.photo ? `<div class="w-16 h-16 rounded-2xl bg-cover bg-center shrink-0 shadow-sm" style="background-image: url(${a.photo})"></div>` : `<div class="w-16 h-16 rounded-2xl bg-pink-50 flex items-center justify-center shrink-0 text-pink-200 text-2xl">🐶</div>`;
                 const tags = a.personality.split(',').map(tag => `<span class="text-[10px] bg-pink-100/50 text-pink-500 px-2 py-0.5 rounded-md font-bold">#${tag.trim()}</span>`).join(' ');
@@ -216,26 +194,28 @@
             container.innerHTML = '';
             animals.forEach(a => {
                 const photoHtml = a.photo ? `<div class="w-12 h-12 rounded-xl bg-cover bg-center shrink-0" style="background-image: url(${a.photo})"></div>` : `<div class="w-12 h-12 rounded-xl bg-pink-50 flex items-center justify-center shrink-0 text-pink-200 text-xl">🐶</div>`;
-                container.innerHTML += `<div class="card border-pink-50 mb-4"><div class="flex items-center gap-3 mb-4 pb-3 border-b border-pink-50">${photoHtml}<div><span class="font-bold text-gray-700 text-lg">${a.name}</span><p class="text-[10px] text-pink-300 font-bold uppercase tracking-tighter">Checklist</p></div></div><div class="grid grid-cols-3 gap-2">${['walk', 'clean', 'meal'].map(type => `<button onclick="toggleTask(${a.id}, '${type}')" class="py-3 rounded-xl border-2 text-xs font-bold transition-all ${a.tasks[type] ? 'pink-gradient text-white border-pink-400' : 'bg-white border-pink-50 text-pink-100'}">${type === 'walk' ? '산책' : type === 'clean' ? '청소' : '급여'}</button>`).join('')}</div></div>`;
+                container.innerHTML += `<div class="card border-pink-50 mb-4"><div class="flex items-center gap-3 mb-4 pb-3 border-b border-pink-50">${photoHtml}<div><span class="font-bold text-gray-700 text-lg">${a.name}</span><p class="text-[10px] text-pink-300 font-bold uppercase">Checklist</p></div></div><div class="grid grid-cols-3 gap-2">${['walk', 'clean', 'meal'].map(type => `<button onclick="toggleTask(${a.id}, '${type}')" class="py-3 rounded-xl border-2 text-xs font-bold transition-all ${a.tasks[type] ? 'pink-gradient text-white border-pink-400' : 'bg-white border-pink-50 text-pink-100'}">${type === 'walk' ? '산책' : type === 'clean' ? '청소' : '급여'}</button>`).join('')}</div></div>`;
             });
         }
 
-        function askDelete(id) {
-            openModal('confirm', '삭제할까요?', '기록이 영구적으로 삭제됩니다.', () => {
-                animals = animals.filter(a => a.id !== id);
-                localStorage.setItem(STORAGE_ID, JSON.stringify(animals));
-                renderRegList();
-            });
+        function openModal(type, title, desc, onConfirm) {
+            const modal = document.getElementById('custom-modal');
+            const btns = document.getElementById('modal-btns');
+            document.getElementById('modal-icon').innerText = type === 'success' ? '✨' : (type === 'error' ? '💡' : '🗑️');
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-desc').innerText = desc;
+            modal.classList.add('active');
+            if (type === 'confirm') {
+                btns.innerHTML = `<button onclick="closeModal()" class="flex-1 py-4 bg-gray-100 text-gray-400 font-bold rounded-2xl">취소</button><button id="modal-confirm-btn" class="flex-1 py-4 bg-red-500 text-white font-bold rounded-2xl">삭제</button>`;
+                document.getElementById('modal-confirm-btn').onclick = () => { onConfirm(); closeModal(); };
+            } else {
+                btns.innerHTML = `<button onclick="closeModal()" class="w-full py-4 pink-gradient text-white font-bold rounded-2xl">확인</button>`;
+            }
         }
+        function closeModal() { document.getElementById('custom-modal').classList.remove('active'); }
+        function askDelete(id) { openModal('confirm', '삭제할까요?', '기록이 영구적으로 삭제됩니다.', () => { animals = animals.filter(a => a.id !== id); localStorage.setItem(STORAGE_ID, JSON.stringify(animals)); renderRegList(); }); }
+        function toggleTask(id, type) { const ani = animals.find(a => a.id === id); ani.tasks[type] = !ani.tasks[type]; localStorage.setItem(STORAGE_ID, JSON.stringify(animals)); renderTasks(); }
 
-        function toggleTask(id, type) {
-            const ani = animals.find(a => a.id === id);
-            ani.tasks[type] = !ani.tasks[type];
-            localStorage.setItem(STORAGE_ID, JSON.stringify(animals));
-            renderTasks();
-        }
-
-        // 초기 실행
         renderRegList();
     </script>
 </body>
