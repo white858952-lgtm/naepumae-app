@@ -11,7 +11,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
-        body { font-family: 'Noto Sans KR', sans-serif; background-color: #fff5f7; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: #fff5f7; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; overflow-x: hidden; }
         .pink-gradient { background: linear-gradient(135deg, #ff69b4 0%, #ff85c0 100%); }
         .card { background: white; border-radius: 28px; padding: 20px; border: 1px solid #ffe4e9; box-shadow: 0 10px 20px rgba(255, 105, 180, 0.03); }
         .tab-active { color: #ff69b4; border-bottom: 3px solid #ff69b4; }
@@ -20,21 +20,23 @@
         #photo-preview { background-size: cover; background-position: center; transition: all 0.3s; }
         
         .content-area { padding-bottom: 160px; position: relative; z-index: 10; }
-        nav { z-index: 50; position: fixed; bottom: 0; left: 0; right: 0; height: 85px; background: white; border-top: 1px solid #ffe4e9; }
+        nav { z-index: 50; position: fixed; bottom: 0; left: 0; right: 0; height: 85px; background: white; border-top: 1px solid #ffe4e9; box-shadow: 0 -5px 20px rgba(255,105,180,0.05); }
         
         .save-btn { cursor: pointer; position: relative; z-index: 100; touch-action: manipulation; -webkit-appearance: none; }
         .save-btn:active { transform: scale(0.96); opacity: 0.9; }
 
-        /* 가로 스크롤 숨김 (필터용) */
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* 타임라인 패널 애니메이션 */
+        #timeline-panel { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
     </style>
 </head>
-<body class="max-w-md mx-auto p-4">
-    <div class="content-area">
+<body class="max-w-md mx-auto p-4 relative">
+    <div class="content-area" id="main-content">
         <header class="py-6 text-center">
             <h1 class="text-3xl font-black text-[#ff69b4] mb-1">내품애 센터</h1>
-            <p class="text-gray-500 text-sm">반려동물과 행복한 서대문</p>
+            <p class="text-gray-500 text-sm font-bold">반려동물과 행복한 서대문</p>
         </header>
 
         <div class="flex justify-around mb-6 bg-white rounded-2xl p-1 shadow-sm border border-pink-50">
@@ -46,17 +48,17 @@
             <div class="card space-y-4">
                 <h2 class="text-lg font-bold text-gray-700">📸 신규 보호 동물 등록</h2>
                 
-                <div id="photo-preview" onclick="document.getElementById('in-photo').click()" class="w-full h-52 rounded-3xl bg-pink-50 flex items-center justify-center border-2 border-dashed border-pink-200 relative overflow-hidden">
+                <div id="photo-preview" onclick="document.getElementById('in-photo').click()" class="w-full h-52 rounded-3xl bg-pink-50 flex items-center justify-center border-2 border-dashed border-pink-200 relative overflow-hidden cursor-pointer">
                     <div id="photo-placeholder" class="text-center text-pink-300">
                         <span class="text-5xl">📸</span>
                         <p class="text-xs font-bold mt-2">사진 선택</p>
                     </div>
                     <input type="file" id="in-photo" accept="image/*" class="hidden" onchange="handleFileSelect(event)">
-                    <button id="del-photo-btn" onclick="removePhoto(event)" class="hidden absolute top-3 right-3 bg-white text-pink-500 px-3 py-1 rounded-full text-xs font-bold shadow-md">삭제</button>
+                    <button id="del-photo-btn" onclick="removePhoto(event)" class="hidden absolute top-3 right-3 bg-white text-pink-500 px-3 py-1 rounded-full text-[10px] font-black shadow-md z-20">사진 삭제</button>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3 pt-2">
-                    <input type="text" id="in-name" placeholder="이름 (필수)" class="col-span-2 p-4 border border-pink-100 rounded-2xl outline-none bg-pink-50/20 font-bold">
+                    <input type="text" id="in-name" placeholder="이름 (필수)" class="col-span-2 p-4 border border-pink-100 rounded-2xl outline-none bg-pink-50/20 font-bold focus:bg-white focus:border-pink-300 transition-colors">
                     <input type="text" id="in-breed" placeholder="종류/견종" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-pink-50/20 text-sm font-bold">
                     <select id="in-gender" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-500 text-sm font-bold">
                         <option value="" disabled selected>성별</option>
@@ -72,16 +74,15 @@
                     </select>
 
                     <input type="text" id="in-personality" placeholder="성격 (쉼표 구분)" class="col-span-2 p-4 border border-pink-100 rounded-2xl outline-none bg-pink-50/20 text-sm font-bold w-full">
-                    <textarea id="in-memo" placeholder="메모 및 특이사항" class="col-span-2 p-4 border border-pink-100 rounded-2xl outline-none h-24 bg-pink-50/20 text-sm font-bold"></textarea>
+                    <textarea id="in-memo" placeholder="구조 경위 및 초기 메모" class="col-span-2 p-4 border border-pink-100 rounded-2xl outline-none h-24 bg-pink-50/20 text-sm font-bold"></textarea>
                     
-                    <button type="button" onclick="saveAnimal(); return false;" class="save-btn col-span-2 py-5 pink-gradient text-white font-black rounded-2xl shadow-lg mt-2 transition-all">
+                    <button type="button" onclick="saveAnimal(); return false;" class="save-btn col-span-2 py-5 pink-gradient text-white font-black rounded-2xl shadow-lg mt-2 transition-transform text-lg">
                         보호 동물 등록하기
                     </button>
                 </div>
             </div>
 
             <div id="filter-container" class="flex gap-2 px-2 overflow-x-auto hide-scrollbar"></div>
-            
             <div id="reg-list" class="space-y-4"></div>
         </div>
 
@@ -90,26 +91,52 @@
         </div>
     </div>
 
-    <nav class="flex justify-around py-4 shadow-lg rounded-t-3xl">
+    <nav class="flex justify-around py-4 shadow-lg rounded-t-[32px]">
         <button onclick="showView('reg')" class="flex flex-col items-center gap-1">
-            <span class="text-2xl">🐾</span><span class="text-[10px] font-bold text-pink-500">아이들</span>
+            <span class="text-2xl">🐾</span><span class="text-[10px] font-black text-pink-500">아이들</span>
         </button>
         <button onclick="showView('list')" class="flex flex-col items-center gap-1">
-            <span class="text-2xl opacity-30">📋</span><span class="text-[10px] font-bold text-gray-400">업무관리</span>
+            <span class="text-2xl opacity-30 hover:opacity-100 transition-opacity">📋</span><span class="text-[10px] font-black text-gray-400">업무관리</span>
         </button>
     </nav>
 
+    <div id="timeline-panel" class="fixed inset-0 bg-gray-50 z-[200] transform translate-x-full flex flex-col">
+        <div class="px-5 py-4 bg-white border-b border-pink-100 flex justify-between items-center shadow-sm sticky top-0 z-10 pt-[max(env(safe-area-inset-top),16px)]">
+            <div class="flex items-center gap-3">
+                <button onclick="closeTimeline()" class="text-gray-400 text-3xl font-black active:scale-90 transition-transform">&lsaquo;</button>
+                <div id="tl-header-info" class="flex items-center gap-2"></div>
+            </div>
+        </div>
+
+        <div id="tl-logs" class="flex-1 overflow-y-auto p-5 space-y-4 pb-32">
+            </div>
+
+        <div class="absolute bottom-0 left-0 right-0 bg-white border-t border-pink-100 p-4 pb-[max(env(safe-area-inset-bottom),16px)] shadow-[0_-5px_15px_rgba(0,0,0,0.03)] z-20">
+            <div class="flex gap-2 mb-3">
+                <button onclick="setMood(this, '😊 안정됨')" class="mood-btn px-3 py-1.5 rounded-xl bg-pink-400 text-white text-xs font-black shadow-sm transition-colors">😊 안정됨</button>
+                <button onclick="setMood(this, '⚡ 흥분/불안')" class="mood-btn px-3 py-1.5 rounded-xl bg-pink-50 text-pink-400 text-xs font-black transition-colors">⚡ 흥분/불안</button>
+                <button onclick="setMood(this, '🚧 경계/공격성')" class="mood-btn px-3 py-1.5 rounded-xl bg-pink-50 text-pink-400 text-xs font-black transition-colors">🚧 경계/공격성</button>
+            </div>
+            <div class="flex gap-2">
+                <input type="text" id="tl-input" placeholder="오늘의 훈련 내용이나 행동 관찰 기록" class="flex-1 p-3.5 border border-pink-100 rounded-2xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300">
+                <button onclick="saveLog()" class="px-5 pink-gradient text-white font-black rounded-2xl shadow-md active:scale-95 transition-transform">기록</button>
+            </div>
+            <input type="hidden" id="tl-mood" value="😊 안정됨">
+            <input type="hidden" id="tl-animal-id" value="">
+        </div>
+    </div>
+
     <div id="custom-modal" class="modal-bg">
-        <div class="bg-white w-full max-w-xs rounded-[32px] p-8 text-center shadow-2xl mx-4">
+        <div class="bg-white w-[85%] max-w-xs rounded-[35px] p-8 text-center shadow-2xl">
             <div id="modal-icon" class="text-5xl mb-4"></div>
-            <h3 id="modal-title" class="text-xl font-bold mb-2"></h3>
-            <p id="modal-desc" class="text-gray-500 text-sm mb-6"></p>
+            <h3 id="modal-title" class="text-xl font-black mb-2 text-gray-800"></h3>
+            <p id="modal-desc" class="text-gray-400 text-sm mb-6 font-bold"></p>
             <div id="modal-btns" class="flex gap-2"></div>
         </div>
     </div>
 
     <script>
-        // 파이어베이스 설정 유지
+        // 트레이너님 파이어베이스 키 (절대 유지)
         const firebaseConfig = {
             apiKey: "AIzaSyAitCQVYKsqytLzT_O9_k0lXT7bAsPhjLY",
             authDomain: "naepumae-center.firebaseapp.com",
@@ -124,7 +151,7 @@
 
         let animals = [];
         let currentPhotoBase64 = null;
-        let currentFilter = 'all'; // 현재 선택된 필터 상태
+        let currentFilter = 'all'; 
 
         // 실시간 동기화
         database.ref('animals').on('value', (snapshot) => {
@@ -137,25 +164,29 @@
             renderFilters();
             renderRegList();
             if (!document.getElementById('view-list').classList.contains('hidden')) renderTasks();
+            
+            // 타임라인이 열려있다면 해당 아이의 로그도 실시간 갱신
+            const activeId = document.getElementById('tl-animal-id').value;
+            if(activeId && !document.getElementById('timeline-panel').classList.contains('translate-x-full')) {
+                renderTimeline(Number(activeId));
+            }
         });
 
         function showView(view) {
             document.getElementById('view-reg').classList.toggle('hidden', view !== 'reg');
             document.getElementById('view-list').classList.toggle('hidden', view !== 'list');
-            document.getElementById('tab-reg').className = view === 'reg' ? 'flex-1 py-3 text-sm font-bold tab-active' : 'flex-1 py-3 text-sm font-bold text-gray-400';
-            document.getElementById('tab-list').className = view === 'list' ? 'flex-1 py-3 text-sm font-bold tab-active' : 'flex-1 py-3 text-sm font-bold text-gray-400';
+            document.getElementById('tab-reg').className = view === 'reg' ? 'flex-1 py-3 text-sm font-black tab-active' : 'flex-1 py-3 text-sm font-black text-gray-300';
+            document.getElementById('tab-list').className = view === 'list' ? 'flex-1 py-3 text-sm font-black tab-active' : 'flex-1 py-3 text-sm font-black text-gray-300';
             window.scrollTo(0,0);
             if(view === 'list') renderTasks();
         }
 
-        // [추가] 필터 상태 변경 함수
         function setFilter(filterType) {
             currentFilter = filterType;
             renderFilters();
             renderRegList();
         }
 
-        // [추가] 가로 스크롤 필터 버튼 렌더링
         function renderFilters() {
             const container = document.getElementById('filter-container');
             const filters = [
@@ -163,12 +194,8 @@
                 { id: 'cat', label: '고양이 🐱' },
                 { id: 'adopt', label: '입양 대기 💝' }
             ];
-
             container.innerHTML = filters.map(f => `
-                <button onclick="setFilter('${f.id}')" 
-                    class="whitespace-nowrap px-4 py-2 rounded-full text-[11px] font-black transition-all ${currentFilter === f.id ? 'bg-pink-500 text-white shadow-md' : 'bg-white text-pink-300 border border-pink-100'}">
-                    ${f.label}
-                </button>
+                <button onclick="setFilter('${f.id}')" class="whitespace-nowrap px-4 py-2 rounded-full text-[11px] font-black transition-all ${currentFilter === f.id ? 'bg-pink-500 text-white shadow-md' : 'bg-white text-pink-300 border border-pink-100'}">${f.label}</button>
             `).join('');
         }
 
@@ -221,10 +248,11 @@
                 breed: document.getElementById('in-breed').value || '미상',
                 gender: document.getElementById('in-gender').value || '미정',
                 age: document.getElementById('in-age').value || '미상',
-                status: document.getElementById('in-status').value || '보호 중 🏡', // 뱃지 데이터 저장
+                status: document.getElementById('in-status').value || '보호 중 🏡',
                 personality: document.getElementById('in-personality').value || '정보없음',
                 memo: document.getElementById('in-memo').value || '',
-                tasks: { walk:false, clean:false, meal:false }
+                tasks: { walk:false, clean:false, meal:false },
+                logs: {} // 행동 로그 저장 공간 초기화
             };
 
             database.ref('animals/' + newId).set(newAnimal).then(() => {
@@ -233,43 +261,39 @@
                 document.getElementById('in-gender').value = "";
                 document.getElementById('in-status').value = "보호 중 🏡";
                 removePhoto(); 
-                openModal('success', '클라우드 등록 성공! ✨', `${name}의 정보가 모든 직원에게 공유됩니다.`);
-            }).catch((error) => {
-                openModal('error', '저장 오류', '인터넷 연결을 확인하거나 잠시 후 다시 시도해주세요.');
+                openModal('success', '등록 성공! ✨', `${name}의 정보가 클라우드에 공유됩니다.`);
             });
         }
 
         function renderRegList() {
             const container = document.getElementById('reg-list');
-            
-            // [추가] 선택된 필터에 맞게 목록 걸러내기
             const filteredAnimals = animals.filter(a => {
                 if (currentFilter === 'cat') return a.breed.includes('고양이') || a.breed.includes('묘') || a.breed.includes('코숏');
                 if (currentFilter === 'adopt') return a.status && a.status.includes('입양 대기');
                 return true;
             });
 
-            container.innerHTML = `<h3 class="font-bold text-gray-400 px-2 mt-4 mb-4 text-xs uppercase tracking-widest">목록 (${filteredAnimals.length})</h3>`;
+            container.innerHTML = `<h3 class="font-black text-gray-400 px-2 mt-6 mb-3 text-[10px] uppercase tracking-widest">목록 (${filteredAnimals.length})</h3>`;
             
             filteredAnimals.forEach(a => {
-                const photoHtml = a.photo ? `<div class="w-20 h-20 rounded-2xl bg-cover bg-center shrink-0 shadow-sm" style="background-image: url(${a.photo})"></div>` : `<div class="w-20 h-20 rounded-2xl bg-pink-50 flex items-center justify-center shrink-0 text-pink-200 text-2xl">🐾</div>`;
-                const tags = a.personality.split(',').map(tag => `<span class="text-[10px] bg-pink-50 text-pink-500 px-2 py-0.5 rounded-md font-bold">#${tag.trim()}</span>`).join(' ');
+                const photoHtml = a.photo ? `<div class="w-20 h-20 rounded-[20px] bg-cover bg-center shrink-0 shadow-sm border border-pink-50" style="background-image: url(${a.photo})"></div>` : `<div class="w-20 h-20 rounded-[20px] bg-pink-50 flex items-center justify-center shrink-0 text-pink-200 text-2xl">🐾</div>`;
+                const tags = a.personality.split(',').map(tag => `<span class="text-[9px] bg-pink-50 text-pink-500 px-2 py-0.5 rounded-md font-black">#${tag.trim()}</span>`).join(' ');
                 
-                // [추가] 시각적 상태 뱃지 렌더링
-                const badgeColor = a.status && a.status.includes('입양 대기') ? 'bg-pink-500 text-white' : (a.status && a.status.includes('훈련 중') ? 'bg-orange-400 text-white' : 'bg-blue-100 text-blue-500');
-                const badgeHtml = `<span class="px-2 py-0.5 rounded-md text-[9px] font-black shadow-sm ${badgeColor}">${a.status || '보호 중 🏡'}</span>`;
+                const badgeColor = a.status && a.status.includes('입양 대기') ? 'bg-pink-500 text-white shadow-md' : (a.status && a.status.includes('훈련 중') ? 'bg-orange-400 text-white shadow-md' : 'bg-blue-50 text-blue-500');
+                const badgeHtml = `<span class="px-2 py-1 rounded-md text-[9px] font-black ${badgeColor}">${a.status || '보호 중 🏡'}</span>`;
 
+                // [수정] 카드를 누르면 타임라인 열림
                 container.innerHTML += `
-                    <div class="card flex gap-4 relative items-center border-pink-50 mb-4 animate-fadeIn">
+                    <div onclick="openTimeline(${a.id})" class="card flex gap-4 relative items-center border-pink-50 mb-4 cursor-pointer hover:shadow-lg transition-all active:scale-[0.98]">
                         <div class="flex-1 min-w-0">
-                            <div class="flex justify-between items-start mb-1">
+                            <div class="flex justify-between items-start mb-1.5">
                                 <div>
                                     ${badgeHtml}
-                                    <h3 class="font-black text-xl text-gray-800 truncate mt-1">${a.name}</h3>
+                                    <h3 class="font-black text-xl text-gray-800 truncate mt-1.5">${a.name}</h3>
                                 </div>
-                                <button onclick="askDelete(${a.id})" class="text-xl text-gray-300 p-1 -mt-1">×</button>
+                                <button onclick="askDelete(event, ${a.id})" class="text-2xl text-gray-200 p-1 -mt-1 hover:text-pink-500 transition-colors">&times;</button>
                             </div>
-                            <p class="text-[11px] text-gray-400 mb-2 font-bold">${a.breed} · ${a.gender} · ${a.age}</p>
+                            <p class="text-[10px] text-gray-400 mb-2 font-bold tracking-tight">${a.breed} · ${a.gender} · ${a.age}</p>
                             <div class="flex flex-wrap gap-1">${tags}</div>
                         </div>
                         ${photoHtml}
@@ -277,33 +301,107 @@
             });
         }
 
+        // [추가] 행동 로그 타임라인 기능
+        function openTimeline(id) {
+            const ani = animals.find(a => a.id === id);
+            if(!ani) return;
+            
+            document.getElementById('tl-animal-id').value = id;
+            
+            // 헤더 정보 세팅
+            const photoHtml = ani.photo ? `<div class="w-10 h-10 rounded-full bg-cover bg-center border-2 border-pink-100" style="background-image: url(${ani.photo})"></div>` : `<div class="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center text-xl">🐾</div>`;
+            document.getElementById('tl-header-info').innerHTML = `${photoHtml}<div class="flex flex-col"><span class="font-black text-gray-800 text-lg leading-tight">${ani.name}</span><span class="text-[10px] text-pink-400 font-bold">행동 관찰 일지</span></div>`;
+            
+            renderTimeline(id);
+            document.getElementById('timeline-panel').classList.remove('translate-x-full');
+        }
+
+        function closeTimeline() {
+            document.getElementById('timeline-panel').classList.add('translate-x-full');
+            document.getElementById('tl-input').value = '';
+            document.activeElement.blur();
+        }
+
+        function setMood(btnEl, mood) {
+            document.querySelectorAll('.mood-btn').forEach(btn => {
+                btn.classList.remove('bg-pink-400', 'text-white', 'shadow-sm');
+                btn.classList.add('bg-pink-50', 'text-pink-400');
+            });
+            btnEl.classList.remove('bg-pink-50', 'text-pink-400');
+            btnEl.classList.add('bg-pink-400', 'text-white', 'shadow-sm');
+            document.getElementById('tl-mood').value = mood;
+        }
+
+        function saveLog() {
+            const id = document.getElementById('tl-animal-id').value;
+            const inputEl = document.getElementById('tl-input');
+            const text = inputEl.value.trim();
+            const mood = document.getElementById('tl-mood').value;
+            
+            if(!text) return;
+
+            const now = new Date();
+            const dateStr = `${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+            
+            const logData = {
+                text: text,
+                mood: mood,
+                date: dateStr,
+                timestamp: Date.now()
+            };
+
+            // 서버에 로그 추가
+            database.ref('animals/' + id + '/logs/' + Date.now()).set(logData).then(() => {
+                inputEl.value = '';
+            });
+        }
+
+        function renderTimeline(id) {
+            const ani = animals.find(a => a.id === id);
+            const container = document.getElementById('tl-logs');
+            if(!ani || !ani.logs) {
+                container.innerHTML = `<div class="flex flex-col items-center justify-center h-full text-gray-300 font-black"><span class="text-4xl mb-2">📝</span><p class="text-sm">첫 번째 관찰 일지를 작성해주세요!</p></div>`;
+                return;
+            }
+
+            // 로그 데이터를 배열로 만들고 최신순 정렬
+            const logsArray = Object.values(ani.logs).sort((a, b) => b.timestamp - a.timestamp);
+            
+            container.innerHTML = logsArray.map(log => {
+                const moodColor = log.mood.includes('안정') ? 'text-pink-500 bg-pink-50' : (log.mood.includes('불안') ? 'text-orange-500 bg-orange-50' : 'text-red-500 bg-red-50');
+                return `
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-pink-50 relative">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="px-2.5 py-1 rounded-md text-[10px] font-black ${moodColor}">${log.mood}</span>
+                        <span class="text-[10px] text-gray-400 font-bold">${log.date}</span>
+                    </div>
+                    <p class="text-sm font-bold text-gray-700 leading-relaxed">${log.text}</p>
+                </div>`;
+            }).join('');
+        }
+
         function renderTasks() {
             const container = document.getElementById('task-container');
             if(animals.length === 0) { container.innerHTML = '<div class="text-center py-20 text-gray-400 font-bold">등록된 동물이 없습니다.</div>'; return; }
             container.innerHTML = '';
             animals.forEach(a => {
-                const photoHtml = a.photo ? `<div class="w-14 h-14 rounded-2xl bg-cover bg-center shrink-0 shadow-sm" style="background-image: url(${a.photo})"></div>` : `<div class="w-14 h-14 rounded-2xl bg-pink-50 flex items-center justify-center shrink-0 text-pink-200 text-xl">🐾</div>`;
-                
-                // [추가] 업무 진행도 계산 게이지 바
-                const completedTasks = Object.values(a.tasks).filter(Boolean).length;
+                const photoHtml = a.photo ? `<div class="w-14 h-14 rounded-[14px] bg-cover bg-center shrink-0 shadow-sm" style="background-image: url(${a.photo})"></div>` : `<div class="w-14 h-14 rounded-[14px] bg-pink-50 flex items-center justify-center shrink-0 text-pink-200 text-xl">🐾</div>`;
+                const completedTasks = a.tasks ? Object.values(a.tasks).filter(Boolean).length : 0;
                 const progressPercent = (completedTasks / 3) * 100;
-                const progressBar = `
-                    <div class="w-full bg-pink-50 rounded-full h-1.5 mt-2 mb-1">
-                        <div class="bg-pink-400 h-1.5 rounded-full transition-all duration-500" style="width: ${progressPercent}%"></div>
-                    </div>
-                `;
 
                 container.innerHTML += `
                     <div class="card border-pink-50 mb-4">
-                        <div class="flex items-center gap-3 mb-4 pb-3 border-b border-pink-50">
+                        <div class="flex items-center gap-4 mb-4 pb-4 border-b border-pink-50">
                             ${photoHtml}
                             <div class="flex-1">
-                                <span class="font-black text-gray-700 text-lg">${a.name}</span>
-                                ${progressBar}
+                                <span class="font-black text-gray-800 text-lg">${a.name}</span>
+                                <div class="w-full bg-pink-50 rounded-full h-1.5 mt-2 overflow-hidden">
+                                    <div class="bg-pink-400 h-1.5 rounded-full transition-all duration-500" style="width: ${progressPercent}%"></div>
+                                </div>
                             </div>
                         </div>
                         <div class="grid grid-cols-3 gap-2">
-                            ${['walk', 'clean', 'meal'].map(type => `<button onclick="toggleTask(${a.id}, '${type}')" class="py-3 rounded-2xl border-2 text-[11px] font-black transition-all active:scale-95 ${a.tasks[type] ? 'pink-gradient text-white border-pink-400 shadow-md' : 'bg-white border-pink-50 text-pink-300'}">${type === 'walk' ? '산책' : type === 'clean' ? '청소' : '급여'}</button>`).join('')}
+                            ${['walk', 'clean', 'meal'].map(type => `<button onclick="toggleTask(${a.id}, '${type}')" class="py-3.5 rounded-[14px] border-2 text-[11px] font-black transition-all active:scale-95 ${a.tasks && a.tasks[type] ? 'pink-gradient text-white border-pink-400 shadow-md' : 'bg-white border-pink-50 text-pink-300'}">${type === 'walk' ? '산책' : type === 'clean' ? '청소' : '급여'}</button>`).join('')}
                         </div>
                     </div>`;
             });
@@ -317,14 +415,22 @@
             document.getElementById('modal-desc').innerText = desc;
             modal.classList.add('active');
             if (type === 'confirm') {
-                btns.innerHTML = `<button onclick="closeModal()" class="flex-1 py-4 bg-gray-100 text-gray-400 font-bold rounded-2xl">취소</button><button id="modal-confirm-btn" class="flex-1 py-4 bg-red-500 text-white font-bold rounded-2xl shadow-md">삭제</button>`;
+                btns.innerHTML = `<button onclick="closeModal()" class="flex-1 py-4 bg-gray-50 text-gray-400 font-black rounded-2xl">취소</button><button id="modal-confirm-btn" class="flex-1 py-4 bg-red-500 text-white font-black rounded-2xl shadow-md">삭제</button>`;
                 document.getElementById('modal-confirm-btn').onclick = () => { onConfirm(); closeModal(); };
             } else {
-                btns.innerHTML = `<button onclick="closeModal()" class="w-full py-4 pink-gradient text-white font-bold rounded-2xl shadow-md">확인</button>`;
+                btns.innerHTML = `<button onclick="closeModal()" class="w-full py-4 pink-gradient text-white font-black rounded-2xl shadow-md">확인</button>`;
             }
         }
         function closeModal() { document.getElementById('custom-modal').classList.remove('active'); }
-        function askDelete(id) { database.ref('animals/' + id).remove(); }
+        
+        // 이벤트 버블링 방지 (카드 클릭과 삭제 버튼 클릭 분리)
+        function askDelete(event, id) { 
+            event.stopPropagation();
+            openModal('confirm', '정말 삭제할까요?', '모든 일지와 기록이 서버에서 영구 삭제됩니다.', () => { 
+                database.ref('animals/' + id).remove(); 
+            }); 
+        }
+        
         function toggleTask(id, type) { 
             const ani = animals.find(a => a.id === id); 
             if(ani) database.ref('animals/' + id + '/tasks/' + type).set(!ani.tasks[type]);
