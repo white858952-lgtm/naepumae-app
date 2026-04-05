@@ -3,108 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>내품애센터 스마트 관리 앱</title>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+    <title>내품애센터 관리 앱</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
-        body { font-family: 'Noto Sans KR', sans-serif; background-color: #fff5f7; }
-        .text-hotpink { color: #ff69b4; }
-        .bg-hotpink { background-color: #ff69b4; }
-        .bg-mint { background-color: #4fd1c5; }
-        .text-mint { color: #4fd1c5; }
-        .card { background: white; border-radius: 1.5rem; padding: 1.5rem; border: 1px solid #ffe4e9; shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
-        .input-field { width: 100%; padding: 0.75rem; border-radius: 0.75rem; border: 1px solid #ffe4e9; outline: none; transition: border-color 0.2s; }
-        .input-field:focus { border-color: #ff69b4; }
-        .btn-primary { background-color: #ff69b4; color: white; padding: 0.75rem; border-radius: 0.75rem; font-weight: bold; transition: opacity 0.2s; }
-        .btn-primary:hover { opacity: 0.9; }
+        body { background-color: #fff5f7; font-family: sans-serif; display: flex; justify-content: center; padding: 20px; }
+        .container { background: white; width: 100%; max-width: 400px; padding: 20px; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #ffe4e9; }
+        h1 { color: #ff69b4; text-align: center; font-size: 22px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ffe4e9; border-radius: 10px; box-sizing: border-box; outline: none; }
+        button { width: 100%; padding: 12px; background: #ff69b4; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        .dog-item { background: #fff5f7; padding: 15px; border-radius: 10px; margin-top: 10px; border-left: 5px solid #ff69b4; font-weight: bold; color: #333; }
     </style>
 </head>
 <body>
-    <div id="root"></div>
-    <script type="text/babel">
-        const { useState, useEffect } = React;
-        const { motion, AnimatePresence } = window.Motion;
-        const { 
-            Dog, ClipboardList, Calendar, PlusCircle, 
-            CheckCircle2, Circle, Trash2, Heart, Info 
-        } = lucide;
+    <div class="container">
+        <h1>🐶 내품애센터 관리</h1>
+        
+        <div style="margin-bottom: 20px;">
+            <input type="text" id="dogName" placeholder="강아지 이름 입력">
+            <button onclick="addDog()">등록하기</button>
+        </div>
 
-        function App() {
-            const [currentView, setCurrentView] = useState('registration');
-            
-            // 데이터 불러오기 (자동 저장 기능)
-            const [animals, setAnimals] = useState(() => {
-                const saved = localStorage.getItem('naepumae_animals');
-                return saved ? JSON.parse(saved) : [];
+        <div id="dogList">
+            </div>
+    </div>
+
+    <script>
+        // 데이터 불러오기
+        let dogs = JSON.parse(localStorage.getItem('my_dogs') || '[]');
+
+        function render() {
+            const list = document.getElementById('dogList');
+            list.innerHTML = '<h3>등록 목록 (' + dogs.length + ')</h3>';
+            dogs.forEach((dog, index) => {
+                list.innerHTML += `<div class="dog-item">${dog}</div>`;
             });
-            const [tasks, setTasks] = useState(() => {
-                const saved = localStorage.getItem('naepumae_tasks');
-                return saved ? JSON.parse(saved) : [];
-            });
+        }
 
-            // 데이터가 바뀔 때마다 저장
-            useEffect(() => {
-                localStorage.setItem('naepumae_animals', JSON.stringify(animals));
-                localStorage.setItem('naepumae_tasks', JSON.stringify(tasks));
-            }, [animals, tasks]);
+        function addDog() {
+            const input = document.getElementById('dogName');
+            if (!input.value) return;
+            dogs.push(input.value);
+            localStorage.setItem('my_dogs', JSON.stringify(dogs));
+            input.value = '';
+            render();
+        }
 
-            const [formData, setFormData] = useState({
-                name: '', breed: '', intakeDate: '', allergy: '', isNeutered: false, weight: ''
-            });
-
-            const handleRegister = (e) => {
-                e.preventDefault();
-                if (!formData.name) return;
-                const newAnimal = { ...formData, id: Math.random().toString(36).substr(2, 9) };
-                setAnimals([...animals, newAnimal]);
-                const newTasks = [
-                    { id: Math.random().toString(), animalId: newAnimal.id, type: 'walk', completed: false },
-                    { id: Math.random().toString(), animalId: newAnimal.id, type: 'cleaning', completed: false },
-                    { id: Math.random().toString(), animalId: newAnimal.id, type: 'meal', completed: false },
-                    { id: Math.random().toString(), animalId: newAnimal.id, type: 'medication', completed: false },
-                ];
-                setTasks([...tasks, ...newTasks]);
-                setFormData({ name: '', breed: '', intakeDate: '', allergy: '', isNeutered: false, weight: '' });
-            };
-
-            const toggleTask = (taskId) => {
-                setTasks(tasks.map(t => t.id === taskId ? { ...t, completed: !t.completed } : t));
-            };
-
-            const deleteAnimal = (id) => {
-                if(confirm("정말 삭제하시겠습니까?")) {
-                    setAnimals(animals.filter(a => a.id !== id));
-                    setTasks(tasks.filter(t => t.animalId !== id));
-                }
-            };
-
-            return (
-                <div className="flex min-h-screen">
-                    <aside className="w-64 bg-white border-r border-pink-50 flex flex-col shadow-sm hidden md:flex">
-                        <div className="p-6">
-                            <div className="flex items-center gap-2 text-hotpink mb-8">
-                                <Heart size={24} fill="currentColor" />
-                                <span className="font-bold text-lg tracking-tight">내품애 센터</span>
-                            </div>
-                            <nav className="space-y-2">
-                                <SidebarItem icon={<PlusCircle size={20} />} label="개체 등록" active={currentView === 'registration'} onClick={() => setCurrentView('registration')} />
-                                <SidebarItem icon={<ClipboardList size={20} />} label="오늘의 업무" active={currentView === 'tasks'} onClick={() => setCurrentView('tasks')} />
-                                <SidebarItem icon={<Calendar size={20} />} label="이벤트 달력" active={currentView === 'calendar'} onClick={() => setCurrentView('calendar')} />
-                            </nav>
-                        </div>
-                    </aside>
-
-                    <main className="flex-1 p-4 md:p-8 overflow-y-auto">
-                        <header className="mb-6 md:mb-10">
-                            <h1 className="text-2xl md:text-3xl font-black text-hotpink mb-2">서대문 내품애센터 관리</h1>
-                            <p className="text-gray-500 text-sm">반려동물과 함께하는 행복한 서대문</p>
-                        </header>
-
-                        <AnimatePresence mode="wait">
-                            {currentView === 'registration' && (
-                                <motion.div key="registration" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity:
+        // 처음 시작할 때 화면 그리기
+        render();
+    </script>
+</body>
+</html>
