@@ -102,9 +102,7 @@
                 <h2 class="text-lg font-black text-gray-800" id="dash-date-title">오늘의 케어 현황</h2>
                 <button onclick="renderDashboard()" class="text-gray-400 active:scale-90 transition-transform">🔄 새로고침</button>
             </div>
-            
             <div id="dash-alerts-container" class="px-2 mb-6"></div>
-
             <h3 class="font-black text-gray-400 px-2 mb-2 text-[10px] uppercase tracking-widest">아이별 당일 업무 진척도</h3>
             <div id="dash-list-container" class="space-y-3 px-1 pb-10"></div>
         </div>
@@ -173,9 +171,11 @@
                     <input type="text" id="in-breed-custom" placeholder="품종 직접 입력" class="hidden col-span-2 p-4 border border-pink-100 rounded-2xl outline-none bg-pink-50 text-sm font-bold focus:border-pink-300">
 
                     <select id="in-gender" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-500 text-sm font-bold">
-                        <option value="" disabled selected>성별</option>
+                        <option value="" disabled selected>성별 (중성화)</option>
                         <option value="남아">남아</option>
                         <option value="여아">여아</option>
+                        <option value="중성화된 남아">중성화된 남아</option>
+                        <option value="중성화된 여아">중성화된 여아</option>
                     </select>
                     
                     <input type="text" id="in-age" placeholder="추정 나이" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-pink-50/20 text-sm font-bold">
@@ -186,8 +186,26 @@
                         <option value="입양 대기 💝">입양 대기 (확정 완료)</option>
                     </select>
 
+                    <div class="col-span-2 mt-2 bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100">
+                        <p class="text-xs font-black text-indigo-500 mb-3">🧠 행동 분석 (ABC 이론)</p>
+                        <div class="space-y-2">
+                            <div class="flex gap-2 items-center">
+                                <span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 font-black text-xs flex items-center justify-center shrink-0">A</span>
+                                <input type="text" id="in-abc-a" placeholder="선행사건 (예: 낯선 사람이 다가온다)" class="w-full p-3 border border-indigo-50 rounded-xl outline-none bg-white text-sm font-bold focus:border-indigo-300">
+                            </div>
+                            <div class="flex gap-2 items-center">
+                                <span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 font-black text-xs flex items-center justify-center shrink-0">B</span>
+                                <input type="text" id="in-abc-b" placeholder="행동양상 (예: 심하게 짖는다)" class="w-full p-3 border border-indigo-50 rounded-xl outline-none bg-white text-sm font-bold focus:border-indigo-300">
+                            </div>
+                            <div class="flex gap-2 items-center">
+                                <span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 font-black text-xs flex items-center justify-center shrink-0">C</span>
+                                <input type="text" id="in-abc-c" placeholder="결과 (예: 사람이 놀라서 멀어진다)" class="w-full p-3 border border-indigo-50 rounded-xl outline-none bg-white text-sm font-bold focus:border-indigo-300">
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="col-span-2 mt-2">
-                        <p class="text-xs font-bold text-gray-400 mb-2 px-1">아이의 성격 (여러 개 선택 가능)</p>
+                        <p class="text-xs font-bold text-gray-400 mb-2 px-1">기본 성격 (여러 개 선택 가능)</p>
                         <div class="flex flex-wrap gap-2" id="personality-container">
                             <button type="button" onclick="toggleMulti(this)" class="per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">활발함</button>
                             <button type="button" onclick="toggleMulti(this)" class="per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">소심함</button>
@@ -200,7 +218,7 @@
                         </div>
                     </div>
 
-                    <textarea id="in-memo" placeholder="구조 경위 및 초기 메모" class="col-span-2 p-4 border border-pink-100 rounded-2xl outline-none h-24 bg-pink-50/20 text-sm font-bold mt-2"></textarea>
+                    <textarea id="in-memo" placeholder="구조 경위 및 기타 메모" class="col-span-2 p-4 border border-pink-100 rounded-2xl outline-none h-24 bg-pink-50/20 text-sm font-bold mt-2"></textarea>
                     
                     <button id="btn-save-animal" type="button" onclick="saveAnimal(); return false;" class="save-btn col-span-2 py-5 pink-gradient text-white font-black rounded-2xl shadow-lg mt-2 transition-transform text-lg">
                         보호 동물 등록하기
@@ -234,27 +252,20 @@
             <span class="font-black text-gray-700">새 일정 등록</span>
             <div class="w-6"></div>
         </div>
-        
         <div class="flex-1 overflow-y-auto p-5 pb-32 space-y-4">
             <div class="bg-white rounded-2xl p-5 shadow-sm border border-pink-100">
                 <p class="text-xs font-bold text-gray-400 mb-1">일자 (필수)</p>
                 <input type="date" id="ev-date" class="w-full p-3 border border-pink-50 rounded-xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300 mb-4">
-                
                 <p class="text-xs font-bold text-gray-400 mb-1">시간 (선택)</p>
                 <input type="text" id="ev-time" placeholder="예: 14:00 ~ 17:00 / 종일" class="w-full p-3 border border-pink-50 rounded-xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300 mb-4">
-                
                 <p class="text-xs font-bold text-gray-400 mb-1">행사/업무명 (필수)</p>
                 <input type="text" id="ev-title" placeholder="예: OO기업 자원봉사 17명 방문" class="w-full p-3 border border-pink-50 rounded-xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300 mb-4">
-                
                 <p class="text-xs font-bold text-gray-400 mb-1">상세 내용 메모</p>
                 <textarea id="ev-desc" placeholder="필요한 물품이나 주요 전달사항을 적어주세요." class="w-full p-3 border border-pink-50 rounded-xl outline-none bg-gray-50 text-sm font-bold h-28 focus:border-pink-300"></textarea>
             </div>
         </div>
-
         <div class="absolute bottom-0 left-0 right-0 bg-white border-t border-pink-100 p-4 pb-[max(env(safe-area-inset-bottom),16px)] shadow-[0_-5px_15px_rgba(0,0,0,0.03)] z-20">
-            <button onclick="saveEvent()" class="w-full py-4 pink-gradient text-white font-black text-lg rounded-2xl shadow-lg active:scale-95 transition-transform">
-                일정 저장하기
-            </button>
+            <button onclick="saveEvent()" class="w-full py-4 pink-gradient text-white font-black text-lg rounded-2xl shadow-lg active:scale-95 transition-transform">일정 저장하기</button>
         </div>
     </div>
 
@@ -264,33 +275,26 @@
             <span id="sp-date-title" class="font-black text-gray-700">0월 0일 근무표</span>
             <div class="w-6"></div>
         </div>
-        
         <div class="flex-1 overflow-y-auto p-5 pb-32 space-y-4">
             <div class="bg-white rounded-2xl p-5 shadow-sm border border-pink-100">
                 <h3 class="text-sm font-black text-gray-800 mb-2">☀️ 오전 근무자</h3>
                 <input type="text" id="sch-am" placeholder="예: 김현우, 이진아" class="w-full p-3 border border-pink-50 rounded-xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300">
             </div>
-            
             <div class="bg-white rounded-2xl p-5 shadow-sm border border-pink-100">
                 <h3 class="text-sm font-black text-gray-800 mb-2">🌙 오후 근무자</h3>
                 <input type="text" id="sch-pm" placeholder="예: 박지성, 최민수" class="w-full p-3 border border-pink-50 rounded-xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300">
             </div>
-
             <div class="bg-white rounded-2xl p-5 shadow-sm border border-pink-100">
                 <h3 class="text-sm font-black text-red-400 mb-2">🌴 연차 (휴무)</h3>
                 <input type="text" id="sch-off" placeholder="휴무자 이름 입력" class="w-full p-3 border border-red-50 rounded-xl outline-none bg-gray-50 text-sm font-bold focus:border-red-300">
             </div>
-
             <div class="bg-white rounded-2xl p-5 shadow-sm border border-pink-100">
                 <h3 class="text-sm font-black text-blue-400 mb-2">🌗 반차</h3>
                 <input type="text" id="sch-half" placeholder="오전반차/오후반차 정보 입력" class="w-full p-3 border border-blue-50 rounded-xl outline-none bg-gray-50 text-sm font-bold focus:border-blue-300">
             </div>
         </div>
-
         <div class="absolute bottom-0 left-0 right-0 bg-white border-t border-pink-100 p-4 pb-[max(env(safe-area-inset-bottom),16px)] shadow-[0_-5px_15px_rgba(0,0,0,0.03)] z-20">
-            <button onclick="saveSchedule()" class="w-full py-4 pink-gradient text-white font-black text-lg rounded-2xl shadow-lg active:scale-95 transition-transform">
-                근무표 저장하기
-            </button>
+            <button onclick="saveSchedule()" class="w-full py-4 pink-gradient text-white font-black text-lg rounded-2xl shadow-lg active:scale-95 transition-transform">근무표 저장하기</button>
             <input type="hidden" id="sp-date-key" value="">
         </div>
     </div>
@@ -313,10 +317,12 @@
                     <span id="pp-status" class="px-3 py-1 rounded-full text-[10px] font-black shadow-sm mb-2">보호 중</span>
                     <h2 id="pp-name" class="text-3xl font-black text-gray-800 mb-1">이름</h2>
                     <p id="pp-info" class="text-xs text-gray-500 font-bold mb-4">견종 · 성별 · 나이</p>
-                    <div id="pp-tags" class="flex flex-wrap gap-1 justify-center mb-6"></div>
+                    <div id="pp-tags" class="flex flex-wrap gap-1 justify-center mb-4"></div>
                 </div>
+                
+                <div id="pp-abc-section"></div>
 
-                <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100 mt-4">
                     <p class="text-[10px] text-gray-400 font-black mb-1">구조 경위 및 메모</p>
                     <p id="pp-memo" class="text-sm font-bold text-gray-700 leading-relaxed min-h-[40px]">메모가 없습니다.</p>
                 </div>
@@ -597,7 +603,7 @@
             }
         }
 
-        /* ================= [수정] 당일 현황 대시보드 로직 ================= */
+        /* ================= 대시보드 로직 ================= */
         function renderDashboard() {
             const now = new Date();
             const todayStr = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`;
@@ -637,7 +643,6 @@
                                     alertCount++;
                                 }
                             }
-                            // 당일 특이사항 경고 추가
                             if(log.daily_memo) {
                                 alertsHtml += `<div class="bg-blue-50 border border-blue-100 p-3 rounded-xl mb-2 flex items-start gap-2 cursor-pointer active:scale-[0.98]" onclick="openProfilePanel(${a.id})"><span class="text-lg">📝</span><div><p class="text-xs font-black text-blue-600">${a.name} <span class="font-bold text-gray-500">특이사항 보고됨</span></p><p class="text-[10px] text-gray-600 truncate mt-1">${log.daily_memo}</p></div></div>`;
                                 alertCount++;
@@ -950,6 +955,11 @@
             document.getElementById('in-status').value = "보호 중 🏡";
             document.getElementById('in-memo').value = "";
             
+            // [신규] ABC 초기화
+            document.getElementById('in-abc-a').value = "";
+            document.getElementById('in-abc-b').value = "";
+            document.getElementById('in-abc-c').value = "";
+
             document.querySelectorAll('.per-btn').forEach(btn => {
                 btn.classList.remove('btn-active', 'bg-pink-100', 'text-pink-600', 'border-pink-300');
                 btn.classList.add('btn-inactive', 'bg-white', 'text-gray-500', 'border-gray-200');
@@ -988,7 +998,13 @@
                 age: document.getElementById('in-age').value || '미상',
                 status: document.getElementById('in-status').value || '보호 중 🏡',
                 personality: selectedPersonalities.join(', ') || '정보없음',
-                memo: document.getElementById('in-memo').value || ''
+                memo: document.getElementById('in-memo').value || '',
+                // [신규 추가] ABC 행동 데이터 저장
+                abc_training: {
+                    a: document.getElementById('in-abc-a').value.trim(),
+                    b: document.getElementById('in-abc-b').value.trim(),
+                    c: document.getElementById('in-abc-c').value.trim()
+                }
             };
 
             if(editingAnimalProfileId) {
@@ -1075,6 +1091,25 @@
             document.getElementById('profile-panel').classList.add('translate-x-full');
         }
 
+        // [신규 추가] 한국어 어미 변환기 (NLP 기능 대체용)
+        function formatABC(a, b) {
+            if(!a || !b) return "";
+            let fa = a.trim();
+            let fb = b.trim();
+
+            if(fa.endsWith('는다')) fa = fa.slice(0, -2) + '으면';
+            else if(fa.endsWith('ㄴ다')) fa = fa.slice(0, -2) + '면';
+            else if(fa.endsWith('다')) fa = fa.slice(0, -1) + '면';
+            else if(!fa.endsWith('면') && !fa.endsWith('때')) fa += ' 상황에서';
+
+            if(fb.endsWith('는다')) fb = fb.slice(0, -2) + '는 경향이 있습니다.';
+            else if(fb.endsWith('ㄴ다')) fb = fb.slice(0, -2) + '는 경향이 있습니다.';
+            else if(fb.endsWith('다')) fb = fb.slice(0, -1) + '는 경향이 있습니다.';
+            else if(!fb.endsWith('경향이 있습니다.')) fb += '는 경향이 있습니다.';
+
+            return `<span class="text-indigo-500">${fa}</span> <span class="text-indigo-800">${fb}</span>`;
+        }
+
         function populateProfilePanel(ani) {
             if(ani.photo) {
                 document.getElementById('pp-photo').style.backgroundImage = `url(${ani.photo})`;
@@ -1101,6 +1136,32 @@
                 document.getElementById('pp-tags').innerHTML = tagsHtml;
             } else {
                 document.getElementById('pp-tags').innerHTML = '<span class="text-xs text-gray-400">등록된 성격이 없습니다.</span>';
+            }
+
+            // [신규 추가] ABC 행동 분석 렌더링
+            const abcContainer = document.getElementById('pp-abc-section');
+            if (ani.abc_training && (ani.abc_training.a || ani.abc_training.b || ani.abc_training.c)) {
+                const aText = ani.abc_training.a || '어떤 상황';
+                const bText = ani.abc_training.b || '어떤 행동을 함';
+                const cText = ani.abc_training.c || '-';
+                
+                const sentence = formatABC(ani.abc_training.a, ani.abc_training.b);
+
+                abcContainer.innerHTML = `
+                    <div class="bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100 mt-4 shadow-sm">
+                        <p class="text-[10px] text-indigo-400 font-black mb-2 uppercase tracking-widest">🧠 훈련/행동 양상 (ABC 모델)</p>
+                        <p class="text-sm font-black leading-relaxed bg-white p-3 rounded-xl border border-indigo-50 shadow-sm mb-3">
+                            "${sentence}"
+                        </p>
+                        <div class="flex flex-col gap-1.5 text-[10px] text-indigo-600 font-bold">
+                            <div class="flex items-start gap-1"><span class="bg-indigo-100 px-1.5 rounded text-indigo-800">A</span> <span>${aText}</span></div>
+                            <div class="flex items-start gap-1"><span class="bg-indigo-100 px-1.5 rounded text-indigo-800">B</span> <span>${bText}</span></div>
+                            <div class="flex items-start gap-1"><span class="bg-indigo-100 px-1.5 rounded text-indigo-800">C</span> <span>${cText}</span></div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                abcContainer.innerHTML = '';
             }
             
             document.getElementById('pp-memo').innerText = ani.memo || '메모가 없습니다.';
@@ -1145,6 +1206,17 @@
             document.getElementById('in-age').value = ani.age;
             document.getElementById('in-status').value = ani.status;
             document.getElementById('in-memo').value = ani.memo;
+
+            // [신규] ABC 복원
+            if(ani.abc_training) {
+                document.getElementById('in-abc-a').value = ani.abc_training.a || '';
+                document.getElementById('in-abc-b').value = ani.abc_training.b || '';
+                document.getElementById('in-abc-c').value = ani.abc_training.c || '';
+            } else {
+                document.getElementById('in-abc-a').value = '';
+                document.getElementById('in-abc-b').value = '';
+                document.getElementById('in-abc-c').value = '';
+            }
 
             const pArr = ani.personality ? ani.personality.split(',').map(s=>s.trim()) : [];
             document.querySelectorAll('.per-btn').forEach(btn => {
@@ -1234,7 +1306,6 @@
                     if(log.meal) content += `<div class="flex items-start gap-2 mb-1"><span class="text-base">🥣</span> <p><strong class="text-gray-900">급여:</strong> ${log.meal.time} / ${log.meal.amount} / ${log.meal.status}</p></div>`;
                     if(log.potty) content += `<div class="flex items-start gap-2 mb-1"><span class="text-base">💩</span> <p><strong class="text-gray-900">배변:</strong> ${log.potty.type} / ${log.potty.memo}</p></div>`;
                     
-                    // [추가] 일일 특이사항 렌더링
                     if(log.daily_memo) content += `<div class="flex items-start gap-2 mb-1 mt-2 p-2 bg-pink-50 rounded-lg"><span class="text-base">📝</span> <p class="text-gray-900">${log.daily_memo.replace(/\n/g, '<br>')}</p></div>`;
 
                     return `
@@ -1309,7 +1380,6 @@
                 }
                 if(log.potty.memo && log.potty.memo !== '특이사항 없음') document.getElementById('potty-memo').value = log.potty.memo;
             }
-            // [추가] 일일 특이사항 복원
             if(log.daily_memo) {
                 document.getElementById('daily-memo').value = log.daily_memo;
             }
@@ -1373,8 +1443,6 @@
             document.getElementById('walk-duration').value = '';
             document.getElementById('meal-amount').value = '';
             document.getElementById('potty-memo').value = '';
-            
-            // [추가] 일일 특이사항 초기화
             document.getElementById('daily-memo').value = '';
         }
 
@@ -1424,10 +1492,8 @@
             if(document.getElementById('potty-type-urine').classList.contains('btn-active')) pottyTypes.push("소변");
             const pottyMemo = document.getElementById('potty-memo').value.trim();
 
-            // [추가] 일일 특이사항 수집
             const dailyMemo = document.getElementById('daily-memo').value.trim();
 
-            // 메모도 포함해서 빈 기록 검사
             if(!walkTime && !walkDuration && !mealTime && !mealAmount && pottyTypes.length === 0 && !pottyMemo && !dailyMemo) {
                 openModal('error', '빈 기록입니다', '최소 하나 이상의 항목을 작성해주세요.');
                 return;
@@ -1458,7 +1524,6 @@
                 logData.potty = { type: pottyTypes.join(', ') || '-', memo: pottyMemo || '특이사항 없음' };
             } else { logData.potty = null; }
 
-            // [추가] 데이터 객체에 일일 특이사항 바인딩
             if(dailyMemo) {
                 logData.daily_memo = dailyMemo;
             } else {
