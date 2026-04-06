@@ -18,7 +18,6 @@
         .modal-bg.active { display: flex; }
         #photo-preview { background-size: cover; background-position: center; transition: all 0.3s; }
         
-        /* 하단 메뉴 높이만큼 충분한 여백 확보 */
         .content-area { padding-bottom: 120px; position: relative; z-index: 10; }
         
         .save-btn { cursor: pointer; position: relative; z-index: 100; touch-action: manipulation; -webkit-appearance: none; }
@@ -45,7 +44,6 @@
         .cal-dot { position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; background-color: #f472b6; border-radius: 50%; }
         .cal-day.today .cal-dot { background-color: white; }
 
-        /* 대시보드 상태 뱃지 스타일 */
         .status-badge { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 20px; border-radius: 6px; font-size: 10px; font-weight: 900; margin-right: 4px; }
         .status-done { background-color: #dcfce7; color: #059669; }
         .status-none { background-color: #f3f4f6; color: #9ca3af; }
@@ -105,12 +103,10 @@
                 <button onclick="renderDashboard()" class="text-gray-400 active:scale-90 transition-transform">🔄 새로고침</button>
             </div>
             
-            <div id="dash-alerts-container" class="px-2 mb-6">
-                </div>
+            <div id="dash-alerts-container" class="px-2 mb-6"></div>
 
             <h3 class="font-black text-gray-400 px-2 mb-2 text-[10px] uppercase tracking-widest">아이별 당일 업무 진척도</h3>
-            <div id="dash-list-container" class="space-y-3 px-1 pb-10">
-                </div>
+            <div id="dash-list-container" class="space-y-3 px-1 pb-10"></div>
         </div>
 
         <div id="view-schedule" class="hidden space-y-4">
@@ -219,7 +215,7 @@
             <span class="text-2xl">📋</span><span class="text-[9px] font-black text-pink-500">개체 관리</span>
         </button>
         <button id="nav-dashboard" onclick="showView('dashboard')" class="flex flex-col items-center gap-1 w-1/5 opacity-40 hover:opacity-100 transition-opacity pt-2">
-            <span class="text-2xl">📊</span><span class="text-[9px] font-black text-pink-500">당일 현황</span>
+            <span class="text-2xl">✨</span><span class="text-[9px] font-black text-pink-500">투데이</span>
         </button>
         <button id="nav-schedule" onclick="showView('schedule')" class="flex flex-col items-center gap-1 w-1/5 opacity-40 hover:opacity-100 transition-opacity pt-2">
             <span class="text-2xl">📅</span><span class="text-[9px] font-black text-pink-500">근무표</span>
@@ -262,7 +258,6 @@
         </div>
     </div>
 
-
     <div id="schedule-panel" class="slide-panel fixed inset-0 bg-gray-50 z-[120] transform translate-x-full flex flex-col h-full overflow-hidden">
         <div class="px-5 py-4 bg-white border-b border-pink-100 flex justify-between items-center shadow-sm sticky top-0 z-10 pt-[max(env(safe-area-inset-top),16px)]">
             <button onclick="closeSchedulePanel()" class="text-gray-400 text-3xl font-black active:scale-90 transition-transform">&lsaquo;</button>
@@ -299,7 +294,6 @@
             <input type="hidden" id="sp-date-key" value="">
         </div>
     </div>
-
 
     <div id="profile-panel" class="slide-panel fixed inset-0 bg-gray-50 z-[120] transform translate-x-full flex flex-col h-full overflow-hidden">
         <div class="px-5 py-4 bg-white border-b border-pink-100 flex justify-between items-center shadow-sm sticky top-0 z-10 pt-[max(env(safe-area-inset-top),16px)]">
@@ -414,6 +408,11 @@
                     <button type="button" onclick="setPottyMemo('혈변/혈뇨')" class="whitespace-nowrap px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-bold bg-white text-red-500 active:scale-95">혈변/혈뇨</button>
                 </div>
                 <input type="text" id="potty-memo" placeholder="세부 상태 입력 (예: 소변만 봄, 특이사항 없음 등)" class="w-full p-4 border border-pink-100 rounded-2xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300">
+            </section>
+
+            <section class="border border-pink-100 p-4 rounded-2xl bg-white shadow-sm">
+                <h3 class="text-lg font-black text-gray-800 mb-3">📝 당일 특이사항</h3>
+                <textarea id="daily-memo" placeholder="오늘 하루 있었던 특이사항이나 전달할 내용을 자유롭게 적어주세요." class="w-full p-4 border border-pink-100 rounded-2xl outline-none bg-gray-50 text-sm font-bold h-24 focus:border-pink-300"></textarea>
             </section>
         </div>
 
@@ -559,7 +558,6 @@
             }
         });
 
-        // [수정됨] 5단 네비게이션 제어
         function showView(view) {
             document.getElementById('view-reg').classList.toggle('hidden', view !== 'reg');
             document.getElementById('view-list').classList.toggle('hidden', view !== 'list');
@@ -599,10 +597,9 @@
             }
         }
 
-        /* ================= [신규] 당일 현황 대시보드 로직 ================= */
+        /* ================= [수정] 당일 현황 대시보드 로직 ================= */
         function renderDashboard() {
             const now = new Date();
-            // 포맷 일치: 2026.04.06
             const todayStr = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`;
             
             document.getElementById('dash-date-title').innerText = `${now.getMonth()+1}월 ${now.getDate()}일 케어 현황`;
@@ -617,8 +614,8 @@
             animals.forEach(a => {
                 let walks = { '오전': false, '오후': false, '저녁': false };
                 let meals = { '아침': false, '저녁': false };
-                let potties = [];
-                let hasAlert = false;
+                let hasFeces = false;
+                let hasUrine = false;
 
                 if(a.daily_logs) {
                     Object.values(a.daily_logs).forEach(log => {
@@ -632,17 +629,23 @@
                             }
                             if(log.meal && log.meal.time !== '-') meals[log.meal.time] = true;
                             if(log.potty) {
-                                if(log.potty.type !== '-') potties.push(log.potty.type);
+                                if(log.potty.type.includes('대변')) hasFeces = true;
+                                if(log.potty.type.includes('소변')) hasUrine = true;
+                                
                                 if(log.potty.memo && log.potty.memo !== '특이사항 없음' && log.potty.memo !== '정상 (양호)') {
                                     alertsHtml += `<div class="bg-orange-50 border border-orange-100 p-3 rounded-xl mb-2 flex items-start gap-2 cursor-pointer active:scale-[0.98]" onclick="openProfilePanel(${a.id})"><span class="text-lg">💩</span><div><p class="text-xs font-black text-orange-600">${a.name} <span class="font-bold text-gray-500">${log.potty.memo}</span></p></div></div>`;
                                     alertCount++;
                                 }
                             }
+                            // 당일 특이사항 경고 추가
+                            if(log.daily_memo) {
+                                alertsHtml += `<div class="bg-blue-50 border border-blue-100 p-3 rounded-xl mb-2 flex items-start gap-2 cursor-pointer active:scale-[0.98]" onclick="openProfilePanel(${a.id})"><span class="text-lg">📝</span><div><p class="text-xs font-black text-blue-600">${a.name} <span class="font-bold text-gray-500">특이사항 보고됨</span></p><p class="text-[10px] text-gray-600 truncate mt-1">${log.daily_memo}</p></div></div>`;
+                                alertCount++;
+                            }
                         }
                     });
                 }
 
-                // 개체 카드 생성
                 const photoHtml = a.photo ? `<div class="w-12 h-12 rounded-full bg-cover bg-center shrink-0 border border-gray-100" style="background-image: url(${a.photo})"></div>` : `<div class="w-12 h-12 rounded-full bg-pink-50 flex items-center justify-center shrink-0 text-pink-200 text-xl border border-pink-100">🐾</div>`;
                 
                 const getBadge = (isDone, label) => `<span class="status-badge ${isDone ? 'status-done' : 'status-none'}">${label}</span>`;
@@ -652,9 +655,10 @@
                         ${photoHtml}
                         <div class="flex-1">
                             <h4 class="font-black text-gray-800 text-sm mb-1.5">${a.name} <span class="text-[9px] text-gray-400 font-bold ml-1">${a.status ? a.status.split(' ')[0] : '보호 중'}</span></h4>
-                            <div class="flex flex-wrap items-center gap-y-1">
+                            <div class="flex flex-wrap items-center gap-y-1.5">
                                 <div class="flex items-center mr-3"><span class="text-xs mr-1">🐕</span> ${getBadge(walks['오전'], '오전')} ${getBadge(walks['오후'], '오후')} ${getBadge(walks['저녁'], '저녁')}</div>
-                                <div class="flex items-center"><span class="text-xs mr-1">🥣</span> ${getBadge(meals['아침'], '아침')} ${getBadge(meals['저녁'], '저녁')}</div>
+                                <div class="flex items-center mr-3"><span class="text-xs mr-1">🥣</span> ${getBadge(meals['아침'], '아침')} ${getBadge(meals['저녁'], '저녁')}</div>
+                                <div class="flex items-center w-full mt-0.5"><span class="text-xs mr-1">💩</span> ${getBadge(hasFeces, '대변')} ${getBadge(hasUrine, '소변')}</div>
                             </div>
                         </div>
                     </div>
@@ -757,8 +761,8 @@
                 });
             }
         }
-        /* ========================================================= */
 
+        /* ================= 행사/일정 관리 로직 ================= */
         function openEventAddPanel() {
             document.getElementById('ev-date').value = '';
             document.getElementById('ev-time').value = '';
@@ -1229,6 +1233,9 @@
                     if(log.walk) content += `<div class="flex items-start gap-2 mb-1"><span class="text-base">🐕</span> <p><strong class="text-gray-900">산책:</strong> ${log.walk.time} / ${log.walk.duration} / ${log.walk.condition}</p></div>`;
                     if(log.meal) content += `<div class="flex items-start gap-2 mb-1"><span class="text-base">🥣</span> <p><strong class="text-gray-900">급여:</strong> ${log.meal.time} / ${log.meal.amount} / ${log.meal.status}</p></div>`;
                     if(log.potty) content += `<div class="flex items-start gap-2 mb-1"><span class="text-base">💩</span> <p><strong class="text-gray-900">배변:</strong> ${log.potty.type} / ${log.potty.memo}</p></div>`;
+                    
+                    // [추가] 일일 특이사항 렌더링
+                    if(log.daily_memo) content += `<div class="flex items-start gap-2 mb-1 mt-2 p-2 bg-pink-50 rounded-lg"><span class="text-base">📝</span> <p class="text-gray-900">${log.daily_memo.replace(/\n/g, '<br>')}</p></div>`;
 
                     return `
                     <div class="bg-white p-4 rounded-2xl shadow-sm border border-pink-50 mb-3 relative group">
@@ -1302,6 +1309,10 @@
                 }
                 if(log.potty.memo && log.potty.memo !== '특이사항 없음') document.getElementById('potty-memo').value = log.potty.memo;
             }
+            // [추가] 일일 특이사항 복원
+            if(log.daily_memo) {
+                document.getElementById('daily-memo').value = log.daily_memo;
+            }
 
             closeHistoryPanel();
             document.getElementById('record-panel').classList.remove('translate-x-full');
@@ -1362,6 +1373,9 @@
             document.getElementById('walk-duration').value = '';
             document.getElementById('meal-amount').value = '';
             document.getElementById('potty-memo').value = '';
+            
+            // [추가] 일일 특이사항 초기화
+            document.getElementById('daily-memo').value = '';
         }
 
         function resetRecordForm() {
@@ -1410,8 +1424,12 @@
             if(document.getElementById('potty-type-urine').classList.contains('btn-active')) pottyTypes.push("소변");
             const pottyMemo = document.getElementById('potty-memo').value.trim();
 
-            if(!walkTime && !walkDuration && !mealTime && !mealAmount && pottyTypes.length === 0 && !pottyMemo) {
-                openModal('error', '빈 기록입니다', '최소 하나 이상의 항목(산책, 급여, 배변)을 작성해주세요.');
+            // [추가] 일일 특이사항 수집
+            const dailyMemo = document.getElementById('daily-memo').value.trim();
+
+            // 메모도 포함해서 빈 기록 검사
+            if(!walkTime && !walkDuration && !mealTime && !mealAmount && pottyTypes.length === 0 && !pottyMemo && !dailyMemo) {
+                openModal('error', '빈 기록입니다', '최소 하나 이상의 항목을 작성해주세요.');
                 return;
             }
 
@@ -1439,6 +1457,13 @@
             if(pottyTypes.length > 0 || pottyMemo) {
                 logData.potty = { type: pottyTypes.join(', ') || '-', memo: pottyMemo || '특이사항 없음' };
             } else { logData.potty = null; }
+
+            // [추가] 데이터 객체에 일일 특이사항 바인딩
+            if(dailyMemo) {
+                logData.daily_memo = dailyMemo;
+            } else {
+                logData.daily_memo = null;
+            }
 
             const targetLogId = editingLogId ? editingLogId : Date.now();
 
