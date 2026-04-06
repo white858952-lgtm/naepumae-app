@@ -16,7 +16,7 @@
         .card { background: white; border-radius: 28px; padding: 20px; border: 1px solid #ffe4e9; box-shadow: 0 10px 20px rgba(255, 105, 180, 0.03); }
         .modal-bg { background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(6px); z-index: 10000; position: fixed; inset: 0; display: none; align-items: center; justify-content: center; }
         .modal-bg.active { display: flex; }
-        #photo-preview { background-size: cover; background-position: center; transition: all 0.3s; }
+        #photo-preview, #edit-photo-preview { background-size: cover; background-position: center; transition: all 0.3s; }
         
         .content-area { padding-bottom: 120px; position: relative; z-index: 10; }
         
@@ -129,10 +129,6 @@
                 </div>
                 <div id="cal-days" class="cal-grid"></div>
             </div>
-            <div class="px-2">
-                <p class="text-xs text-gray-400 font-bold mb-1">💡 날짜를 누르면 상세 근무표를 열람/수정할 수 있습니다.</p>
-                <p class="text-xs text-gray-400 font-bold">💡 핑크색 점(•)은 근무표가 작성된 날을 의미합니다.</p>
-            </div>
         </div>
 
         <div id="view-events" class="hidden space-y-4">
@@ -146,28 +142,24 @@
         <div id="view-reg" class="hidden space-y-6 pb-10">
             <div class="card space-y-4">
                 <div class="flex justify-between items-center">
-                    <h2 id="reg-title" class="text-lg font-bold text-gray-700">📸 보호 동물 등록/수정</h2>
-                    <button id="btn-cancel-edit" onclick="cancelEdit()" class="hidden text-xs bg-gray-100 text-gray-500 px-3 py-1 rounded-full font-bold">수정 취소</button>
+                    <h2 class="text-lg font-bold text-gray-700">📸 신규 보호 동물 등록</h2>
                 </div>
                 
                 <div id="photo-preview" onclick="document.getElementById('in-photo').click()" class="w-full h-52 rounded-3xl bg-pink-50 flex items-center justify-center border-2 border-dashed border-pink-200 relative overflow-hidden cursor-pointer">
-                    <div id="photo-placeholder" class="text-center text-pink-300">
-                        <span class="text-5xl">📸</span>
-                        <p class="text-xs font-bold mt-2">사진 선택</p>
-                    </div>
-                    <input type="file" id="in-photo" accept="image/*" class="hidden" onchange="handleFileSelect(event)">
-                    <button id="del-photo-btn" onclick="removePhoto(event)" class="hidden absolute top-3 right-3 bg-white text-pink-500 px-3 py-1 rounded-full text-[10px] font-black shadow-md z-20">사진 삭제</button>
+                    <div id="photo-placeholder" class="text-center text-pink-300"><span class="text-5xl">📸</span><p class="text-xs font-bold mt-2">사진 선택</p></div>
+                    <input type="file" id="in-photo" accept="image/*" class="hidden" onchange="handleFileSelect(event, 'in')">
+                    <button id="del-photo-btn" onclick="removePhoto(event, 'in')" class="hidden absolute top-3 right-3 bg-white text-pink-500 px-3 py-1 rounded-full text-[10px] font-black shadow-md z-20">사진 삭제</button>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3 pt-2">
                     <input type="text" id="in-name" placeholder="이름 (필수)" class="col-span-2 p-4 border border-pink-100 rounded-2xl outline-none bg-pink-50/20 font-bold focus:bg-white focus:border-pink-300 transition-colors">
                     
-                    <select id="in-type" onchange="updateBreeds()" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-500 text-sm font-bold">
+                    <select id="in-type" onchange="updateBreeds('in')" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-500 text-sm font-bold">
                         <option value="" disabled selected>동물 종류</option>
                         <option value="개">개 🐶</option>
                         <option value="고양이">고양이 🐱</option>
                     </select>
-                    <select id="in-breed" onchange="checkCustomBreed()" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-500 text-sm font-bold">
+                    <select id="in-breed" onchange="checkCustomBreed('in')" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-500 text-sm font-bold">
                         <option value="" disabled selected>품종 선택</option>
                     </select>
                     <input type="text" id="in-breed-custom" placeholder="품종 직접 입력" class="hidden col-span-2 p-4 border border-pink-100 rounded-2xl outline-none bg-pink-50 text-sm font-bold focus:border-pink-300">
@@ -197,22 +189,23 @@
                     <input type="text" id="in-age" placeholder="추정 나이" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-pink-50/20 text-sm font-bold">
                     
                     <select id="in-status" class="col-span-2 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-600 text-sm font-bold shadow-sm">
-                        <option value="보호 중 🏡" selected>보호 중 (입양 대기 전)</option>
+                        <option value="" disabled selected>보호 상태</option>
+                        <option value="보호 중 🏡">보호 중 (입양 대기 전)</option>
                         <option value="임시보호 🏨">임시보호 (호텔링/위탁)</option>
                         <option value="입양 대기 💝">입양 대기 (확정 완료)</option>
                     </select>
 
                     <div class="col-span-2 mt-2">
                         <p class="text-xs font-bold text-gray-400 mb-2 px-1">기본 성격 (여러 개 선택 가능)</p>
-                        <div class="flex flex-wrap gap-2" id="personality-container">
-                            <button type="button" onclick="toggleMulti(this)" class="per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">활발함</button>
-                            <button type="button" onclick="toggleMulti(this)" class="per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">소심함</button>
-                            <button type="button" onclick="toggleMulti(this)" class="per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">사람 좋아함</button>
-                            <button type="button" onclick="toggleMulti(this)" class="per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">경계심/겁</button>
-                            <button type="button" onclick="toggleMulti(this)" class="per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">공격성 주의</button>
-                            <button type="button" onclick="toggleMulti(this)" class="per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">분리불안</button>
-                            <button type="button" onclick="toggleMulti(this)" class="per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">입질 있음</button>
-                            <button type="button" onclick="toggleMulti(this)" class="per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">조용함</button>
+                        <div class="flex flex-wrap gap-2" id="in-personality-container">
+                            <button type="button" onclick="toggleMulti(this)" class="in-per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">활발함</button>
+                            <button type="button" onclick="toggleMulti(this)" class="in-per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">소심함</button>
+                            <button type="button" onclick="toggleMulti(this)" class="in-per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">사람 좋아함</button>
+                            <button type="button" onclick="toggleMulti(this)" class="in-per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">경계심/겁</button>
+                            <button type="button" onclick="toggleMulti(this)" class="in-per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">공격성 주의</button>
+                            <button type="button" onclick="toggleMulti(this)" class="in-per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">분리불안</button>
+                            <button type="button" onclick="toggleMulti(this)" class="in-per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">입질 있음</button>
+                            <button type="button" onclick="toggleMulti(this)" class="in-per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">조용함</button>
                         </div>
                     </div>
 
@@ -233,8 +226,8 @@
 
                     <textarea id="in-memo" placeholder="구조 경위 및 기본 메모" class="col-span-2 p-4 border border-pink-100 rounded-2xl outline-none h-20 bg-pink-50/20 text-sm font-bold mt-2"></textarea>
                     
-                    <button id="btn-save-animal" type="button" onclick="saveAnimal(); return false;" class="save-btn col-span-2 py-5 pink-gradient text-white font-black rounded-2xl shadow-lg mt-2 transition-transform text-lg">
-                        정보 저장하기
+                    <button type="button" onclick="saveNewAnimal(); return false;" class="save-btn col-span-2 py-5 pink-gradient text-white font-black rounded-2xl shadow-lg mt-2 transition-transform text-lg">
+                        새로운 동물 등록하기
                     </button>
                 </div>
             </div>
@@ -259,55 +252,6 @@
         </button>
     </nav>
 
-    <div id="schedule-panel" class="slide-panel fixed inset-0 bg-gray-50 z-[120] transform translate-x-full flex flex-col h-full overflow-hidden">
-        <div class="px-5 py-4 bg-white border-b border-pink-100 flex justify-between items-center shadow-sm sticky top-0 z-10 pt-[max(env(safe-area-inset-top),16px)]">
-            <button onclick="closeSchedulePanel()" class="text-gray-400 text-3xl font-black active:scale-90 transition-transform">&lsaquo;</button>
-            <span id="sp-date-title" class="font-black text-gray-700">근무표</span>
-            <div class="w-6"></div>
-        </div>
-        <div class="flex-1 overflow-y-auto p-5 pb-32 space-y-4">
-            <div class="bg-white rounded-2xl p-5 shadow-sm border border-pink-100">
-                <h3 class="text-sm font-black text-gray-800 mb-2">☀️ 오전 근무자</h3><input type="text" id="sch-am" class="w-full p-3 border border-pink-50 rounded-xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300">
-            </div>
-            <div class="bg-white rounded-2xl p-5 shadow-sm border border-pink-100">
-                <h3 class="text-sm font-black text-gray-800 mb-2">🌙 오후 근무자</h3><input type="text" id="sch-pm" class="w-full p-3 border border-pink-50 rounded-xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300">
-            </div>
-            <div class="bg-white rounded-2xl p-5 shadow-sm border border-pink-100">
-                <h3 class="text-sm font-black text-red-400 mb-2">🌴 연차 (휴무)</h3><input type="text" id="sch-off" class="w-full p-3 border border-red-50 rounded-xl outline-none bg-gray-50 text-sm font-bold focus:border-red-300">
-            </div>
-            <div class="bg-white rounded-2xl p-5 shadow-sm border border-pink-100">
-                <h3 class="text-sm font-black text-blue-400 mb-2">🌗 반차</h3><input type="text" id="sch-half" class="w-full p-3 border border-blue-50 rounded-xl outline-none bg-gray-50 text-sm font-bold focus:border-blue-300">
-            </div>
-        </div>
-        <div class="absolute bottom-0 left-0 right-0 bg-white border-t border-pink-100 p-4 pb-[max(env(safe-area-inset-bottom),16px)] z-20">
-            <button onclick="saveSchedule()" class="w-full py-4 pink-gradient text-white font-black text-lg rounded-2xl shadow-lg active:scale-95 transition-transform">근무표 저장</button>
-            <input type="hidden" id="sp-date-key" value="">
-        </div>
-    </div>
-
-    <div id="event-add-panel" class="slide-panel fixed inset-0 bg-gray-50 z-[120] transform translate-x-full flex flex-col h-full overflow-hidden">
-        <div class="px-5 py-4 bg-white border-b border-pink-100 flex justify-between items-center shadow-sm sticky top-0 z-10 pt-[max(env(safe-area-inset-top),16px)]">
-            <button onclick="closeEventAddPanel()" class="text-gray-400 text-3xl font-black active:scale-90 transition-transform">&lsaquo;</button>
-            <span class="font-black text-gray-700">새 일정 등록</span>
-            <div class="w-6"></div>
-        </div>
-        <div class="flex-1 overflow-y-auto p-5 pb-32 space-y-4">
-            <div class="bg-white rounded-2xl p-5 shadow-sm border border-pink-100">
-                <p class="text-xs font-bold text-gray-400 mb-1">일자 (필수)</p>
-                <input type="date" id="ev-date" class="w-full p-3 border border-pink-50 rounded-xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300 mb-4">
-                <p class="text-xs font-bold text-gray-400 mb-1">시간 (선택)</p>
-                <input type="text" id="ev-time" placeholder="예: 14:00 ~ 17:00" class="w-full p-3 border border-pink-50 rounded-xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300 mb-4">
-                <p class="text-xs font-bold text-gray-400 mb-1">행사명 (필수)</p>
-                <input type="text" id="ev-title" placeholder="행사/업무명" class="w-full p-3 border border-pink-50 rounded-xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300 mb-4">
-                <p class="text-xs font-bold text-gray-400 mb-1">상세 내용 메모</p>
-                <textarea id="ev-desc" class="w-full p-3 border border-pink-50 rounded-xl outline-none bg-gray-50 text-sm font-bold h-28 focus:border-pink-300"></textarea>
-            </div>
-        </div>
-        <div class="absolute bottom-0 left-0 right-0 bg-white border-t border-pink-100 p-4 pb-[max(env(safe-area-inset-bottom),16px)] z-20">
-            <button onclick="saveEvent()" class="w-full py-4 pink-gradient text-white font-black text-lg rounded-2xl shadow-lg active:scale-95 transition-transform">일정 저장하기</button>
-        </div>
-    </div>
-
     <div id="profile-panel" class="slide-panel fixed inset-0 bg-gray-50 z-[120] transform translate-x-full flex flex-col h-full overflow-hidden">
         <div class="px-5 py-4 bg-white border-b border-pink-100 flex justify-between items-center shadow-sm sticky top-0 z-10 pt-[max(env(safe-area-inset-top),16px)]">
             <button onclick="closeProfilePanel()" class="text-gray-400 text-3xl font-black active:scale-90 transition-transform">&lsaquo;</button>
@@ -318,7 +262,7 @@
         <div class="flex-1 overflow-y-auto p-5 pb-32 space-y-6">
             <div class="bg-white rounded-3xl p-6 shadow-sm border border-pink-100 relative">
                 <div class="absolute top-4 right-4 flex gap-2">
-                    <button onclick="editAnimalProfile()" class="text-[11px] px-3 py-1.5 bg-pink-50 text-pink-600 rounded-lg font-bold shadow-sm active:scale-95">정보 수정</button>
+                    <button onclick="openEditPanel()" class="text-[11px] px-3 py-1.5 bg-pink-50 text-pink-600 rounded-lg font-bold shadow-sm active:scale-95">정보 수정</button>
                 </div>
 
                 <div class="flex flex-col items-center mt-2">
@@ -357,6 +301,106 @@
             <button onclick="askDeleteAnimal()" class="w-full py-3 mt-4 text-xs text-red-400 font-bold underline active:scale-95">이 동물의 프로필 영구 삭제하기</button>
         </div>
         <input type="hidden" id="pp-animal-id" value="">
+    </div>
+
+    <div id="edit-panel" class="slide-panel fixed inset-0 bg-gray-50 z-[130] transform translate-x-full flex flex-col h-full overflow-hidden">
+        <div class="px-5 py-4 bg-white border-b border-pink-100 flex justify-between items-center shadow-sm sticky top-0 z-10 pt-[max(env(safe-area-inset-top),16px)]">
+            <button onclick="closeEditPanel()" class="text-gray-400 text-3xl font-black active:scale-90 transition-transform">&lsaquo;</button>
+            <span class="font-black text-gray-700">📝 정보 수정</span>
+            <div class="w-6"></div>
+        </div>
+        
+        <div class="flex-1 overflow-y-auto p-5 pb-32 space-y-6">
+            <div class="card space-y-4">
+                <div id="edit-photo-preview" onclick="document.getElementById('edit-photo').click()" class="w-full h-52 rounded-3xl bg-pink-50 flex items-center justify-center border-2 border-dashed border-pink-200 relative overflow-hidden cursor-pointer">
+                    <div id="edit-photo-placeholder" class="text-center text-pink-300">
+                        <span class="text-5xl">📸</span><p class="text-xs font-bold mt-2">사진 선택</p>
+                    </div>
+                    <input type="file" id="edit-photo" accept="image/*" class="hidden" onchange="handleFileSelect(event, 'edit')">
+                    <button id="edit-del-photo-btn" onclick="removePhoto(event, 'edit')" class="hidden absolute top-3 right-3 bg-white text-pink-500 px-3 py-1 rounded-full text-[10px] font-black shadow-md z-20">사진 삭제</button>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 pt-2">
+                    <input type="text" id="edit-name" placeholder="이름 (필수)" class="col-span-2 p-4 border border-pink-100 rounded-2xl outline-none bg-pink-50/20 font-bold focus:bg-white focus:border-pink-300 transition-colors">
+                    
+                    <select id="edit-type" onchange="updateBreeds('edit')" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-500 text-sm font-bold">
+                        <option value="" disabled selected>동물 종류</option>
+                        <option value="개">개 🐶</option>
+                        <option value="고양이">고양이 🐱</option>
+                    </select>
+                    <select id="edit-breed" onchange="checkCustomBreed('edit')" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-500 text-sm font-bold">
+                        <option value="" disabled selected>품종 선택</option>
+                    </select>
+                    <input type="text" id="edit-breed-custom" placeholder="품종 직접 입력" class="hidden col-span-2 p-4 border border-pink-100 rounded-2xl outline-none bg-pink-50 text-sm font-bold focus:border-pink-300">
+
+                    <select id="edit-size" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-500 text-sm font-bold">
+                        <option value="" disabled selected>체급 (크기)</option>
+                        <option value="소형견">소형견</option>
+                        <option value="중형견">중형견</option>
+                        <option value="대형견">대형견</option>
+                        <option value="해당없음">해당없음(고양이 등)</option>
+                    </select>
+                    <select id="edit-group" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-500 text-sm font-bold">
+                        <option value="" disabled selected>야외 활동 그룹</option>
+                        <option value="A그룹">A그룹 (합사)</option>
+                        <option value="B그룹">B그룹 (합사)</option>
+                        <option value="C그룹">C그룹 (합사)</option>
+                        <option value="단독 활동">단독 활동 (격리)</option>
+                    </select>
+
+                    <select id="edit-gender" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-500 text-sm font-bold">
+                        <option value="" disabled selected>성별 (중성화)</option>
+                        <option value="남아">남아</option>
+                        <option value="여아">여아</option>
+                        <option value="중성화된 남아">중성화된 남아</option>
+                        <option value="중성화된 여아">중성화된 여아</option>
+                    </select>
+                    <input type="text" id="edit-age" placeholder="추정 나이" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-pink-50/20 text-sm font-bold">
+                    
+                    <select id="edit-status" class="col-span-2 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-600 text-sm font-bold shadow-sm">
+                        <option value="" disabled selected>보호 상태</option>
+                        <option value="보호 중 🏡">보호 중 (입양 대기 전)</option>
+                        <option value="임시보호 🏨">임시보호 (호텔링/위탁)</option>
+                        <option value="입양 대기 💝">입양 대기 (확정 완료)</option>
+                    </select>
+
+                    <div class="col-span-2 mt-2">
+                        <p class="text-xs font-bold text-gray-400 mb-2 px-1">기본 성격 (여러 개 선택 가능)</p>
+                        <div class="flex flex-wrap gap-2">
+                            <button type="button" onclick="toggleMulti(this)" class="edit-per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">활발함</button>
+                            <button type="button" onclick="toggleMulti(this)" class="edit-per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">소심함</button>
+                            <button type="button" onclick="toggleMulti(this)" class="edit-per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">사람 좋아함</button>
+                            <button type="button" onclick="toggleMulti(this)" class="edit-per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">경계심/겁</button>
+                            <button type="button" onclick="toggleMulti(this)" class="edit-per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">공격성 주의</button>
+                            <button type="button" onclick="toggleMulti(this)" class="edit-per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">분리불안</button>
+                            <button type="button" onclick="toggleMulti(this)" class="edit-per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">입질 있음</button>
+                            <button type="button" onclick="toggleMulti(this)" class="edit-per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">조용함</button>
+                        </div>
+                    </div>
+
+                    <div class="col-span-2 mt-2 bg-green-50/50 p-4 rounded-2xl border border-green-100">
+                        <p class="text-xs font-black text-green-600 mb-2">🏥 건강 및 복약 정보</p>
+                        <input type="text" id="edit-health-memo" placeholder="건강 특이사항 (예: 슬개골 탈구 2기)" class="w-full p-3 border border-green-100 rounded-xl outline-none bg-white text-sm font-bold focus:border-green-300 mb-2">
+                        <p class="text-[10px] font-bold text-green-700 mb-1">✅ 체크한 약만 대시보드(투데이) 뱃지로 나타납니다.</p>
+                        <div class="flex gap-3 mb-2">
+                            <label class="flex items-center gap-1.5 text-xs font-bold text-gray-700 bg-white px-3 py-2 rounded-lg border border-green-100 w-1/2 justify-center">
+                                <input type="checkbox" id="edit-med-am" class="w-4 h-4 accent-green-500"> 아침 약 필요
+                            </label>
+                            <label class="flex items-center gap-1.5 text-xs font-bold text-gray-700 bg-white px-3 py-2 rounded-lg border border-green-100 w-1/2 justify-center">
+                                <input type="checkbox" id="edit-med-pm" class="w-4 h-4 accent-green-500"> 저녁 약 필요
+                            </label>
+                        </div>
+                        <input type="text" id="edit-med-info" placeholder="복약 상세 내용 (예: 사료에 섞어서)" class="w-full p-3 border border-green-100 rounded-xl outline-none bg-white text-sm font-bold focus:border-green-300">
+                    </div>
+
+                    <textarea id="edit-memo" placeholder="구조 경위 및 기본 메모" class="col-span-2 p-4 border border-pink-100 rounded-2xl outline-none h-20 bg-pink-50/20 text-sm font-bold mt-2"></textarea>
+                    
+                    <button type="button" onclick="saveEditedAnimal(); return false;" class="save-btn col-span-2 py-5 pink-gradient text-white font-black rounded-2xl shadow-lg mt-2 transition-transform text-lg">
+                        수정 내용 저장하기
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div id="behavior-panel" class="slide-panel fixed inset-0 bg-gray-50 z-[160] transform translate-x-full flex flex-col h-full overflow-hidden">
@@ -598,26 +642,46 @@
             }
         });
 
+        // 압축률과 리사이징 크기를 조절하여 대량 등록 시 메모리 과부하를 방지
         let currentPhotoBase64 = null;
-        function handleFileSelect(event) {
+        let currentEditPhotoBase64 = null;
+
+        function handleFileSelect(event, mode='in') {
             const file = event.target.files[0]; if (!file) return;
             const reader = new FileReader();
             reader.onload = (e) => {
                 const img = new Image();
                 img.onload = () => {
-                    const canvas = document.createElement('canvas'); let width = img.width, height = img.height; const max = 300; 
+                    const canvas = document.createElement('canvas'); let width = img.width, height = img.height; 
+                    const max = 300; // 최대 300px로 강력 리사이징 (DB 최적화)
                     if (width > height) { if (width > max) { height *= max / width; width = max; } } else { if (height > max) { width *= max / height; height = max; } }
                     canvas.width = width; canvas.height = height; canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-                    currentPhotoBase64 = canvas.toDataURL('image/jpeg', 0.6);
-                    document.getElementById('photo-preview').style.backgroundImage = `url(${currentPhotoBase64})`;
-                    document.getElementById('photo-placeholder').classList.add('hidden'); document.getElementById('del-photo-btn').classList.remove('hidden');
+                    
+                    const base64Str = canvas.toDataURL('image/jpeg', 0.6);
+                    
+                    if (mode === 'in') {
+                        currentPhotoBase64 = base64Str;
+                        document.getElementById('photo-preview').style.backgroundImage = `url(${currentPhotoBase64})`;
+                        document.getElementById('photo-placeholder').classList.add('hidden'); document.getElementById('del-photo-btn').classList.remove('hidden');
+                    } else {
+                        currentEditPhotoBase64 = base64Str;
+                        document.getElementById('edit-photo-preview').style.backgroundImage = `url(${currentEditPhotoBase64})`;
+                        document.getElementById('edit-photo-placeholder').classList.add('hidden'); document.getElementById('edit-del-photo-btn').classList.remove('hidden');
+                    }
                 }; img.src = e.target.result;
             }; reader.readAsDataURL(file);
         }
-        function removePhoto(event) {
-            if(event) event.stopPropagation(); currentPhotoBase64 = null;
-            document.getElementById('photo-preview').style.backgroundImage = 'none';
-            document.getElementById('photo-placeholder').classList.remove('hidden'); document.getElementById('del-photo-btn').classList.add('hidden'); document.getElementById('in-photo').value = '';
+        function removePhoto(event, mode='in') {
+            if(event) event.stopPropagation(); 
+            if(mode === 'in') {
+                currentPhotoBase64 = null;
+                document.getElementById('photo-preview').style.backgroundImage = 'none';
+                document.getElementById('photo-placeholder').classList.remove('hidden'); document.getElementById('del-photo-btn').classList.add('hidden'); document.getElementById('in-photo').value = '';
+            } else {
+                currentEditPhotoBase64 = null;
+                document.getElementById('edit-photo-preview').style.backgroundImage = 'none';
+                document.getElementById('edit-photo-placeholder').classList.remove('hidden'); document.getElementById('edit-del-photo-btn').classList.add('hidden'); document.getElementById('edit-photo').value = '';
+            }
         }
 
         database.ref('schedules').on('value', (snapshot) => { schedules = snapshot.val() || {}; if (!document.getElementById('view-schedule').classList.contains('hidden')) renderCalendar(); });
@@ -637,7 +701,7 @@
             
             if(view === 'list') renderTasks();
             else if(view === 'dashboard') renderDashboard();
-            else if(view === 'reg' && !editingAnimalProfileId) resetRegForm();
+            else if(view === 'reg') resetRegForm(); // 아이 등록 탭은 누를 때마다 무조건 빈 폼 표시
         }
 
         function renderFilters() {
@@ -653,33 +717,39 @@
         function setFilter(filterType) { currentFilter = filterType; renderFilters(); renderTasks(); }
         function handleSearch() { currentSearchQuery = document.getElementById('search-input').value.toLowerCase().trim(); renderTasks(); }
 
-        function updateBreeds() {
-            const typeSelect = document.getElementById('in-type'); const breedSelect = document.getElementById('in-breed'); const breedCustom = document.getElementById('in-breed-custom');
+        // [수정] select box 세팅용 안전 헬퍼 함수
+        function setSelectValue(id, validOptions, value) {
+            const el = document.getElementById(id);
+            el.value = validOptions.includes(value) ? value : "";
+        }
+
+        function updateBreeds(mode='in') {
+            const typeSelect = document.getElementById(`${mode}-type`); const breedSelect = document.getElementById(`${mode}-breed`); const breedCustom = document.getElementById(`${mode}-breed-custom`);
             breedSelect.innerHTML = '<option value="" disabled selected>품종 선택</option>'; breedCustom.classList.add('hidden'); breedCustom.value = '';
             let list = typeSelect.value === '개' ? dogBreeds : (typeSelect.value === '고양이' ? catBreeds : []);
             list.forEach(breed => { const opt = document.createElement('option'); opt.value = breed; opt.innerText = breed; breedSelect.appendChild(opt); });
         }
-        function checkCustomBreed() {
-            const breedSelect = document.getElementById('in-breed'); const breedCustom = document.getElementById('in-breed-custom');
+        function checkCustomBreed(mode='in') {
+            const breedSelect = document.getElementById(`${mode}-breed`); const breedCustom = document.getElementById(`${mode}-breed-custom`);
             if(breedSelect.value === '직접 입력') breedCustom.classList.remove('hidden'); else { breedCustom.classList.add('hidden'); breedCustom.value = ''; }
         }
 
         function resetRegForm() {
-            editingAnimalProfileId = null;
-            document.getElementById('reg-title').innerText = "📸 신규 보호 동물 등록"; document.getElementById('btn-save-animal').innerText = "보호 동물 등록하기"; document.getElementById('btn-cancel-edit').classList.add('hidden');
-            
-            ['in-name', 'in-type', 'in-gender', 'in-age', 'in-health-memo', 'in-med-info', 'in-memo', 'in-size', 'in-group'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ""; });
-            updateBreeds(); document.getElementById('in-status').value = "보호 중 🏡";
+            ['in-name', 'in-type', 'in-gender', 'in-age', 'in-health-memo', 'in-med-info', 'in-memo', 'in-size', 'in-group'].forEach(id => {
+                const el = document.getElementById(id); if(el) el.value = "";
+            });
+            updateBreeds('in'); document.getElementById('in-status').value = "";
             document.getElementById('in-med-am').checked = false; document.getElementById('in-med-pm').checked = false;
             
-            document.querySelectorAll('.per-btn').forEach(btn => { btn.classList.remove('btn-active', 'bg-pink-100', 'text-pink-600', 'border-pink-300'); btn.classList.add('btn-inactive', 'bg-white', 'text-gray-500', 'border-gray-200'); });
-            removePhoto(); 
+            document.querySelectorAll('.in-per-btn').forEach(btn => {
+                btn.classList.remove('btn-active', 'bg-pink-100', 'text-pink-600', 'border-pink-300'); btn.classList.add('btn-inactive', 'bg-white', 'text-gray-500', 'border-gray-200');
+            });
+            removePhoto(null, 'in'); 
         }
 
-        function cancelEdit() { resetRegForm(); showView('list'); document.getElementById('profile-panel').classList.remove('translate-x-full'); }
-
-        function saveAnimal() {
-            document.querySelectorAll('input, textarea, select').forEach(el => el.blur());
+        // 새 아이 등록 함수
+        function saveNewAnimal() {
+            document.querySelectorAll('#view-reg input, #view-reg textarea, #view-reg select').forEach(el => el.blur());
             const name = document.getElementById('in-name').value.trim();
             if(!name) { openModal('error', '이름을 적어주세요!', '아이의 이름을 입력해야 완료됩니다.'); return; }
             
@@ -687,8 +757,8 @@
             if(breedVal === '직접 입력') breedVal = document.getElementById('in-breed-custom').value.trim();
             if(!breedVal) breedVal = '미상';
 
-            const selectedPersonalities = Array.from(document.querySelectorAll('.per-btn.btn-active')).map(b => b.innerText);
-            const targetId = editingAnimalProfileId ? editingAnimalProfileId : Date.now();
+            const selectedPersonalities = Array.from(document.querySelectorAll('.in-per-btn.btn-active')).map(b => b.innerText);
+            const targetId = Date.now();
             
             let saveObj = {
                 id: targetId, photo: currentPhotoBase64, name: name, type: document.getElementById('in-type').value || '미상', breed: breedVal,
@@ -700,19 +770,96 @@
                 med_am: document.getElementById('in-med-am').checked, med_pm: document.getElementById('in-med-pm').checked
             };
 
-            if(editingAnimalProfileId) {
-                const existingAni = animals.find(a => a.id === editingAnimalProfileId);
-                if(existingAni && existingAni.daily_logs) saveObj.daily_logs = existingAni.daily_logs;
-                if(existingAni && existingAni.behavior_logs) saveObj.behavior_logs = existingAni.behavior_logs;
-                if(!currentPhotoBase64 && existingAni && existingAni.photo) saveObj.photo = existingAni.photo;
+            database.ref('animals/' + targetId).set(saveObj).then(() => {
+                resetRegForm(); openModal('success', '등록 성공! ✨', `${name}의 정보가 저장되었습니다.`); showView('list');
+            });
+        }
+
+        // [수정 전용 패널 로직]
+        function openEditPanel() {
+            const id = document.getElementById('pp-animal-id').value;
+            const ani = animals.find(a => a.id == id);
+            if(!ani) return;
+            editingAnimalProfileId = ani.id;
+
+            document.getElementById('edit-name').value = ani.name; 
+            
+            setSelectValue('edit-type', ['개', '고양이'], ani.type);
+            updateBreeds('edit');
+
+            const breedSelect = document.getElementById('edit-breed');
+            let isCustom = true;
+            for(let i=0; i<breedSelect.options.length; i++) { if(breedSelect.options[i].value === ani.breed) { isCustom = false; break; } }
+            if(isCustom && ani.breed && ani.breed !== '미상') { breedSelect.value = '직접 입력'; checkCustomBreed('edit'); document.getElementById('edit-breed-custom').value = ani.breed; } 
+            else { breedSelect.value = ani.breed === '미상' ? "" : ani.breed; checkCustomBreed('edit'); }
+
+            setSelectValue('edit-size', ['소형견', '중형견', '대형견', '해당없음'], ani.size);
+            setSelectValue('edit-group', ['A그룹', 'B그룹', 'C그룹', '단독 활동'], ani.play_group);
+            setSelectValue('edit-gender', ['남아', '여아', '중성화된 남아', '중성화된 여아'], ani.gender);
+            document.getElementById('edit-age').value = ani.age;
+            setSelectValue('edit-status', ['보호 중 🏡', '임시보호 🏨', '입양 대기 💝'], ani.status);
+            
+            document.getElementById('edit-memo').value = ani.memo;
+            document.getElementById('edit-health-memo').value = ani.health_memo || '';
+            document.getElementById('edit-med-info').value = ani.med_info || '';
+            document.getElementById('edit-med-am').checked = ani.med_am || false;
+            document.getElementById('edit-med-pm').checked = ani.med_pm || false;
+
+            const pArr = ani.personality ? ani.personality.split(',').map(s=>s.trim()) : [];
+            document.querySelectorAll('.edit-per-btn').forEach(btn => {
+                if(pArr.includes(btn.innerText)) { btn.classList.add('btn-active', 'bg-pink-100', 'text-pink-600', 'border-pink-300'); btn.classList.remove('btn-inactive', 'bg-white', 'text-gray-500', 'border-gray-200'); } 
+                else { btn.classList.remove('btn-active', 'bg-pink-100', 'text-pink-600', 'border-pink-300'); btn.classList.add('btn-inactive', 'bg-white', 'text-gray-500', 'border-gray-200'); }
+            });
+
+            if(ani.photo) {
+                currentEditPhotoBase64 = ani.photo; 
+                document.getElementById('edit-photo-preview').style.backgroundImage = `url(${ani.photo})`;
+                document.getElementById('edit-photo-placeholder').classList.add('hidden'); document.getElementById('edit-del-photo-btn').classList.remove('hidden');
+            } else { removePhoto(null, 'edit'); }
+
+            document.getElementById('edit-panel').classList.remove('translate-x-full');
+        }
+
+        function closeEditPanel() {
+            editingAnimalProfileId = null;
+            document.getElementById('edit-panel').classList.add('translate-x-full');
+        }
+
+        function saveEditedAnimal() {
+            document.querySelectorAll('#edit-panel input, #edit-panel textarea, #edit-panel select').forEach(el => el.blur());
+            const name = document.getElementById('edit-name').value.trim();
+            if(!name) { openModal('error', '이름을 적어주세요!', '아이의 이름을 입력해야 완료됩니다.'); return; }
+            
+            let breedVal = document.getElementById('edit-breed').value;
+            if(breedVal === '직접 입력') breedVal = document.getElementById('edit-breed-custom').value.trim();
+            if(!breedVal) breedVal = '미상';
+
+            const selectedPersonalities = Array.from(document.querySelectorAll('.edit-per-btn.btn-active')).map(b => b.innerText);
+            const targetId = editingAnimalProfileId;
+            const existingAni = animals.find(a => a.id === targetId);
+            
+            let saveObj = {
+                id: targetId, photo: currentEditPhotoBase64, name: name, type: document.getElementById('edit-type').value || '미상', breed: breedVal,
+                size: document.getElementById('edit-size').value || '해당없음', play_group: document.getElementById('edit-group').value || '미정',
+                gender: document.getElementById('edit-gender').value || '미정', age: document.getElementById('edit-age').value || '미상',
+                status: document.getElementById('edit-status').value || '보호 중 🏡', personality: selectedPersonalities.join(', ') || '정보없음',
+                memo: document.getElementById('edit-memo').value || '',
+                health_memo: document.getElementById('edit-health-memo').value.trim(), med_info: document.getElementById('edit-med-info').value.trim(),
+                med_am: document.getElementById('edit-med-am').checked, med_pm: document.getElementById('edit-med-pm').checked
+            };
+
+            if(existingAni) {
+                if(existingAni.daily_logs) saveObj.daily_logs = existingAni.daily_logs;
+                if(existingAni.behavior_logs) saveObj.behavior_logs = existingAni.behavior_logs;
+                if(!currentEditPhotoBase64 && existingAni.photo) saveObj.photo = existingAni.photo; // 사진 변경 없으면 유지
             }
 
             database.ref('animals/' + targetId).set(saveObj).then(() => {
-                const msgTitle = editingAnimalProfileId ? '수정 완료!' : '등록 성공! ✨';
-                resetRegForm(); openModal('success', msgTitle, `${name}의 정보가 저장되었습니다.`); showView('list');
-                if(editingAnimalProfileId) document.getElementById('profile-panel').classList.remove('translate-x-full');
+                closeEditPanel();
+                openModal('success', '수정 완료!', `${name}의 정보가 업데이트되었습니다.`);
             });
         }
+
 
         function renderTasks() {
             const container = document.getElementById('task-container');
@@ -748,7 +895,7 @@
                 else if(a.status && a.status.includes('임시보호')) badgeColor = 'bg-yellow-100 text-yellow-600 shadow-sm border border-yellow-200';
                 const shortStatus = a.status ? a.status.split(' ')[0] + ' ' + a.status.split(' ')[1] : '보호 중 🏡';
 
-                const sizeBadge = a.size && a.size !== '해당없음' ? `<span class="px-2 py-0.5 rounded-md text-[9px] font-black bg-teal-50 text-teal-600 border border-teal-100 mr-1">${a.size}</span>` : '';
+                const sizeBadge = a.size && a.size !== '해당없음' && a.size !== '미정' ? `<span class="px-2 py-0.5 rounded-md text-[9px] font-black bg-teal-50 text-teal-600 border border-teal-100 mr-1">${a.size}</span>` : '';
                 const groupBadge = a.play_group && a.play_group !== '미정' ? `<span class="px-2 py-0.5 rounded-md text-[9px] font-black mr-1 ${a.play_group === '단독 활동' ? 'bg-red-50 text-red-500 border border-red-100' : (a.play_group === 'A그룹' ? 'bg-purple-50 text-purple-600 border border-purple-100' : (a.play_group === 'B그룹' ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-cyan-50 text-cyan-600 border border-cyan-100'))}">${a.play_group}</span>` : '';
 
                 container.innerHTML += `
@@ -822,7 +969,8 @@
                                 ${medHtml}
                             </div>
                         </div>
-                    </div>`;
+                    </div>
+                `;
             });
 
             if(alertCount > 0) { alertsContainer.innerHTML = `<h3 class="font-black text-red-500 mb-2 text-sm">🚨 오늘 발견된 특이사항 (${alertCount}건)</h3>` + alertsHtml; alertsContainer.classList.remove('hidden'); } 
@@ -851,7 +999,7 @@
             document.getElementById('pp-name').innerText = ani.name; 
             document.getElementById('pp-info').innerText = `${ani.type||'동물'} · ${ani.breed} · ${ani.gender} · ${ani.age}`;
             
-            const sizeBadge = ani.size && ani.size !== '해당없음' ? `<span class="px-2 py-1 rounded-md text-[10px] font-black bg-teal-50 text-teal-600 border border-teal-100">${ani.size}</span>` : '';
+            const sizeBadge = ani.size && ani.size !== '해당없음' && ani.size !== '미정' ? `<span class="px-2 py-1 rounded-md text-[10px] font-black bg-teal-50 text-teal-600 border border-teal-100">${ani.size}</span>` : '';
             const groupBadge = ani.play_group && ani.play_group !== '미정' ? `<span class="px-2 py-1 rounded-md text-[10px] font-black ${ani.play_group === '단독 활동' ? 'bg-red-50 text-red-500 border border-red-100' : (ani.play_group === 'A그룹' ? 'bg-purple-50 text-purple-600 border border-purple-100' : (ani.play_group === 'B그룹' ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-cyan-50 text-cyan-600 border border-cyan-100'))}">${ani.play_group}</span>` : '';
             document.getElementById('pp-classification').innerHTML = sizeBadge + groupBadge;
 
@@ -868,38 +1016,9 @@
             document.getElementById('pp-memo').innerText = ani.memo || '메모가 없습니다.';
         }
 
-        function editAnimalProfile() {
-            const id = document.getElementById('pp-animal-id').value; const ani = animals.find(a => a.id == id); if(!ani) return;
-            editingAnimalProfileId = ani.id;
-            document.getElementById('in-name').value = ani.name; document.getElementById('in-type').value = ani.type || '개'; updateBreeds();
-            const breedSelect = document.getElementById('in-breed'); let isCustom = true;
-            for(let i=0; i<breedSelect.options.length; i++) { if(breedSelect.options[i].value === ani.breed) { isCustom = false; break; } }
-            if(isCustom && ani.breed && ani.breed !== '미상') { breedSelect.value = '직접 입력'; checkCustomBreed(); document.getElementById('in-breed-custom').value = ani.breed; } 
-            else { breedSelect.value = ani.breed; checkCustomBreed(); }
-
-            document.getElementById('in-size').value = ani.size || ''; document.getElementById('in-group').value = ani.play_group || '';
-            document.getElementById('in-gender').value = ani.gender; document.getElementById('in-age').value = ani.age;
-            document.getElementById('in-status').value = ani.status; document.getElementById('in-memo').value = ani.memo;
-            document.getElementById('in-health-memo').value = ani.health_memo || ''; document.getElementById('in-med-info').value = ani.med_info || '';
-            document.getElementById('in-med-am').checked = ani.med_am || false; document.getElementById('in-med-pm').checked = ani.med_pm || false;
-
-            const pArr = ani.personality ? ani.personality.split(',').map(s=>s.trim()) : [];
-            document.querySelectorAll('.per-btn').forEach(btn => {
-                if(pArr.includes(btn.innerText)) { btn.classList.add('btn-active', 'bg-pink-100', 'text-pink-600', 'border-pink-300'); btn.classList.remove('btn-inactive', 'bg-white', 'text-gray-500', 'border-gray-200'); } 
-                else { btn.classList.remove('btn-active', 'bg-pink-100', 'text-pink-600', 'border-pink-300'); btn.classList.add('btn-inactive', 'bg-white', 'text-gray-500', 'border-gray-200'); }
-            });
-
-            if(ani.photo) {
-                currentPhotoBase64 = ani.photo; document.getElementById('photo-preview').style.backgroundImage = `url(${ani.photo})`;
-                document.getElementById('photo-placeholder').classList.add('hidden'); document.getElementById('del-photo-btn').classList.remove('hidden');
-            } else { removePhoto(); }
-
-            document.getElementById('reg-title').innerText = "📝 보호 동물 정보 수정"; document.getElementById('btn-save-animal').innerText = "수정 완료하기"; document.getElementById('btn-cancel-edit').classList.remove('hidden');
-            closeProfilePanel(); showView('reg');
-        }
         function askDeleteAnimal() { const id = document.getElementById('pp-animal-id').value; openModal('confirm', '아이 정보 영구 삭제', '이 동물의 프로필과 모든 기록이 완전히 삭제됩니다. 진행할까요?', () => { database.ref('animals/' + id).remove(); closeProfilePanel(); }); }
 
-        function openBehaviorFromProfile() { const id = document.getElementById('pp-animal-id').value; openBehaviorPanel(Number(id)); }
+        // --- 행동 분석 패널 ---
         function setGrade(level) { document.querySelectorAll('.grade-btn').forEach(b => b.classList.remove('grade-active')); document.querySelector(`.g${level}`).classList.add('grade-active'); document.getElementById('bh-grade').value = level; }
         function formatABC(a, b) {
             if(!a || !b) return ""; let fa = a.trim(); let fb = b.trim();
@@ -955,6 +1074,66 @@
             }).join('');
         }
 
+        // --- 기타 로직 (캘린더, 일정 등) ---
+        function renderCalendar() {
+            const year = currentDate.getFullYear(); const month = currentDate.getMonth();
+            document.getElementById('cal-month-title').innerText = `${year}년 ${month + 1}월`;
+            const firstDay = new Date(year, month, 1).getDay(); const lastDate = new Date(year, month + 1, 0).getDate(); 
+            const calDays = document.getElementById('cal-days'); calDays.innerHTML = '';
+            const today = new Date(); const isCurrentMonth = (today.getFullYear() === year && today.getMonth() === month);
+            for (let i = 0; i < firstDay; i++) { calDays.innerHTML += `<div class="cal-day empty"></div>`; }
+            for (let i = 1; i <= lastDate; i++) {
+                const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                let classes = 'cal-day'; if (isCurrentMonth && today.getDate() === i) classes += ' today';
+                const dayOfWeek = new Date(year, month, i).getDay(); if (dayOfWeek === 0) classes += ' sun'; if (dayOfWeek === 6) classes += ' sat';
+                const daySchedule = schedules[dateString]; const hasSchedule = daySchedule && (daySchedule.am || daySchedule.pm || daySchedule.off || daySchedule.half);
+                const dotHtml = hasSchedule ? '<div class="cal-dot"></div>' : '';
+                calDays.innerHTML += `<div class="${classes}" onclick="openSchedulePanel('${dateString}')">${i}${dotHtml}</div>`;
+            }
+        }
+        function changeMonth(delta) { currentDate.setMonth(currentDate.getMonth() + delta); renderCalendar(); }
+        function openSchedulePanel(dateString) {
+            const dateObj = new Date(dateString); document.getElementById('sp-date-title').innerText = `${dateObj.getMonth() + 1}월 ${dateObj.getDate()}일 근무표`; document.getElementById('sp-date-key').value = dateString;
+            const dayData = schedules[dateString] || { am: '', pm: '', off: '', half: '' }; document.getElementById('sch-am').value = dayData.am || ''; document.getElementById('sch-pm').value = dayData.pm || ''; document.getElementById('sch-off').value = dayData.off || ''; document.getElementById('sch-half').value = dayData.half || '';
+            document.getElementById('schedule-panel').classList.remove('translate-x-full');
+        }
+        function closeSchedulePanel() { document.getElementById('schedule-panel').classList.add('translate-x-full'); document.activeElement.blur(); }
+        function saveSchedule() {
+            const dateKey = document.getElementById('sp-date-key').value; const am = document.getElementById('sch-am').value.trim(); const pm = document.getElementById('sch-pm').value.trim(); const off = document.getElementById('sch-off').value.trim(); const half = document.getElementById('sch-half').value.trim();
+            const scheduleData = { am, pm, off, half, updatedBy: currentTrainerName, updatedAt: Date.now() };
+            if(!am && !pm && !off && !half) { database.ref('schedules/' + dateKey).remove().then(() => { closeSchedulePanel(); openModal('success', '삭제 완료', '해당 날짜의 근무표가 초기화되었습니다.'); }); } 
+            else { database.ref('schedules/' + dateKey).set(scheduleData).then(() => { closeSchedulePanel(); openModal('success', '저장 완료!', '근무표가 공유되었습니다.'); }); }
+        }
+
+        function openEventAddPanel() { document.getElementById('ev-date').value = ''; document.getElementById('ev-time').value = ''; document.getElementById('ev-title').value = ''; document.getElementById('ev-desc').value = ''; document.getElementById('event-add-panel').classList.remove('translate-x-full'); }
+        function closeEventAddPanel() { document.getElementById('event-add-panel').classList.add('translate-x-full'); }
+        function saveEvent() {
+            const date = document.getElementById('ev-date').value; const time = document.getElementById('ev-time').value.trim(); const title = document.getElementById('ev-title').value.trim(); const desc = document.getElementById('ev-desc').value.trim();
+            if(!date || !title) { openModal('error', '입력 오류', '일자와 행사명은 필수 입력 항목입니다.'); return; }
+            const eventData = { date: date, time: time || '시간 미정', title: title, desc: desc, createdBy: currentTrainerName, timestamp: Date.now() };
+            database.ref('events/' + Date.now()).set(eventData).then(() => { closeEventAddPanel(); openModal('success', '일정 등록 완료', '센터 행사가 성공적으로 등록되었습니다.'); });
+        }
+        function renderEvents() {
+            const container = document.getElementById('event-container'); const today = new Date(); today.setHours(0,0,0,0);
+            if(eventsList.length === 0) { container.innerHTML = `<div class="text-center py-20 text-gray-400 font-bold">등록된 행사 및 일정이 없습니다.</div>`; return; }
+            container.innerHTML = eventsList.map(ev => {
+                const evDate = new Date(ev.date); const isPast = evDate < today; const days = ['일', '월', '화', '수', '목', '금', '토']; const dayName = days[evDate.getDay()]; const dateStr = `${evDate.getMonth()+1}/${evDate.getDate()}(${dayName})`;
+                return `
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-pink-100 relative ${isPast ? 'opacity-50' : ''}">
+                    <button onclick="askDeleteEvent(event, '${ev.id}')" class="absolute top-4 right-4 text-gray-300 hover:text-red-400 font-bold text-lg">&times;</button>
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="bg-pink-50 text-pink-600 px-3 py-1.5 rounded-xl font-black text-sm text-center min-w-[70px]">${dateStr}</div>
+                        <div class="text-xs font-bold text-gray-500 bg-gray-50 px-2 py-1 rounded-md">⏰ ${ev.time}</div>
+                    </div>
+                    <h3 class="text-base font-black text-gray-800 mb-1 leading-tight pr-6">${ev.title}</h3>
+                    ${ev.desc ? `<p class="text-sm text-gray-600 font-bold bg-pink-50/30 p-2 rounded-lg mt-2">${ev.desc.replace(/\n/g, '<br>')}</p>` : ''}
+                    <p class="text-[10px] text-gray-400 mt-2 text-right">등록: ${ev.createdBy}</p>
+                </div>`;
+            }).join('');
+        }
+        function askDeleteEvent(event, eventId) { event.stopPropagation(); openModal('confirm', '일정 삭제', '이 일정을 삭제하시겠습니까?', () => { database.ref('events/' + eventId).remove(); }); }
+
+        // --- 과거 기록 열람 패널 ---
         function openHistoryFromProfile() { const id = document.getElementById('pp-animal-id').value; openHistoryPanel(null, Number(id)); }
         function openHistoryPanel(event, id) {
             if(event) event.stopPropagation(); const ani = animals.find(a => a.id === id); if(!ani) return;
@@ -1005,7 +1184,7 @@
         }
         function askDeleteLog(event, animalId, logId) { event.stopPropagation(); openModal('confirm', '기록을 삭제할까요?', '해당 시간의 일과 기록이 영구적으로 삭제됩니다.', () => { database.ref('animals/' + animalId + '/daily_logs/' + logId).remove(); }); }
 
-        function openRecordFromProfile() { const id = document.getElementById('pp-animal-id').value; openRecordPanel(Number(id)); }
+        // --- 일과 기록 작성 패널 ---
         function setToggleState(selector, text, isPartial = false) { document.querySelectorAll(selector).forEach(btn => { if(isPartial ? btn.innerText.includes(text) : btn.innerText === text) { btn.classList.remove('btn-inactive'); btn.classList.add('btn-active'); } }); }
         function forceMultiState(id, isActive) { const btn = document.getElementById(id); if(isActive) { btn.classList.remove('btn-inactive'); btn.classList.add('btn-active'); } }
         function toggleSelect(clickedBtn, groupClass) { const wasActive = clickedBtn.classList.contains('btn-active'); document.querySelectorAll(`.${groupClass}-btn`).forEach(btn => { btn.classList.remove('btn-active'); btn.classList.add('btn-inactive'); }); if (!wasActive) { clickedBtn.classList.remove('btn-inactive'); clickedBtn.classList.add('btn-active'); } }
@@ -1019,6 +1198,8 @@
             document.getElementById('walk-duration').value = ''; document.getElementById('meal-amount').value = ''; document.getElementById('potty-memo').value = ''; document.getElementById('daily-memo').value = '';
         }
         function resetRecordForm() { editingLogId = null; editingLogOriginalData = null; document.getElementById('record-action-text').innerText = '기록'; clearFormFields(); }
+
+        function openRecordFromProfile() { const id = document.getElementById('pp-animal-id').value; openRecordPanel(Number(id)); }
 
         function openRecordPanel(id) {
             const ani = animals.find(a => a.id === id); if(!ani) return;
@@ -1047,8 +1228,11 @@
             if(!medTime && !walkTime && !walkDuration && !mealTime && !mealAmount && pottyTypes.length === 0 && !pottyMemo && !dailyMemo) { openModal('error', '빈 기록입니다', '최소 하나 이상의 항목을 작성해주세요.'); return; }
 
             let logData = { trainer_name: currentTrainerName };
-            if(editingLogId && editingLogOriginalData) { logData.timestamp = editingLogOriginalData.timestamp; logData.date_str = editingLogOriginalData.date_str; logData.time_str = editingLogOriginalData.time_str; } 
-            else { const now = new Date(); logData.timestamp = Date.now(); logData.date_str = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`; logData.time_str = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`; }
+            if(editingLogId && editingLogOriginalData) {
+                logData.timestamp = editingLogOriginalData.timestamp; logData.date_str = editingLogOriginalData.date_str; logData.time_str = editingLogOriginalData.time_str;
+            } else {
+                const now = new Date(); logData.timestamp = Date.now(); logData.date_str = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`; logData.time_str = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+            }
 
             if(medTime) logData.med = { time: medTime }; else logData.med = null;
             if(walkTime || walkDuration || walkCond) logData.walk = { time: walkTime || '-', duration: walkDuration || '-', condition: walkCond || '-' }; else logData.walk = null; 
@@ -1057,7 +1241,9 @@
             if(dailyMemo) logData.daily_memo = dailyMemo; else logData.daily_memo = null;
 
             const targetLogId = editingLogId ? editingLogId : Date.now();
-            database.ref('animals/' + id + '/daily_logs/' + targetLogId).update(logData).then(() => { closeRecordPanel(); if(editingLogId) openModal('success', '수정 완료!', '기록이 성공적으로 수정되었습니다.'); else openModal('success', '기록 완료!', `작성하신 항목이 저장되었습니다.`); });
+            database.ref('animals/' + id + '/daily_logs/' + targetLogId).update(logData).then(() => {
+                closeRecordPanel(); if(editingLogId) openModal('success', '수정 완료!', '기록이 성공적으로 수정되었습니다.'); else openModal('success', '기록 완료!', `작성하신 항목이 저장되었습니다.`);
+            });
         }
 
         function editLog(event, animalId, logId) {
@@ -1091,62 +1277,6 @@
             } else { btns.innerHTML = `<button onclick="closeModal()" class="w-full py-4 pink-gradient text-white font-black rounded-2xl shadow-md">확인</button>`; }
         }
         function closeModal() { document.getElementById('custom-modal').classList.remove('active'); }
-        function renderCalendar() {
-            const year = currentDate.getFullYear(); const month = currentDate.getMonth();
-            document.getElementById('cal-month-title').innerText = `${year}년 ${month + 1}월`;
-            const firstDay = new Date(year, month, 1).getDay(); const lastDate = new Date(year, month + 1, 0).getDate(); 
-            const calDays = document.getElementById('cal-days'); calDays.innerHTML = '';
-            const today = new Date(); const isCurrentMonth = (today.getFullYear() === year && today.getMonth() === month);
-            for (let i = 0; i < firstDay; i++) { calDays.innerHTML += `<div class="cal-day empty"></div>`; }
-            for (let i = 1; i <= lastDate; i++) {
-                const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
-                let classes = 'cal-day'; if (isCurrentMonth && today.getDate() === i) classes += ' today';
-                const dayOfWeek = new Date(year, month, i).getDay(); if (dayOfWeek === 0) classes += ' sun'; if (dayOfWeek === 6) classes += ' sat';
-                const daySchedule = schedules[dateString]; const hasSchedule = daySchedule && (daySchedule.am || daySchedule.pm || daySchedule.off || daySchedule.half);
-                const dotHtml = hasSchedule ? '<div class="cal-dot"></div>' : '';
-                calDays.innerHTML += `<div class="${classes}" onclick="openSchedulePanel('${dateString}')">${i}${dotHtml}</div>`;
-            }
-        }
-        function changeMonth(delta) { currentDate.setMonth(currentDate.getMonth() + delta); renderCalendar(); }
-        function openSchedulePanel(dateString) {
-            const dateObj = new Date(dateString); document.getElementById('sp-date-title').innerText = `${dateObj.getMonth() + 1}월 ${dateObj.getDate()}일 근무표`; document.getElementById('sp-date-key').value = dateString;
-            const dayData = schedules[dateString] || { am: '', pm: '', off: '', half: '' }; document.getElementById('sch-am').value = dayData.am || ''; document.getElementById('sch-pm').value = dayData.pm || ''; document.getElementById('sch-off').value = dayData.off || ''; document.getElementById('sch-half').value = dayData.half || '';
-            document.getElementById('schedule-panel').classList.remove('translate-x-full');
-        }
-        function closeSchedulePanel() { document.getElementById('schedule-panel').classList.add('translate-x-full'); document.activeElement.blur(); }
-        function saveSchedule() {
-            const dateKey = document.getElementById('sp-date-key').value; const am = document.getElementById('sch-am').value.trim(); const pm = document.getElementById('sch-pm').value.trim(); const off = document.getElementById('sch-off').value.trim(); const half = document.getElementById('sch-half').value.trim();
-            const scheduleData = { am, pm, off, half, updatedBy: currentTrainerName, updatedAt: Date.now() };
-            if(!am && !pm && !off && !half) { database.ref('schedules/' + dateKey).remove().then(() => { closeSchedulePanel(); openModal('success', '삭제 완료', '해당 날짜의 근무표가 초기화되었습니다.'); }); } 
-            else { database.ref('schedules/' + dateKey).set(scheduleData).then(() => { closeSchedulePanel(); openModal('success', '저장 완료!', '근무표가 공유되었습니다.'); }); }
-        }
-        function openEventAddPanel() { document.getElementById('ev-date').value = ''; document.getElementById('ev-time').value = ''; document.getElementById('ev-title').value = ''; document.getElementById('ev-desc').value = ''; document.getElementById('event-add-panel').classList.remove('translate-x-full'); }
-        function closeEventAddPanel() { document.getElementById('event-add-panel').classList.add('translate-x-full'); }
-        function saveEvent() {
-            const date = document.getElementById('ev-date').value; const time = document.getElementById('ev-time').value.trim(); const title = document.getElementById('ev-title').value.trim(); const desc = document.getElementById('ev-desc').value.trim();
-            if(!date || !title) { openModal('error', '입력 오류', '일자와 행사명은 필수 입력 항목입니다.'); return; }
-            const eventData = { date: date, time: time || '시간 미정', title: title, desc: desc, createdBy: currentTrainerName, timestamp: Date.now() };
-            database.ref('events/' + Date.now()).set(eventData).then(() => { closeEventAddPanel(); openModal('success', '일정 등록 완료', '센터 행사가 성공적으로 등록되었습니다.'); });
-        }
-        function renderEvents() {
-            const container = document.getElementById('event-container'); const today = new Date(); today.setHours(0,0,0,0);
-            if(eventsList.length === 0) { container.innerHTML = `<div class="text-center py-20 text-gray-400 font-bold">등록된 행사 및 일정이 없습니다.</div>`; return; }
-            container.innerHTML = eventsList.map(ev => {
-                const evDate = new Date(ev.date); const isPast = evDate < today; const days = ['일', '월', '화', '수', '목', '금', '토']; const dayName = days[evDate.getDay()]; const dateStr = `${evDate.getMonth()+1}/${evDate.getDate()}(${dayName})`;
-                return `
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-pink-100 relative ${isPast ? 'opacity-50' : ''}">
-                    <button onclick="askDeleteEvent(event, '${ev.id}')" class="absolute top-4 right-4 text-gray-300 hover:text-red-400 font-bold text-lg">&times;</button>
-                    <div class="flex items-center gap-3 mb-2">
-                        <div class="bg-pink-50 text-pink-600 px-3 py-1.5 rounded-xl font-black text-sm text-center min-w-[70px]">${dateStr}</div>
-                        <div class="text-xs font-bold text-gray-500 bg-gray-50 px-2 py-1 rounded-md">⏰ ${ev.time}</div>
-                    </div>
-                    <h3 class="text-base font-black text-gray-800 mb-1 leading-tight pr-6">${ev.title}</h3>
-                    ${ev.desc ? `<p class="text-sm text-gray-600 font-bold bg-pink-50/30 p-2 rounded-lg mt-2">${ev.desc.replace(/\n/g, '<br>')}</p>` : ''}
-                    <p class="text-[10px] text-gray-400 mt-2 text-right">등록: ${ev.createdBy}</p>
-                </div>`;
-            }).join('');
-        }
-        function askDeleteEvent(event, eventId) { event.stopPropagation(); openModal('confirm', '일정 삭제', '이 일정을 삭제하시겠습니까?', () => { database.ref('events/' + eventId).remove(); }); }
     </script>
 </body>
 </html>
