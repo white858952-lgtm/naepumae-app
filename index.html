@@ -18,7 +18,7 @@
         .modal-bg.active { display: flex; }
         #photo-preview { background-size: cover; background-position: center; transition: all 0.3s; }
         
-        /* [수정됨] 하단 고정 메뉴에 가려지지 않도록 하단 여백 대폭 추가 */
+        /* 하단 메뉴 높이만큼 충분한 여백 확보 */
         .content-area { padding-bottom: 120px; position: relative; z-index: 10; }
         
         .save-btn { cursor: pointer; position: relative; z-index: 100; touch-action: manipulation; -webkit-appearance: none; }
@@ -44,6 +44,11 @@
         .cal-day.sat { color: #3b82f6; }
         .cal-dot { position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; background-color: #f472b6; border-radius: 50%; }
         .cal-day.today .cal-dot { background-color: white; }
+
+        /* 대시보드 상태 뱃지 스타일 */
+        .status-badge { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 20px; border-radius: 6px; font-size: 10px; font-weight: 900; margin-right: 4px; }
+        .status-done { background-color: #dcfce7; color: #059669; }
+        .status-none { background-color: #f3f4f6; color: #9ca3af; }
     </style>
 </head>
 <body class="max-w-md mx-auto p-4 relative" onload="initApp()">
@@ -53,28 +58,20 @@
             <div class="text-6xl mb-6">🐾</div>
             <h1 class="text-2xl font-black text-gray-800 mb-2">환영합니다!</h1>
             <p class="text-gray-500 font-bold mb-8">기록 작성 시 표시될 훈련사님의<br>이름(또는 직함)을 입력해주세요.</p>
-            
             <input type="text" id="setup-trainer-name" placeholder="예: 김현우 훈련사" class="w-full p-4 border border-pink-100 rounded-2xl outline-none bg-gray-50 text-center font-black text-lg focus:border-pink-400 focus:bg-white transition-colors mb-4 shadow-sm">
-            
-            <button onclick="saveTrainerProfile()" class="w-full py-4 pink-gradient text-white font-black text-lg rounded-2xl shadow-lg active:scale-95 transition-transform">
-                앱 시작하기
-            </button>
+            <button onclick="saveTrainerProfile()" class="w-full py-4 pink-gradient text-white font-black text-lg rounded-2xl shadow-lg active:scale-95 transition-transform">앱 시작하기</button>
             <p class="text-[10px] text-gray-400 mt-4 font-bold">이름은 나중에 우측 상단 메뉴에서 수정할 수 있습니다.</p>
         </div>
     </div>
 
-    <div id="profile-edit-modal" class="modal-bg">
+    <div id="profile-edit-modal" class="modal-bg z-[10000]">
         <div class="bg-white w-[85%] max-w-xs rounded-[35px] p-8 text-center shadow-2xl relative">
             <button onclick="closeProfileEditModal()" class="absolute top-4 right-5 text-2xl text-gray-400 hover:text-gray-600">&times;</button>
             <div class="text-4xl mb-3">👤</div>
             <h3 class="text-xl font-black mb-2 text-gray-800">내 정보 수정</h3>
             <p class="text-gray-400 text-xs mb-6 font-bold">앱에 표시될 내 이름을 변경합니다.</p>
-            
             <input type="text" id="edit-trainer-name" class="w-full p-3 border border-pink-100 rounded-xl outline-none bg-gray-50 text-center font-black text-sm focus:border-pink-400 mb-4">
-            
-            <button onclick="updateTrainerProfile()" class="w-full py-3.5 pink-gradient text-white font-black rounded-xl shadow-md active:scale-95 transition-transform">
-                저장하기
-            </button>
+            <button onclick="updateTrainerProfile()" class="w-full py-3.5 pink-gradient text-white font-black rounded-xl shadow-md active:scale-95 transition-transform">저장하기</button>
         </div>
     </div>
 
@@ -98,9 +95,22 @@
                 </div>
                 <input type="text" id="search-input" oninput="handleSearch()" placeholder="이름 또는 견종으로 빠르게 찾기" class="w-full pl-10 pr-4 py-3.5 bg-white border border-pink-100 rounded-2xl text-sm font-bold text-gray-700 shadow-sm outline-none focus:border-pink-300 transition-colors">
             </div>
-
             <div id="filter-container" class="flex gap-2 px-2 overflow-x-auto hide-scrollbar mb-4 pb-1"></div>
-            <div id="task-container" class="space-y-4"></div>
+            <div id="task-container" class="space-y-4 px-1 pb-10"></div>
+        </div>
+
+        <div id="view-dashboard" class="hidden space-y-4">
+            <div class="flex justify-between items-center px-2 mb-2 mt-2">
+                <h2 class="text-lg font-black text-gray-800" id="dash-date-title">오늘의 케어 현황</h2>
+                <button onclick="renderDashboard()" class="text-gray-400 active:scale-90 transition-transform">🔄 새로고침</button>
+            </div>
+            
+            <div id="dash-alerts-container" class="px-2 mb-6">
+                </div>
+
+            <h3 class="font-black text-gray-400 px-2 mb-2 text-[10px] uppercase tracking-widest">아이별 당일 업무 진척도</h3>
+            <div id="dash-list-container" class="space-y-3 px-1 pb-10">
+                </div>
         </div>
 
         <div id="view-schedule" class="hidden space-y-4">
@@ -110,7 +120,6 @@
                     <h2 id="cal-month-title" class="text-xl font-black text-gray-800">2026년 4월</h2>
                     <button onclick="changeMonth(1)" class="text-gray-400 text-2xl font-black p-2 active:scale-90">&rsaquo;</button>
                 </div>
-                
                 <div class="cal-grid mb-2">
                     <div class="text-xs font-black text-red-400">일</div>
                     <div class="text-xs font-black text-gray-400">월</div>
@@ -120,10 +129,8 @@
                     <div class="text-xs font-black text-gray-400">금</div>
                     <div class="text-xs font-black text-blue-400">토</div>
                 </div>
-                
                 <div id="cal-days" class="cal-grid"></div>
             </div>
-            
             <div class="px-2">
                 <p class="text-xs text-gray-400 font-bold mb-1">💡 날짜를 누르면 상세 근무표를 열람/수정할 수 있습니다.</p>
                 <p class="text-xs text-gray-400 font-bold">💡 핑크색 점(•)은 근무표가 작성된 날을 의미합니다.</p>
@@ -138,7 +145,7 @@
             <div id="event-container" class="space-y-4 px-1 pb-10"></div>
         </div>
 
-        <div id="view-reg" class="hidden space-y-6">
+        <div id="view-reg" class="hidden space-y-6 pb-10">
             <div class="card space-y-4">
                 <div class="flex justify-between items-center">
                     <h2 id="reg-title" class="text-lg font-bold text-gray-700">📸 신규 보호 동물 등록</h2>
@@ -208,17 +215,20 @@
     </div>
 
     <nav class="flex justify-around py-2 shadow-[0_-10px_20px_rgba(0,0,0,0.05)] rounded-t-[28px] items-center z-[100] bg-white fixed bottom-0 left-0 right-0 pb-[max(env(safe-area-inset-bottom),12px)]">
-        <button id="nav-list" onclick="showView('list')" class="flex flex-col items-center gap-1 w-1/4 opacity-100 transition-opacity pt-2">
-            <span class="text-2xl">📋</span><span class="text-[10px] font-black text-pink-500">개체 관리</span>
+        <button id="nav-list" onclick="showView('list')" class="flex flex-col items-center gap-1 w-1/5 opacity-100 transition-opacity pt-2">
+            <span class="text-2xl">📋</span><span class="text-[9px] font-black text-pink-500">개체 관리</span>
         </button>
-        <button id="nav-schedule" onclick="showView('schedule')" class="flex flex-col items-center gap-1 w-1/4 opacity-40 hover:opacity-100 transition-opacity pt-2">
-            <span class="text-2xl">📅</span><span class="text-[10px] font-black text-pink-500">근무표</span>
+        <button id="nav-dashboard" onclick="showView('dashboard')" class="flex flex-col items-center gap-1 w-1/5 opacity-40 hover:opacity-100 transition-opacity pt-2">
+            <span class="text-2xl">📊</span><span class="text-[9px] font-black text-pink-500">당일 현황</span>
         </button>
-        <button id="nav-events" onclick="showView('events')" class="flex flex-col items-center gap-1 w-1/4 opacity-40 hover:opacity-100 transition-opacity pt-2">
-            <span class="text-2xl">📢</span><span class="text-[10px] font-black text-pink-500">행사/일정</span>
+        <button id="nav-schedule" onclick="showView('schedule')" class="flex flex-col items-center gap-1 w-1/5 opacity-40 hover:opacity-100 transition-opacity pt-2">
+            <span class="text-2xl">📅</span><span class="text-[9px] font-black text-pink-500">근무표</span>
         </button>
-        <button id="nav-reg" onclick="showView('reg')" class="flex flex-col items-center gap-1 w-1/4 opacity-40 hover:opacity-100 transition-opacity pt-2">
-            <span class="text-2xl">🐾</span><span class="text-[10px] font-black text-pink-500">아이 등록</span>
+        <button id="nav-events" onclick="showView('events')" class="flex flex-col items-center gap-1 w-1/5 opacity-40 hover:opacity-100 transition-opacity pt-2">
+            <span class="text-2xl">📢</span><span class="text-[9px] font-black text-pink-500">행사/일정</span>
+        </button>
+        <button id="nav-reg" onclick="showView('reg')" class="flex flex-col items-center gap-1 w-1/5 opacity-40 hover:opacity-100 transition-opacity pt-2">
+            <span class="text-2xl">🐾</span><span class="text-[9px] font-black text-pink-500">아이 등록</span>
         </button>
     </nav>
 
@@ -325,7 +335,7 @@
                 </button>
                 <button onclick="openHistoryFromProfile()" class="bg-pink-500 text-white py-4 rounded-2xl font-black shadow-md active:scale-95 transition-all flex flex-col items-center gap-1">
                     <span class="text-2xl">📅</span>
-                    <span>일과 기록 열람</span>
+                    <span>과거 기록 열람</span>
                 </button>
             </div>
             
@@ -435,7 +445,7 @@
 
         let currentDate = new Date();
         let schedules = {}; 
-        let eventsList = []; // [신규 추가] 이벤트 저장 배열
+        let eventsList = []; 
 
         const dogBreeds = ['믹스견', '말티즈', '푸들', '포메라니안', '진돗개', '골든 리트리버', '비숑 프리제', '치와와', '시츄', '요크셔테리어', '직접 입력'];
         const catBreeds = ['코리안 숏헤어', '페르시안', '러시안 블루', '샴', '먼치킨', '랙돌', '스코티시 폴드', '브리티시 숏헤어', '직접 입력'];
@@ -513,6 +523,7 @@
             }
             renderFilters();
             if (!document.getElementById('view-list').classList.contains('hidden')) renderTasks();
+            if (!document.getElementById('view-dashboard').classList.contains('hidden')) renderDashboard();
 
             const profilePanel = document.getElementById('profile-panel');
             if(!profilePanel.classList.contains('translate-x-full')) {
@@ -536,13 +547,11 @@
             }
         });
 
-        // [신규 추가] 이벤트 DB 동기화
         database.ref('events').on('value', (snapshot) => {
             const data = snapshot.val();
             eventsList = [];
             if(data) {
                 Object.keys(data).forEach(k => eventsList.push({...data[k], id: k}));
-                // 날짜 오름차순 정렬 (다가오는 이벤트 먼저)
                 eventsList.sort((a, b) => new Date(a.date) - new Date(b.date));
             }
             if (!document.getElementById('view-events').classList.contains('hidden')) {
@@ -550,20 +559,24 @@
             }
         });
 
-        // [수정됨] 4단 네비게이션 제어
+        // [수정됨] 5단 네비게이션 제어
         function showView(view) {
             document.getElementById('view-reg').classList.toggle('hidden', view !== 'reg');
             document.getElementById('view-list').classList.toggle('hidden', view !== 'list');
             document.getElementById('view-schedule').classList.toggle('hidden', view !== 'schedule');
             document.getElementById('view-events').classList.toggle('hidden', view !== 'events');
+            document.getElementById('view-dashboard').classList.toggle('hidden', view !== 'dashboard');
             
             const navList = document.getElementById('nav-list');
+            const navDash = document.getElementById('nav-dashboard');
             const navSchedule = document.getElementById('nav-schedule');
             const navEvents = document.getElementById('nav-events');
             const navReg = document.getElementById('nav-reg');
             
             navList.classList.toggle('opacity-40', view !== 'list');
             navList.classList.toggle('opacity-100', view === 'list');
+            navDash.classList.toggle('opacity-40', view !== 'dashboard');
+            navDash.classList.toggle('opacity-100', view === 'dashboard');
             navSchedule.classList.toggle('opacity-40', view !== 'schedule');
             navSchedule.classList.toggle('opacity-100', view === 'schedule');
             navEvents.classList.toggle('opacity-40', view !== 'events');
@@ -575,6 +588,8 @@
             
             if(view === 'list') {
                 renderTasks();
+            } else if(view === 'dashboard') {
+                renderDashboard();
             } else if(view === 'schedule') {
                 renderCalendar();
             } else if(view === 'events') {
@@ -582,6 +597,80 @@
             } else if (view === 'reg' && !editingAnimalProfileId) {
                 resetRegForm();
             }
+        }
+
+        /* ================= [신규] 당일 현황 대시보드 로직 ================= */
+        function renderDashboard() {
+            const now = new Date();
+            // 포맷 일치: 2026.04.06
+            const todayStr = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`;
+            
+            document.getElementById('dash-date-title').innerText = `${now.getMonth()+1}월 ${now.getDate()}일 케어 현황`;
+
+            const listContainer = document.getElementById('dash-list-container');
+            const alertsContainer = document.getElementById('dash-alerts-container');
+            
+            let listHtml = '';
+            let alertsHtml = '';
+            let alertCount = 0;
+
+            animals.forEach(a => {
+                let walks = { '오전': false, '오후': false, '저녁': false };
+                let meals = { '아침': false, '저녁': false };
+                let potties = [];
+                let hasAlert = false;
+
+                if(a.daily_logs) {
+                    Object.values(a.daily_logs).forEach(log => {
+                        if(log.date_str === todayStr) {
+                            if(log.walk) {
+                                if(log.walk.time !== '-') walks[log.walk.time] = true;
+                                if(log.walk.condition === '나쁨') {
+                                    alertsHtml += `<div class="bg-red-50 border border-red-100 p-3 rounded-xl mb-2 flex items-start gap-2 cursor-pointer active:scale-[0.98]" onclick="openProfilePanel(${a.id})"><span class="text-lg">🚨</span><div><p class="text-xs font-black text-red-600">${a.name} <span class="font-bold text-gray-500">산책 컨디션 나쁨</span></p></div></div>`;
+                                    alertCount++;
+                                }
+                            }
+                            if(log.meal && log.meal.time !== '-') meals[log.meal.time] = true;
+                            if(log.potty) {
+                                if(log.potty.type !== '-') potties.push(log.potty.type);
+                                if(log.potty.memo && log.potty.memo !== '특이사항 없음' && log.potty.memo !== '정상 (양호)') {
+                                    alertsHtml += `<div class="bg-orange-50 border border-orange-100 p-3 rounded-xl mb-2 flex items-start gap-2 cursor-pointer active:scale-[0.98]" onclick="openProfilePanel(${a.id})"><span class="text-lg">💩</span><div><p class="text-xs font-black text-orange-600">${a.name} <span class="font-bold text-gray-500">${log.potty.memo}</span></p></div></div>`;
+                                    alertCount++;
+                                }
+                            }
+                        }
+                    });
+                }
+
+                // 개체 카드 생성
+                const photoHtml = a.photo ? `<div class="w-12 h-12 rounded-full bg-cover bg-center shrink-0 border border-gray-100" style="background-image: url(${a.photo})"></div>` : `<div class="w-12 h-12 rounded-full bg-pink-50 flex items-center justify-center shrink-0 text-pink-200 text-xl border border-pink-100">🐾</div>`;
+                
+                const getBadge = (isDone, label) => `<span class="status-badge ${isDone ? 'status-done' : 'status-none'}">${label}</span>`;
+
+                listHtml += `
+                    <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center gap-3 cursor-pointer active:scale-[0.98]" onclick="openProfilePanel(${a.id})">
+                        ${photoHtml}
+                        <div class="flex-1">
+                            <h4 class="font-black text-gray-800 text-sm mb-1.5">${a.name} <span class="text-[9px] text-gray-400 font-bold ml-1">${a.status ? a.status.split(' ')[0] : '보호 중'}</span></h4>
+                            <div class="flex flex-wrap items-center gap-y-1">
+                                <div class="flex items-center mr-3"><span class="text-xs mr-1">🐕</span> ${getBadge(walks['오전'], '오전')} ${getBadge(walks['오후'], '오후')} ${getBadge(walks['저녁'], '저녁')}</div>
+                                <div class="flex items-center"><span class="text-xs mr-1">🥣</span> ${getBadge(meals['아침'], '아침')} ${getBadge(meals['저녁'], '저녁')}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            if(alertCount > 0) {
+                alertsContainer.innerHTML = `<h3 class="font-black text-red-500 mb-2 text-sm">🚨 오늘 발견된 특이사항 (${alertCount}건)</h3>` + alertsHtml;
+                alertsContainer.classList.remove('hidden');
+            } else {
+                alertsContainer.innerHTML = `<div class="bg-green-50 p-3 rounded-xl border border-green-100 text-center"><p class="text-xs font-bold text-green-600">오늘 보고된 특이사항이 없습니다. 모두 건강해요! 🌿</p></div>`;
+                alertsContainer.classList.remove('hidden');
+            }
+
+            if(!listHtml) listHtml = `<div class="text-center py-10 text-gray-400 font-bold">등록된 아이가 없습니다.</div>`;
+            listContainer.innerHTML = listHtml;
         }
 
         /* ================= 캘린더 근태 관리 로직 ================= */
@@ -664,13 +753,12 @@
             } else {
                 database.ref('schedules/' + dateKey).set(scheduleData).then(() => {
                     closeSchedulePanel();
-                    openModal('success', '저장 완료!', '근무표가 모든 훈련사에게 공유되었습니다.');
+                    openModal('success', '저장 완료!', '근무표가 공유되었습니다.');
                 });
             }
         }
         /* ========================================================= */
 
-        /* ================= [신규 추가] 행사/일정 관리 로직 ================= */
         function openEventAddPanel() {
             document.getElementById('ev-date').value = '';
             document.getElementById('ev-time').value = '';
@@ -711,12 +799,9 @@
 
         function renderEvents() {
             const container = document.getElementById('event-container');
-            
-            // 오늘 날짜 기준 자정
             const today = new Date();
             today.setHours(0,0,0,0);
 
-            // 지난 일정 지우기 없이 다 보여주되, 지나간 건 희미하게 보이도록 처리
             if(eventsList.length === 0) {
                 container.innerHTML = `<div class="text-center py-20 text-gray-400 font-bold">등록된 행사 및 일정이 없습니다.</div>`;
                 return;
@@ -725,12 +810,8 @@
             container.innerHTML = eventsList.map(ev => {
                 const evDate = new Date(ev.date);
                 const isPast = evDate < today;
-                
-                // 요일 구하기
                 const days = ['일', '월', '화', '수', '목', '금', '토'];
                 const dayName = days[evDate.getDay()];
-                
-                // 날짜 포맷 (예: 4/11)
                 const dateStr = `${evDate.getMonth()+1}/${evDate.getDate()}(${dayName})`;
 
                 return `
@@ -757,7 +838,6 @@
                 database.ref('events/' + eventId).remove();
             });
         }
-        /* ========================================================= */
 
         function handleSearch() {
             currentSearchQuery = document.getElementById('search-input').value.toLowerCase().trim();
@@ -943,7 +1023,6 @@
                     const breedMatch = a.breed && a.breed.toLowerCase().includes(currentSearchQuery);
                     if (!nameMatch && !breedMatch) return false; 
                 }
-
                 return true;
             });
 
