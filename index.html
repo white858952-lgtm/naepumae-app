@@ -16,21 +16,16 @@
         .card { background: white; border-radius: 28px; padding: 20px; border: 1px solid #ffe4e9; box-shadow: 0 10px 20px rgba(255, 105, 180, 0.03); }
         .modal-bg { background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(6px); z-index: 10000; position: fixed; inset: 0; display: none; align-items: center; justify-content: center; }
         .modal-bg.active { display: flex; }
-        #photo-preview, #edit-photo-preview { background-size: cover; background-position: center; transition: all 0.3s; }
+        #photo-preview { background-size: cover; background-position: center; transition: all 0.3s; }
         
         .content-area { padding-bottom: 120px; position: relative; z-index: 10; }
-        
         .save-btn { cursor: pointer; position: relative; z-index: 100; touch-action: manipulation; -webkit-appearance: none; }
         .save-btn:active { transform: scale(0.96); opacity: 0.9; }
-
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
         .slide-panel { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        
         .btn-active { background-color: #fbcfe8; color: #db2777; border-color: #f472b6; font-weight: 900; }
         .btn-inactive { background-color: #f9fafb; color: #9ca3af; border-color: #e5e7eb; }
-
         .grade-btn { transition: all 0.2s; }
         .grade-active { border-width: 2px !important; font-weight: 900; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transform: scale(1.05); }
         .g1.grade-active { border-color: #22c55e !important; background-color: #dcfce7 !important; color: #166534 !important; }
@@ -41,6 +36,8 @@
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        @keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(255, 105, 180, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(255, 105, 180, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 105, 180, 0); } }
+        .pulse-anim { animation: pulse-ring 2s infinite; }
         
         .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
         .cal-day { padding: 12px 4px; border-radius: 12px; font-weight: bold; font-size: 14px; cursor: pointer; position: relative; transition: all 0.2s; }
@@ -51,21 +48,56 @@
         .cal-day.sat { color: #3b82f6; }
         .cal-dot { position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; background-color: #f472b6; border-radius: 50%; }
         .cal-day.today .cal-dot { background-color: white; }
-
         .status-badge { display: inline-flex; align-items: center; justify-content: center; height: 20px; padding: 0 6px; border-radius: 6px; font-size: 10px; font-weight: 900; margin-right: 4px; }
         .status-done { background-color: #dcfce7; color: #059669; }
         .status-none { background-color: #f3f4f6; color: #9ca3af; }
     </style>
 </head>
-<body class="max-w-md mx-auto p-4 relative" onload="initApp()">
+<body class="max-w-md mx-auto p-4 relative" onload="checkAuth()">
     
     <div id="onboarding-panel" class="fixed inset-0 bg-white z-[9999] flex flex-col items-center justify-center p-6 hidden">
         <div class="w-full max-w-sm animate-fade-in text-center">
-            <div class="text-6xl mb-6">🐾</div>
-            <h1 class="text-2xl font-black text-gray-800 mb-2">환영합니다!</h1>
-            <p class="text-gray-500 font-bold mb-8">기록 작성 시 표시될 훈련사님의<br>이름(또는 직함)을 입력해주세요.</p>
+            <div class="text-6xl mb-4">🐾</div>
+            <h1 class="text-2xl font-black text-gray-800 mb-2">내품애 관리 시스템</h1>
+            <p class="text-gray-500 font-bold mb-8 text-sm">외부 접근이 차단된 안전한 시스템입니다.<br>소속 훈련사님의 이름을 입력하고 권한을 요청하세요.</p>
+            
             <input type="text" id="setup-trainer-name" placeholder="예: 김현우 훈련사" class="w-full p-4 border border-pink-100 rounded-2xl outline-none bg-gray-50 text-center font-black text-lg focus:border-pink-400 focus:bg-white transition-colors mb-4 shadow-sm">
-            <button onclick="saveTrainerProfile()" class="w-full py-4 pink-gradient text-white font-black text-lg rounded-2xl shadow-lg active:scale-95 transition-transform">앱 시작하기</button>
+            
+            <button onclick="requestAccess()" class="w-full py-4 pink-gradient text-white font-black text-lg rounded-2xl shadow-lg active:scale-95 transition-transform mb-6">
+                접속 권한 요청하기
+            </button>
+            
+            <button onclick="showAdminCodeInput()" class="text-[10px] text-gray-300 font-bold underline">🔑 관리자 코드로 접속</button>
+            
+            <div id="admin-code-area" class="hidden mt-3">
+                <input type="password" id="setup-admin-code" placeholder="초기비밀번호: 0000" class="w-2/3 p-2 border border-gray-200 rounded-xl outline-none bg-gray-50 text-center font-black text-sm mb-2">
+                <button onclick="loginAsAdmin()" class="w-2/3 py-2 bg-gray-800 text-white font-black text-sm rounded-xl shadow-md active:scale-95 transition-transform">관리자 즉시 승인</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="waiting-panel" class="fixed inset-0 bg-white z-[9999] flex flex-col items-center justify-center p-6 hidden">
+        <div class="w-full max-w-sm text-center">
+            <div class="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-6 pulse-anim">
+                <span class="text-3xl">⏳</span>
+            </div>
+            <h1 class="text-2xl font-black text-gray-800 mb-2">승인 대기 중입니다</h1>
+            <p class="text-gray-500 font-bold text-sm mb-6">관리자(최고 권한자)가 승인을 완료하면<br>화면이 자동으로 전환됩니다.</p>
+            <div class="bg-gray-50 p-4 rounded-xl text-xs text-gray-400 font-bold border border-gray-100">
+                요청자 이름: <span id="wait-trainer-name" class="text-pink-500 font-black"></span>
+            </div>
+        </div>
+    </div>
+
+    <div id="admin-approve-modal" class="modal-bg z-[10000]">
+        <div class="bg-white w-[90%] max-w-sm rounded-[35px] p-6 text-center shadow-2xl relative max-h-[80vh] overflow-hidden flex flex-col">
+            <button onclick="closeAdminApproveModal()" class="absolute top-4 right-5 text-2xl text-gray-400 hover:text-gray-600">&times;</button>
+            <div class="text-4xl mb-2 mt-2">👑</div>
+            <h3 class="text-xl font-black mb-1 text-gray-800">멤버 승인 관리</h3>
+            <p class="text-gray-400 text-xs mb-4 font-bold">어플 접속을 요청한 훈련사 목록입니다.</p>
+            
+            <div id="request-list-container" class="flex-1 overflow-y-auto space-y-3 mb-2 px-1 pb-4 text-left">
+                </div>
         </div>
     </div>
 
@@ -79,14 +111,19 @@
         </div>
     </div>
 
-    <div class="content-area" id="main-content">
+    <div class="content-area hidden" id="main-content">
         <header class="py-6 flex justify-between items-center relative">
-            <div></div> 
-            <div class="text-center absolute left-1/2 transform -translate-x-1/2 w-full pointer-events-none">
+            <button id="btn-admin-manage" onclick="openAdminApproveModal()" class="hidden flex items-center gap-1 bg-gray-800 text-white px-3 py-1.5 rounded-full shadow-sm active:scale-95 transition-transform z-10">
+                <span class="text-sm">👑</span>
+                <span class="text-[10px] font-black">승인 관리</span>
+                <div id="admin-req-badge" class="hidden absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
+            </button>
+            <div id="header-spacer" class="w-10"></div> <div class="text-center absolute left-1/2 transform -translate-x-1/2 w-full pointer-events-none">
                 <h1 class="text-3xl font-black text-[#ff69b4] mb-1">내품애 센터</h1>
                 <p class="text-gray-500 text-xs font-bold tracking-tight">반려동물과 행복한 서대문</p>
             </div>
-            <button onclick="openProfileEditModal()" class="flex items-center gap-1.5 bg-pink-50 border border-pink-100 px-3 py-1.5 rounded-full text-pink-500 shadow-sm active:scale-95 transition-transform z-10">
+
+            <button onclick="openProfileEditModal()" class="flex items-center gap-1.5 bg-pink-50 border border-pink-100 px-3 py-1.5 rounded-full text-pink-500 shadow-sm active:scale-95 transition-transform z-10 ml-auto">
                 <span id="header-trainer-name" class="text-[11px] font-black max-w-[60px] truncate">로그인</span>
                 <span class="text-sm">👤</span>
             </button>
@@ -142,7 +179,7 @@
         <div id="view-reg" class="hidden space-y-6 pb-10">
             <div class="card space-y-4">
                 <div class="flex justify-between items-center">
-                    <h2 class="text-lg font-bold text-gray-700">📸 신규 보호 동물 등록</h2>
+                    <h2 id="reg-title" class="text-lg font-bold text-gray-700">📸 신규 보호 동물 등록</h2>
                 </div>
                 
                 <div id="photo-preview" onclick="document.getElementById('in-photo').click()" class="w-full h-52 rounded-3xl bg-pink-50 flex items-center justify-center border-2 border-dashed border-pink-200 relative overflow-hidden cursor-pointer">
@@ -542,6 +579,16 @@
         </div>
     </div>
 
+    <div id="admin-approve-modal" class="modal-bg z-[10000]">
+        <div class="bg-white w-[90%] max-w-sm rounded-[35px] p-6 text-center shadow-2xl relative max-h-[80vh] overflow-hidden flex flex-col">
+            <button onclick="closeAdminApproveModal()" class="absolute top-4 right-5 text-2xl text-gray-400 hover:text-gray-600">&times;</button>
+            <div class="text-4xl mb-2 mt-2">👑</div>
+            <h3 class="text-xl font-black mb-1 text-gray-800">멤버 승인 관리</h3>
+            <p class="text-gray-400 text-xs mb-4 font-bold">어플 접속을 요청한 훈련사 목록입니다.</p>
+            <div id="request-list-container" class="flex-1 overflow-y-auto space-y-3 mb-2 px-1 pb-4 text-left"></div>
+        </div>
+    </div>
+
     <div id="custom-modal" class="modal-bg z-[10000]">
         <div class="bg-white w-[85%] max-w-xs rounded-[35px] p-8 text-center shadow-2xl">
             <div id="modal-icon" class="text-5xl mb-4"></div>
@@ -552,20 +599,11 @@
     </div>
 
     <script>
-        let currentTrainerName = localStorage.getItem('naepumae_trainer_name');
-        let currentTrainerId = localStorage.getItem('naepumae_trainer_id');
-        
-        let editingLogId = null;
-        let editingLogOriginalData = null;
-        let editingAnimalProfileId = null; 
-        let currentSearchQuery = '';
-
-        let currentDate = new Date();
-        let schedules = {}; 
-        let eventsList = []; 
-
-        const dogBreeds = ['믹스견', '말티즈', '푸들', '포메라니안', '진돗개', '골든 리트리버', '비숑 프리제', '치와와', '시츄', '요크셔테리어', '직접 입력'];
-        const catBreeds = ['코리안 숏헤어', '페르시안', '러시안 블루', '샴', '먼치킨', '랙돌', '스코티시 폴드', '브리티시 숏헤어', '직접 입력'];
+        // === 보안 및 인증 로직 (기존 유지) ===
+        let currentTrainerName = "";
+        let currentTrainerId = "";
+        let isAdmin = false;
+        let deviceId = localStorage.getItem('naepumae_device_id');
 
         const firebaseConfig = {
             apiKey: "AIzaSyAitCQVYKsqytLzT_O9_k0lXT7bAsPhjLY",
@@ -579,72 +617,171 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        let animals = [];
-        let currentFilter = 'all'; 
+        let isAppStarted = false; 
 
-        function initApp() {
-            if(!currentTrainerName || !currentTrainerId) {
+        function checkAuth() {
+            if(!deviceId) {
+                deviceId = 'dev_' + Date.now() + Math.random().toString(36).substr(2);
+                localStorage.setItem('naepumae_device_id', deviceId);
                 document.getElementById('onboarding-panel').classList.remove('hidden');
             } else {
-                applyTrainerProfile();
-                showView('list');
+                database.ref('users/' + deviceId).on('value', snap => {
+                    const user = snap.val();
+                    if(!user) {
+                        document.getElementById('onboarding-panel').classList.remove('hidden');
+                        document.getElementById('waiting-panel').classList.add('hidden');
+                        document.getElementById('main-content').classList.add('hidden');
+                    } else if(user.status === 'pending') {
+                        document.getElementById('wait-trainer-name').innerText = user.name;
+                        document.getElementById('onboarding-panel').classList.add('hidden');
+                        document.getElementById('waiting-panel').classList.remove('hidden');
+                        document.getElementById('main-content').classList.add('hidden');
+                    } else if(user.status === 'approved') {
+                        currentTrainerName = user.name;
+                        currentTrainerId = deviceId;
+                        isAdmin = (user.role === 'admin');
+                        
+                        document.getElementById('header-trainer-name').innerText = currentTrainerName;
+                        document.querySelectorAll('#current-trainer-display').forEach(el => el.innerText = currentTrainerName);
+                        
+                        if(isAdmin) document.getElementById('btn-admin-manage').classList.remove('hidden');
+                        else document.getElementById('btn-admin-manage').classList.add('hidden');
+
+                        document.getElementById('onboarding-panel').classList.add('hidden');
+                        document.getElementById('waiting-panel').classList.add('hidden');
+                        document.getElementById('main-content').classList.remove('hidden');
+
+                        if(!isAppStarted) {
+                            startAppSync();
+                            isAppStarted = true;
+                            showView('list');
+                        }
+                    }
+                });
             }
         }
 
-        function saveTrainerProfile() {
-            const inputName = document.getElementById('setup-trainer-name').value.trim();
-            if(!inputName) { alert('이름을 입력해주세요!'); return; }
-            currentTrainerName = inputName;
-            currentTrainerId = 'tr_' + Date.now().toString(36) + Math.random().toString(36).substr(2);
-            localStorage.setItem('naepumae_trainer_name', currentTrainerName);
-            localStorage.setItem('naepumae_trainer_id', currentTrainerId);
-            document.getElementById('onboarding-panel').classList.add('hidden');
-            applyTrainerProfile();
-            showView('list');
+        function requestAccess() {
+            const name = document.getElementById('setup-trainer-name').value.trim();
+            if(!name) { alert('이름이나 직함을 입력해주세요.'); return; }
+            database.ref('users/' + deviceId).set({ name: name, status: 'pending', role: 'trainer', timestamp: Date.now() });
         }
 
+        function showAdminCodeInput() {
+            document.getElementById('admin-code-area').classList.remove('hidden');
+        }
+
+        function loginAsAdmin() {
+            const name = document.getElementById('setup-trainer-name').value.trim();
+            const code = document.getElementById('setup-admin-code').value.trim();
+            if(!name) { alert('이름을 먼저 입력해주세요.'); return; }
+            if(code === '0000') {
+                database.ref('users/' + deviceId).set({ name: name, status: 'approved', role: 'admin', timestamp: Date.now() });
+            } else {
+                alert('관리자 코드가 일치하지 않습니다.');
+            }
+        }
+
+        function openAdminApproveModal() {
+            document.getElementById('admin-approve-modal').classList.add('active');
+            document.getElementById('admin-req-badge').classList.add('hidden'); // 알림 배지 숨김
+        }
+        function closeAdminApproveModal() { document.getElementById('admin-approve-modal').classList.remove('active'); }
+
+        function approveUser(uid) { database.ref('users/' + uid).update({ status: 'approved' }); }
+        function rejectUser(uid) { database.ref('users/' + uid).remove(); }
+
+        // --- 메인 데이터 동기화 (권한 획득 후 실행) ---
+        let animals = [];
+        let currentFilter = 'all'; 
+        let currentSearchQuery = '';
+        let editingLogId = null; let editingLogOriginalData = null; let editingAnimalProfileId = null; 
+        let currentDate = new Date(); let schedules = {}; let eventsList = []; 
+
+        const dogBreeds = ['믹스견', '말티즈', '푸들', '포메라니안', '진돗개', '골든 리트리버', '비숑 프리제', '치와와', '시츄', '요크셔테리어', '직접 입력'];
+        const catBreeds = ['코리안 숏헤어', '페르시안', '러시안 블루', '샴', '먼치킨', '랙돌', '스코티시 폴드', '브리티시 숏헤어', '직접 입력'];
+
+        function startAppSync() {
+            // 관리자용 승인 요청 리스너
+            if(isAdmin) {
+                database.ref('users').on('value', snap => {
+                    const users = snap.val();
+                    const listContainer = document.getElementById('request-list-container');
+                    let pendingCount = 0;
+                    let html = '';
+                    if(users) {
+                        Object.keys(users).forEach(uid => {
+                            if(users[uid].status === 'pending') {
+                                pendingCount++;
+                                html += `
+                                <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex justify-between items-center">
+                                    <div>
+                                        <p class="text-sm font-black text-gray-800">${users[uid].name}</p>
+                                        <p class="text-[10px] text-gray-400">요청: ${new Date(users[uid].timestamp).toLocaleDateString()}</p>
+                                    </div>
+                                    <div class="flex gap-1">
+                                        <button onclick="approveUser('${uid}')" class="bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg text-xs font-bold active:scale-95 border border-indigo-100">승인</button>
+                                        <button onclick="rejectUser('${uid}')" class="bg-white text-gray-400 px-3 py-1.5 rounded-lg text-xs font-bold active:scale-95 border border-gray-200">거절</button>
+                                    </div>
+                                </div>`;
+                            }
+                        });
+                    }
+                    if(pendingCount > 0) {
+                        document.getElementById('admin-req-badge').classList.remove('hidden');
+                        listContainer.innerHTML = html;
+                    } else {
+                        document.getElementById('admin-req-badge').classList.add('hidden');
+                        listContainer.innerHTML = `<div class="text-center py-10 text-gray-400 font-bold text-xs">대기 중인 요청이 없습니다.</div>`;
+                    }
+                });
+            }
+
+            // 동기화
+            database.ref('animals').on('value', (snapshot) => {
+                const data = snapshot.val(); animals = [];
+                if (data) { Object.keys(data).forEach(key => animals.push(data[key])); animals.sort((a, b) => b.id - a.id); }
+                renderFilters();
+                if (!document.getElementById('view-list').classList.contains('hidden')) renderTasks();
+                if (!document.getElementById('view-dashboard').classList.contains('hidden')) renderDashboard();
+
+                const profilePanel = document.getElementById('profile-panel');
+                if(!profilePanel.classList.contains('translate-x-full')) {
+                    const activeId = document.getElementById('pp-animal-id').value; const activeAni = animals.find(a => a.id == activeId);
+                    if(activeAni) populateProfilePanel(activeAni); 
+                }
+                const behaviorPanel = document.getElementById('behavior-panel');
+                if(!behaviorPanel.classList.contains('translate-x-full')) {
+                    const activeId = document.getElementById('pp-animal-id').value; const activeAni = animals.find(a => a.id == activeId);
+                    if(activeAni) renderBehaviorHistory(activeAni); 
+                }
+                const historyPanel = document.getElementById('history-panel');
+                if(!historyPanel.classList.contains('translate-x-full')) {
+                    const activeId = document.getElementById('hp-animal-id').value; const activeAni = animals.find(a => a.id == activeId);
+                    if(activeAni) renderHistory(activeAni);
+                }
+            });
+
+            database.ref('schedules').on('value', (snapshot) => { schedules = snapshot.val() || {}; if (!document.getElementById('view-schedule').classList.contains('hidden')) renderCalendar(); });
+            database.ref('events').on('value', (snapshot) => { 
+                const data = snapshot.val(); eventsList = [];
+                if(data) { Object.keys(data).forEach(k => eventsList.push({...data[k], id: k})); eventsList.sort((a, b) => new Date(a.date) - new Date(b.date)); }
+                if (!document.getElementById('view-events').classList.contains('hidden')) renderEvents();
+            });
+        }
+
+        // --- 내 정보 수정 (Approved 이후 작동) ---
         function openProfileEditModal() { document.getElementById('edit-trainer-name').value = currentTrainerName; document.getElementById('profile-edit-modal').classList.add('active'); }
         function closeProfileEditModal() { document.getElementById('profile-edit-modal').classList.remove('active'); }
         function updateTrainerProfile() {
             const newName = document.getElementById('edit-trainer-name').value.trim();
             if(!newName) return;
-            currentTrainerName = newName; localStorage.setItem('naepumae_trainer_name', currentTrainerName);
-            applyTrainerProfile(); closeProfileEditModal();
-        }
-        function applyTrainerProfile() {
-            document.getElementById('header-trainer-name').innerText = currentTrainerName;
-            const displays = document.querySelectorAll('#current-trainer-display');
-            displays.forEach(d => d.innerText = currentTrainerName);
+            database.ref('users/' + deviceId).update({ name: newName }).then(() => { closeProfileEditModal(); });
         }
 
-        database.ref('animals').on('value', (snapshot) => {
-            const data = snapshot.val();
-            animals = [];
-            if (data) { Object.keys(data).forEach(key => animals.push(data[key])); animals.sort((a, b) => b.id - a.id); }
-            renderFilters();
-            if (!document.getElementById('view-list').classList.contains('hidden')) renderTasks();
-            if (!document.getElementById('view-dashboard').classList.contains('hidden')) renderDashboard();
 
-            const profilePanel = document.getElementById('profile-panel');
-            if(!profilePanel.classList.contains('translate-x-full')) {
-                const activeId = document.getElementById('pp-animal-id').value; const activeAni = animals.find(a => a.id == activeId);
-                if(activeAni) populateProfilePanel(activeAni); 
-            }
-            const behaviorPanel = document.getElementById('behavior-panel');
-            if(!behaviorPanel.classList.contains('translate-x-full')) {
-                const activeId = document.getElementById('pp-animal-id').value; const activeAni = animals.find(a => a.id == activeId);
-                if(activeAni) renderBehaviorHistory(activeAni); 
-            }
-            const historyPanel = document.getElementById('history-panel');
-            if(!historyPanel.classList.contains('translate-x-full')) {
-                const activeId = document.getElementById('hp-animal-id').value; const activeAni = animals.find(a => a.id == activeId);
-                if(activeAni) renderHistory(activeAni);
-            }
-        });
-
-        // 압축률과 리사이징 크기를 조절하여 대량 등록 시 메모리 과부하를 방지
-        let currentPhotoBase64 = null;
-        let currentEditPhotoBase64 = null;
+        // === 이미지 최적화 및 폼 로직 ===
+        let currentPhotoBase64 = null; let currentEditPhotoBase64 = null;
 
         function handleFileSelect(event, mode='in') {
             const file = event.target.files[0]; if (!file) return;
@@ -652,76 +789,22 @@
             reader.onload = (e) => {
                 const img = new Image();
                 img.onload = () => {
-                    const canvas = document.createElement('canvas'); let width = img.width, height = img.height; 
-                    const max = 300; // 최대 300px로 강력 리사이징 (DB 최적화)
+                    const canvas = document.createElement('canvas'); let width = img.width, height = img.height; const max = 300; 
                     if (width > height) { if (width > max) { height *= max / width; width = max; } } else { if (height > max) { width *= max / height; height = max; } }
                     canvas.width = width; canvas.height = height; canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-                    
                     const base64Str = canvas.toDataURL('image/jpeg', 0.6);
-                    
-                    if (mode === 'in') {
-                        currentPhotoBase64 = base64Str;
-                        document.getElementById('photo-preview').style.backgroundImage = `url(${currentPhotoBase64})`;
-                        document.getElementById('photo-placeholder').classList.add('hidden'); document.getElementById('del-photo-btn').classList.remove('hidden');
-                    } else {
-                        currentEditPhotoBase64 = base64Str;
-                        document.getElementById('edit-photo-preview').style.backgroundImage = `url(${currentEditPhotoBase64})`;
-                        document.getElementById('edit-photo-placeholder').classList.add('hidden'); document.getElementById('edit-del-photo-btn').classList.remove('hidden');
-                    }
+                    if (mode === 'in') { currentPhotoBase64 = base64Str; document.getElementById('photo-preview').style.backgroundImage = `url(${currentPhotoBase64})`; document.getElementById('photo-placeholder').classList.add('hidden'); document.getElementById('del-photo-btn').classList.remove('hidden'); } 
+                    else { currentEditPhotoBase64 = base64Str; document.getElementById('edit-photo-preview').style.backgroundImage = `url(${currentEditPhotoBase64})`; document.getElementById('edit-photo-placeholder').classList.add('hidden'); document.getElementById('edit-del-photo-btn').classList.remove('hidden'); }
                 }; img.src = e.target.result;
             }; reader.readAsDataURL(file);
         }
         function removePhoto(event, mode='in') {
             if(event) event.stopPropagation(); 
-            if(mode === 'in') {
-                currentPhotoBase64 = null;
-                document.getElementById('photo-preview').style.backgroundImage = 'none';
-                document.getElementById('photo-placeholder').classList.remove('hidden'); document.getElementById('del-photo-btn').classList.add('hidden'); document.getElementById('in-photo').value = '';
-            } else {
-                currentEditPhotoBase64 = null;
-                document.getElementById('edit-photo-preview').style.backgroundImage = 'none';
-                document.getElementById('edit-photo-placeholder').classList.remove('hidden'); document.getElementById('edit-del-photo-btn').classList.add('hidden'); document.getElementById('edit-photo').value = '';
-            }
+            if(mode === 'in') { currentPhotoBase64 = null; document.getElementById('photo-preview').style.backgroundImage = 'none'; document.getElementById('photo-placeholder').classList.remove('hidden'); document.getElementById('del-photo-btn').classList.add('hidden'); document.getElementById('in-photo').value = ''; } 
+            else { currentEditPhotoBase64 = null; document.getElementById('edit-photo-preview').style.backgroundImage = 'none'; document.getElementById('edit-photo-placeholder').classList.remove('hidden'); document.getElementById('edit-del-photo-btn').classList.add('hidden'); document.getElementById('edit-photo').value = ''; }
         }
 
-        database.ref('schedules').on('value', (snapshot) => { schedules = snapshot.val() || {}; if (!document.getElementById('view-schedule').classList.contains('hidden')) renderCalendar(); });
-        database.ref('events').on('value', (snapshot) => { 
-            const data = snapshot.val(); eventsList = [];
-            if(data) { Object.keys(data).forEach(k => eventsList.push({...data[k], id: k})); eventsList.sort((a, b) => new Date(a.date) - new Date(b.date)); }
-            if (!document.getElementById('view-events').classList.contains('hidden')) renderEvents();
-        });
-
-        function showView(view) {
-            ['reg', 'list', 'schedule', 'events', 'dashboard'].forEach(v => {
-                document.getElementById('view-'+v).classList.toggle('hidden', view !== v);
-                const navBtn = document.getElementById('nav-'+v);
-                if(navBtn) { navBtn.classList.toggle('opacity-40', view !== v); navBtn.classList.toggle('opacity-100', view === v); }
-            });
-            window.scrollTo(0,0);
-            
-            if(view === 'list') renderTasks();
-            else if(view === 'dashboard') renderDashboard();
-            else if(view === 'reg') resetRegForm(); // 아이 등록 탭은 누를 때마다 무조건 빈 폼 표시
-        }
-
-        function renderFilters() {
-            const container = document.getElementById('filter-container');
-            const filters = [
-                { id: 'all', label: '전체 보기' }, { id: 'dog', label: '개 🐶' }, { id: 'cat', label: '고양이 🐱' }, 
-                { id: 'protecting', label: '보호 중 🏡' }, { id: 'temp', label: '임시보호 🏨' }, { id: 'adopt', label: '입양 대기 💝' },
-                { id: 'grA', label: 'A그룹(합사)' }, { id: 'grB', label: 'B그룹(합사)' }, { id: 'grC', label: 'C그룹(합사)' }, { id: 'grAlone', label: '단독 활동 🔴' }
-            ];
-            container.innerHTML = filters.map(f => `<button onclick="setFilter('${f.id}')" class="whitespace-nowrap px-4 py-2 rounded-full text-[11px] font-black transition-all ${currentFilter === f.id ? 'bg-pink-500 text-white shadow-md' : 'bg-white text-pink-300 border border-pink-100'}">${f.label}</button>`).join('');
-        }
-
-        function setFilter(filterType) { currentFilter = filterType; renderFilters(); renderTasks(); }
-        function handleSearch() { currentSearchQuery = document.getElementById('search-input').value.toLowerCase().trim(); renderTasks(); }
-
-        // [수정] select box 세팅용 안전 헬퍼 함수
-        function setSelectValue(id, validOptions, value) {
-            const el = document.getElementById(id);
-            el.value = validOptions.includes(value) ? value : "";
-        }
+        function setSelectValue(id, validOptions, value) { const el = document.getElementById(id); el.value = validOptions.includes(value) ? value : ""; }
 
         function updateBreeds(mode='in') {
             const typeSelect = document.getElementById(`${mode}-type`); const breedSelect = document.getElementById(`${mode}-breed`); const breedCustom = document.getElementById(`${mode}-breed-custom`);
@@ -735,19 +818,17 @@
         }
 
         function resetRegForm() {
-            ['in-name', 'in-type', 'in-gender', 'in-age', 'in-health-memo', 'in-med-info', 'in-memo', 'in-size', 'in-group'].forEach(id => {
-                const el = document.getElementById(id); if(el) el.value = "";
-            });
+            editingAnimalProfileId = null;
+            document.getElementById('reg-title').innerText = "📸 신규 보호 동물 등록"; 
+            
+            ['in-name', 'in-type', 'in-gender', 'in-age', 'in-health-memo', 'in-med-info', 'in-memo', 'in-size', 'in-group'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ""; });
             updateBreeds('in'); document.getElementById('in-status').value = "";
             document.getElementById('in-med-am').checked = false; document.getElementById('in-med-pm').checked = false;
             
-            document.querySelectorAll('.in-per-btn').forEach(btn => {
-                btn.classList.remove('btn-active', 'bg-pink-100', 'text-pink-600', 'border-pink-300'); btn.classList.add('btn-inactive', 'bg-white', 'text-gray-500', 'border-gray-200');
-            });
+            document.querySelectorAll('.in-per-btn').forEach(btn => { btn.classList.remove('btn-active', 'bg-pink-100', 'text-pink-600', 'border-pink-300'); btn.classList.add('btn-inactive', 'bg-white', 'text-gray-500', 'border-gray-200'); });
             removePhoto(null, 'in'); 
         }
 
-        // 새 아이 등록 함수
         function saveNewAnimal() {
             document.querySelectorAll('#view-reg input, #view-reg textarea, #view-reg select').forEach(el => el.blur());
             const name = document.getElementById('in-name').value.trim();
@@ -770,25 +851,19 @@
                 med_am: document.getElementById('in-med-am').checked, med_pm: document.getElementById('in-med-pm').checked
             };
 
-            database.ref('animals/' + targetId).set(saveObj).then(() => {
-                resetRegForm(); openModal('success', '등록 성공! ✨', `${name}의 정보가 저장되었습니다.`); showView('list');
-            });
+            database.ref('animals/' + targetId).set(saveObj).then(() => { resetRegForm(); openModal('success', '등록 성공! ✨', `${name}의 정보가 저장되었습니다.`); showView('list'); });
         }
 
-        // [수정 전용 패널 로직]
+
+        // === 개체 정보 수정 패널 (완전 분리) ===
         function openEditPanel() {
-            const id = document.getElementById('pp-animal-id').value;
-            const ani = animals.find(a => a.id == id);
-            if(!ani) return;
+            const id = document.getElementById('pp-animal-id').value; const ani = animals.find(a => a.id == id); if(!ani) return;
             editingAnimalProfileId = ani.id;
 
             document.getElementById('edit-name').value = ani.name; 
-            
-            setSelectValue('edit-type', ['개', '고양이'], ani.type);
-            updateBreeds('edit');
+            setSelectValue('edit-type', ['개', '고양이'], ani.type); updateBreeds('edit');
 
-            const breedSelect = document.getElementById('edit-breed');
-            let isCustom = true;
+            const breedSelect = document.getElementById('edit-breed'); let isCustom = true;
             for(let i=0; i<breedSelect.options.length; i++) { if(breedSelect.options[i].value === ani.breed) { isCustom = false; break; } }
             if(isCustom && ani.breed && ani.breed !== '미상') { breedSelect.value = '직접 입력'; checkCustomBreed('edit'); document.getElementById('edit-breed-custom').value = ani.breed; } 
             else { breedSelect.value = ani.breed === '미상' ? "" : ani.breed; checkCustomBreed('edit'); }
@@ -800,10 +875,8 @@
             setSelectValue('edit-status', ['보호 중 🏡', '임시보호 🏨', '입양 대기 💝'], ani.status);
             
             document.getElementById('edit-memo').value = ani.memo;
-            document.getElementById('edit-health-memo').value = ani.health_memo || '';
-            document.getElementById('edit-med-info').value = ani.med_info || '';
-            document.getElementById('edit-med-am').checked = ani.med_am || false;
-            document.getElementById('edit-med-pm').checked = ani.med_pm || false;
+            document.getElementById('edit-health-memo').value = ani.health_memo || ''; document.getElementById('edit-med-info').value = ani.med_info || '';
+            document.getElementById('edit-med-am').checked = ani.med_am || false; document.getElementById('edit-med-pm').checked = ani.med_pm || false;
 
             const pArr = ani.personality ? ani.personality.split(',').map(s=>s.trim()) : [];
             document.querySelectorAll('.edit-per-btn').forEach(btn => {
@@ -811,32 +884,21 @@
                 else { btn.classList.remove('btn-active', 'bg-pink-100', 'text-pink-600', 'border-pink-300'); btn.classList.add('btn-inactive', 'bg-white', 'text-gray-500', 'border-gray-200'); }
             });
 
-            if(ani.photo) {
-                currentEditPhotoBase64 = ani.photo; 
-                document.getElementById('edit-photo-preview').style.backgroundImage = `url(${ani.photo})`;
-                document.getElementById('edit-photo-placeholder').classList.add('hidden'); document.getElementById('edit-del-photo-btn').classList.remove('hidden');
-            } else { removePhoto(null, 'edit'); }
+            if(ani.photo) { currentEditPhotoBase64 = ani.photo; document.getElementById('edit-photo-preview').style.backgroundImage = `url(${ani.photo})`; document.getElementById('edit-photo-placeholder').classList.add('hidden'); document.getElementById('edit-del-photo-btn').classList.remove('hidden'); } 
+            else { removePhoto(null, 'edit'); }
 
             document.getElementById('edit-panel').classList.remove('translate-x-full');
         }
 
-        function closeEditPanel() {
-            editingAnimalProfileId = null;
-            document.getElementById('edit-panel').classList.add('translate-x-full');
-        }
+        function closeEditPanel() { editingAnimalProfileId = null; document.getElementById('edit-panel').classList.add('translate-x-full'); }
 
         function saveEditedAnimal() {
             document.querySelectorAll('#edit-panel input, #edit-panel textarea, #edit-panel select').forEach(el => el.blur());
-            const name = document.getElementById('edit-name').value.trim();
-            if(!name) { openModal('error', '이름을 적어주세요!', '아이의 이름을 입력해야 완료됩니다.'); return; }
+            const name = document.getElementById('edit-name').value.trim(); if(!name) { openModal('error', '이름을 적어주세요!', '아이의 이름을 입력해야 완료됩니다.'); return; }
             
-            let breedVal = document.getElementById('edit-breed').value;
-            if(breedVal === '직접 입력') breedVal = document.getElementById('edit-breed-custom').value.trim();
-            if(!breedVal) breedVal = '미상';
-
+            let breedVal = document.getElementById('edit-breed').value; if(breedVal === '직접 입력') breedVal = document.getElementById('edit-breed-custom').value.trim(); if(!breedVal) breedVal = '미상';
             const selectedPersonalities = Array.from(document.querySelectorAll('.edit-per-btn.btn-active')).map(b => b.innerText);
-            const targetId = editingAnimalProfileId;
-            const existingAni = animals.find(a => a.id === targetId);
+            const targetId = editingAnimalProfileId; const existingAni = animals.find(a => a.id === targetId);
             
             let saveObj = {
                 id: targetId, photo: currentEditPhotoBase64, name: name, type: document.getElementById('edit-type').value || '미상', breed: breedVal,
@@ -851,16 +913,39 @@
             if(existingAni) {
                 if(existingAni.daily_logs) saveObj.daily_logs = existingAni.daily_logs;
                 if(existingAni.behavior_logs) saveObj.behavior_logs = existingAni.behavior_logs;
-                if(!currentEditPhotoBase64 && existingAni.photo) saveObj.photo = existingAni.photo; // 사진 변경 없으면 유지
+                if(!currentEditPhotoBase64 && existingAni.photo) saveObj.photo = existingAni.photo; 
             }
 
-            database.ref('animals/' + targetId).set(saveObj).then(() => {
-                closeEditPanel();
-                openModal('success', '수정 완료!', `${name}의 정보가 업데이트되었습니다.`);
-            });
+            database.ref('animals/' + targetId).set(saveObj).then(() => { closeEditPanel(); openModal('success', '수정 완료!', `${name}의 정보가 업데이트되었습니다.`); });
         }
 
 
+        // === 메인 뷰 제어 ===
+        function showView(view) {
+            ['reg', 'list', 'schedule', 'events', 'dashboard'].forEach(v => {
+                document.getElementById('view-'+v).classList.toggle('hidden', view !== v);
+                const navBtn = document.getElementById('nav-'+v);
+                if(navBtn) { navBtn.classList.toggle('opacity-40', view !== v); navBtn.classList.toggle('opacity-100', view === v); }
+            });
+            window.scrollTo(0,0);
+            
+            if(view === 'list') renderTasks();
+            else if(view === 'dashboard') renderDashboard();
+            else if(view === 'schedule') renderCalendar();
+            else if(view === 'events') renderEvents();
+            else if(view === 'reg') resetRegForm(); 
+        }
+
+        // --- 필터 / 검색 ---
+        function renderFilters() {
+            const container = document.getElementById('filter-container');
+            const filters = [ { id: 'all', label: '전체 보기' }, { id: 'dog', label: '개 🐶' }, { id: 'cat', label: '고양이 🐱' }, { id: 'protecting', label: '보호 중 🏡' }, { id: 'temp', label: '임시보호 🏨' }, { id: 'adopt', label: '입양 대기 💝' }, { id: 'grA', label: 'A그룹(합사)' }, { id: 'grB', label: 'B그룹(합사)' }, { id: 'grC', label: 'C그룹(합사)' }, { id: 'grAlone', label: '단독 활동 🔴' } ];
+            container.innerHTML = filters.map(f => `<button onclick="setFilter('${f.id}')" class="whitespace-nowrap px-4 py-2 rounded-full text-[11px] font-black transition-all ${currentFilter === f.id ? 'bg-pink-500 text-white shadow-md' : 'bg-white text-pink-300 border border-pink-100'}">${f.label}</button>`).join('');
+        }
+        function setFilter(filterType) { currentFilter = filterType; renderFilters(); renderTasks(); }
+        function handleSearch() { currentSearchQuery = document.getElementById('search-input').value.toLowerCase().trim(); renderTasks(); }
+
+        // --- 리스트 렌더링 ---
         function renderTasks() {
             const container = document.getElementById('task-container');
             const filteredAnimals = animals.filter(a => {
@@ -876,10 +961,7 @@
                 
                 if (currentSearchQuery) {
                     const searchStr = currentSearchQuery;
-                    const match = (a.name && a.name.toLowerCase().includes(searchStr)) ||
-                                  (a.breed && a.breed.toLowerCase().includes(searchStr)) ||
-                                  (a.personality && a.personality.toLowerCase().includes(searchStr)) ||
-                                  (a.play_group && a.play_group.toLowerCase().includes(searchStr));
+                    const match = (a.name && a.name.toLowerCase().includes(searchStr)) || (a.breed && a.breed.toLowerCase().includes(searchStr)) || (a.personality && a.personality.toLowerCase().includes(searchStr)) || (a.play_group && a.play_group.toLowerCase().includes(searchStr));
                     if (!match) return false; 
                 }
                 return true;
@@ -915,6 +997,7 @@
             });
         }
 
+        // --- 대시보드 렌더링 ---
         function renderDashboard() {
             const now = new Date(); const todayStr = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`;
             document.getElementById('dash-date-title').innerText = `${now.getMonth()+1}월 ${now.getDate()}일 케어 현황`;
@@ -928,10 +1011,7 @@
                 if(a.daily_logs) {
                     Object.values(a.daily_logs).forEach(log => {
                         if(log.date_str === todayStr) {
-                            if(log.walk) {
-                                if(log.walk.time !== '-') walks[log.walk.time] = true;
-                                if(log.walk.condition === '나쁨') { alertsHtml += `<div class="bg-red-50 border border-red-100 p-3 rounded-xl mb-2 flex items-start gap-2 cursor-pointer" onclick="openProfilePanel(${a.id})"><span class="text-lg">🚨</span><div><p class="text-xs font-black text-red-600">${a.name} <span class="font-bold text-gray-500">산책 컨디션 나쁨</span></p></div></div>`; alertCount++; }
-                            }
+                            if(log.walk) { if(log.walk.time !== '-') walks[log.walk.time] = true; if(log.walk.condition === '나쁨') { alertsHtml += `<div class="bg-red-50 border border-red-100 p-3 rounded-xl mb-2 flex items-start gap-2 cursor-pointer" onclick="openProfilePanel(${a.id})"><span class="text-lg">🚨</span><div><p class="text-xs font-black text-red-600">${a.name} <span class="font-bold text-gray-500">산책 컨디션 나쁨</span></p></div></div>`; alertCount++; } }
                             if(log.meal && log.meal.time !== '-') meals[log.meal.time] = true;
                             if(log.med && log.med.time !== '-') meds[log.med.time] = true; 
                             if(log.potty) {
@@ -969,8 +1049,7 @@
                                 ${medHtml}
                             </div>
                         </div>
-                    </div>
-                `;
+                    </div>`;
             });
 
             if(alertCount > 0) { alertsContainer.innerHTML = `<h3 class="font-black text-red-500 mb-2 text-sm">🚨 오늘 발견된 특이사항 (${alertCount}건)</h3>` + alertsHtml; alertsContainer.classList.remove('hidden'); } 
@@ -979,6 +1058,7 @@
             listContainer.innerHTML = listHtml;
         }
 
+        // --- 프로필 오픈 ---
         function openProfilePanel(id) {
             const ani = animals.find(a => a.id === id); if(!ani) return; document.getElementById('pp-animal-id').value = id;
             populateProfilePanel(ani); document.getElementById('profile-panel').classList.remove('translate-x-full');
@@ -1015,10 +1095,14 @@
             } else { healthContainer.classList.add('hidden'); }
             document.getElementById('pp-memo').innerText = ani.memo || '메모가 없습니다.';
         }
-
         function askDeleteAnimal() { const id = document.getElementById('pp-animal-id').value; openModal('confirm', '아이 정보 영구 삭제', '이 동물의 프로필과 모든 기록이 완전히 삭제됩니다. 진행할까요?', () => { database.ref('animals/' + id).remove(); closeProfilePanel(); }); }
 
-        // --- 행동 분석 패널 ---
+        // --- 기타 공통 스크립트 연결 ---
+        function openRecordFromProfile() { const id = document.getElementById('pp-animal-id').value; openRecordPanel(Number(id)); }
+        function openHistoryFromProfile() { const id = document.getElementById('pp-animal-id').value; openHistoryPanel(null, Number(id)); }
+        function openBehaviorFromProfile() { const id = document.getElementById('pp-animal-id').value; openBehaviorPanel(Number(id)); }
+
+        // 훈련 분석 로직
         function setGrade(level) { document.querySelectorAll('.grade-btn').forEach(b => b.classList.remove('grade-active')); document.querySelector(`.g${level}`).classList.add('grade-active'); document.getElementById('bh-grade').value = level; }
         function formatABC(a, b) {
             if(!a || !b) return ""; let fa = a.trim(); let fb = b.trim();
@@ -1074,17 +1158,130 @@
             }).join('');
         }
 
-        // --- 기타 로직 (캘린더, 일정 등) ---
+        // --- 일반 일과 로직 ---
+        function openHistoryPanel(event, id) {
+            if(event) event.stopPropagation(); const ani = animals.find(a => a.id === id); if(!ani) return;
+            document.getElementById('hp-animal-id').value = id; 
+            const photoHtml = ani.photo ? `<div class="w-10 h-10 rounded-full bg-cover bg-center border-2 border-pink-100" style="background-image: url(${ani.photo})"></div>` : `<div class="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center text-xl">🐾</div>`;
+            document.getElementById('hp-header-info').innerHTML = `${photoHtml}<div class="flex flex-col"><span class="font-black text-gray-800 text-lg leading-tight">${ani.name}</span><span class="text-[10px] text-pink-400 font-bold">과거 일과 기록</span></div>`;
+            renderHistory(ani); document.getElementById('history-panel').classList.remove('translate-x-full');
+        }
+        function closeHistoryPanel() { document.getElementById('history-panel').classList.add('translate-x-full'); }
+        function toggleAccordion(id) { document.getElementById(id).classList.toggle('hidden'); }
+        function renderHistory(ani) {
+            const container = document.getElementById('hp-logs-container');
+            if(!ani.daily_logs || Object.keys(ani.daily_logs).length === 0) { container.innerHTML = `<div class="flex flex-col items-center justify-center h-full text-gray-400 font-bold mt-20"><span class="text-4xl mb-3">📭</span><p>아직 작성된 일과 기록이 없습니다.</p></div>`; return; }
+            const logsByDate = {};
+            Object.entries(ani.daily_logs).forEach(([logKey, log]) => { log.id = logKey; const dateKey = log.date_str || "날짜 미상"; if(!logsByDate[dateKey]) logsByDate[dateKey] = []; logsByDate[dateKey].push(log); });
+            const sortedDates = Object.keys(logsByDate).sort((a, b) => b.localeCompare(a));
+            container.innerHTML = sortedDates.map((date, index) => {
+                const logs = logsByDate[date].sort((a,b) => b.timestamp - a.timestamp); const accId = `acc-date-${index}`; const isOpen = index === 0; 
+                const logsHtml = logs.map(log => {
+                    let content = '';
+                    if(log.walk) content += `<div class="flex items-start gap-2 mb-1"><span class="text-base">🐕</span> <p><strong class="text-gray-900">산책:</strong> ${log.walk.time} / ${log.walk.duration} / ${log.walk.condition}</p></div>`;
+                    if(log.meal) content += `<div class="flex items-start gap-2 mb-1"><span class="text-base">🥣</span> <p><strong class="text-gray-900">급여:</strong> ${log.meal.time} / ${log.meal.amount} / ${log.meal.status}</p></div>`;
+                    if(log.med) content += `<div class="flex items-start gap-2 mb-1"><span class="text-base">💊</span> <p><strong class="text-gray-900">복약:</strong> ${log.med.time}</p></div>`;
+                    if(log.potty) content += `<div class="flex items-start gap-2 mb-1"><span class="text-base">💩</span> <p><strong class="text-gray-900">배변:</strong> ${log.potty.type} / ${log.potty.memo}</p></div>`;
+                    if(log.daily_memo) content += `<div class="flex items-start gap-2 mb-1 mt-2 p-2 bg-blue-50/50 rounded-lg border border-blue-100"><span class="text-base">📝</span> <p class="text-gray-900 leading-tight">${log.daily_memo.replace(/\n/g, '<br>')}</p></div>`;
+                    return `
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-pink-50 mb-3 relative group">
+                        <div class="flex justify-between items-center mb-2 pb-2 border-b border-gray-50">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs text-gray-500 font-bold">${log.time_str || ''}</span><span class="text-[10px] bg-pink-50 text-pink-500 px-2 py-1 rounded-md font-black">작성: ${log.trainer_name}</span>
+                            </div>
+                            <div class="flex gap-1">
+                                <button onclick="editLog(event, ${ani.id}, '${log.id}')" class="text-[10px] px-2 py-1 bg-gray-50 text-gray-500 rounded-md font-bold active:scale-95 hover:bg-gray-100">수정</button>
+                                <button onclick="askDeleteLog(event, ${ani.id}, '${log.id}')" class="text-[10px] px-2 py-1 bg-red-50 text-red-500 rounded-md font-bold active:scale-95 hover:bg-red-100">삭제</button>
+                            </div>
+                        </div>
+                        <div class="text-sm text-gray-700">${content}</div>
+                    </div>`;
+                }).join('');
+                return `<div class="mb-4"><button onclick="toggleAccordion('${accId}')" class="w-full flex justify-between items-center bg-pink-100 text-pink-600 px-4 py-3 rounded-2xl font-black shadow-sm active:scale-95 transition-all"><span>📅 ${date}</span><span class="text-xs bg-white px-2 py-1 rounded-lg text-pink-400">${logs.length}건 기록 ▼</span></button><div id="${accId}" class="${isOpen ? '' : 'hidden'} mt-3 pl-2 border-l-2 border-pink-100">${logsHtml}</div></div>`;
+            }).join('');
+        }
+        function askDeleteLog(event, animalId, logId) { event.stopPropagation(); openModal('confirm', '기록을 삭제할까요?', '해당 시간의 일과 기록이 영구적으로 삭제됩니다.', () => { database.ref('animals/' + animalId + '/daily_logs/' + logId).remove(); }); }
+
+        function setToggleState(selector, text, isPartial = false) { document.querySelectorAll(selector).forEach(btn => { if(isPartial ? btn.innerText.includes(text) : btn.innerText === text) { btn.classList.remove('btn-inactive'); btn.classList.add('btn-active'); } }); }
+        function forceMultiState(id, isActive) { const btn = document.getElementById(id); if(isActive) { btn.classList.remove('btn-inactive'); btn.classList.add('btn-active'); } }
+        function toggleSelect(clickedBtn, groupClass) { const wasActive = clickedBtn.classList.contains('btn-active'); document.querySelectorAll(`.${groupClass}-btn`).forEach(btn => { btn.classList.remove('btn-active'); btn.classList.add('btn-inactive'); }); if (!wasActive) { clickedBtn.classList.remove('btn-inactive'); clickedBtn.classList.add('btn-active'); } }
+        function toggleMulti(clickedBtn) { if(clickedBtn.classList.contains('btn-active')) { clickedBtn.classList.remove('btn-active', 'bg-pink-100', 'text-pink-600', 'border-pink-300'); clickedBtn.classList.add('btn-inactive', 'bg-white', 'text-gray-500', 'border-gray-200'); } else { clickedBtn.classList.remove('btn-inactive', 'bg-white', 'text-gray-500', 'border-gray-200'); clickedBtn.classList.add('btn-active', 'bg-pink-100', 'text-pink-600', 'border-pink-300'); } }
+        function setPottyMemo(text) { document.getElementById('potty-memo').value = text; }
+        
+        function clearFormFields() {
+            document.querySelectorAll('.med-time-btn').forEach(b => { b.classList.remove('btn-active'); b.classList.add('btn-inactive'); });
+            ['walk-time', 'walk-cond', 'meal-time', 'meal-status'].forEach(cls => { document.querySelectorAll(`.${cls}-btn`).forEach(b => { b.classList.remove('btn-active'); b.classList.add('btn-inactive'); }); });
+            document.getElementById('potty-type-feces').className = 'potty-type-btn flex-1 py-3 rounded-2xl border btn-inactive'; document.getElementById('potty-type-urine').className = 'potty-type-btn flex-1 py-3 rounded-2xl border btn-inactive';
+            document.getElementById('walk-duration').value = ''; document.getElementById('meal-amount').value = ''; document.getElementById('potty-memo').value = ''; document.getElementById('daily-memo').value = '';
+        }
+        function resetRecordForm() { editingLogId = null; editingLogOriginalData = null; document.getElementById('record-action-text').innerText = '기록'; clearFormFields(); }
+
+        function openRecordPanel(id) {
+            const ani = animals.find(a => a.id === id); if(!ani) return;
+            document.getElementById('rp-animal-id').value = id;
+            const medSection = document.getElementById('rp-med-section'); const btnAm = document.getElementById('btn-med-am'); const btnPm = document.getElementById('btn-med-pm');
+            if(ani.med_am || ani.med_pm) { medSection.classList.remove('hidden'); btnAm.classList.toggle('hidden', !ani.med_am); btnPm.classList.toggle('hidden', !ani.med_pm); } else { medSection.classList.add('hidden'); }
+            const photoHtml = ani.photo ? `<div class="w-10 h-10 rounded-full bg-cover bg-center border-2 border-pink-100" style="background-image: url(${ani.photo})"></div>` : `<div class="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center text-xl">🐾</div>`;
+            document.getElementById('rp-header-info').innerHTML = `${photoHtml}<div class="flex flex-col"><span class="font-black text-gray-800 text-lg leading-tight">${ani.name}</span><span class="text-[10px] text-pink-400 font-bold">일과 기록 작성</span></div>`;
+            resetRecordForm(); document.getElementById('record-panel').classList.remove('translate-x-full');
+        }
+        function closeRecordPanel() { document.getElementById('record-panel').classList.add('translate-x-full'); document.activeElement.blur(); }
+
+        function saveDetailLog() {
+            const id = document.getElementById('rp-animal-id').value; if(!id) return;
+            const medTimeBtn = document.querySelector('.med-time-btn.btn-active'); const medTime = medTimeBtn ? medTimeBtn.innerText : null;
+            const walkTimeBtn = document.querySelector('.walk-time-btn.btn-active'); const walkTime = walkTimeBtn ? walkTimeBtn.innerText : null;
+            const walkDuration = document.getElementById('walk-duration').value.trim(); const walkCondBtn = document.querySelector('.walk-cond-btn.btn-active'); const walkCond = walkCondBtn ? walkCondBtn.innerText.split(' ')[1] : null;
+            const mealTimeBtn = document.querySelector('.meal-time-btn.btn-active'); const mealTime = mealTimeBtn ? mealTimeBtn.innerText : null;
+            const mealAmount = document.getElementById('meal-amount').value.trim(); const mealStatusBtn = document.querySelector('.meal-status-btn.btn-active'); const mealStatus = mealStatusBtn ? mealStatusBtn.innerText : null;
+            const pottyTypes = []; if(document.getElementById('potty-type-feces').classList.contains('btn-active')) pottyTypes.push("대변"); if(document.getElementById('potty-type-urine').classList.contains('btn-active')) pottyTypes.push("소변");
+            const pottyMemo = document.getElementById('potty-memo').value.trim(); const dailyMemo = document.getElementById('daily-memo').value.trim();
+
+            if(!medTime && !walkTime && !walkDuration && !mealTime && !mealAmount && pottyTypes.length === 0 && !pottyMemo && !dailyMemo) { openModal('error', '빈 기록입니다', '최소 하나 이상의 항목을 작성해주세요.'); return; }
+
+            let logData = { trainer_name: currentTrainerName };
+            if(editingLogId && editingLogOriginalData) { logData.timestamp = editingLogOriginalData.timestamp; logData.date_str = editingLogOriginalData.date_str; logData.time_str = editingLogOriginalData.time_str; } 
+            else { const now = new Date(); logData.timestamp = Date.now(); logData.date_str = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`; logData.time_str = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`; }
+
+            if(medTime) logData.med = { time: medTime }; else logData.med = null;
+            if(walkTime || walkDuration || walkCond) logData.walk = { time: walkTime || '-', duration: walkDuration || '-', condition: walkCond || '-' }; else logData.walk = null; 
+            if(mealTime || mealAmount || mealStatus) logData.meal = { time: mealTime || '-', amount: mealAmount || '-', status: mealStatus || '-' }; else logData.meal = null;
+            if(pottyTypes.length > 0 || pottyMemo) logData.potty = { type: pottyTypes.join(', ') || '-', memo: pottyMemo || '특이사항 없음' }; else logData.potty = null;
+            if(dailyMemo) logData.daily_memo = dailyMemo; else logData.daily_memo = null;
+
+            const targetLogId = editingLogId ? editingLogId : Date.now();
+            database.ref('animals/' + id + '/daily_logs/' + targetLogId).update(logData).then(() => {
+                closeRecordPanel(); if(editingLogId) openModal('success', '수정 완료!', '기록이 성공적으로 수정되었습니다.'); else openModal('success', '기록 완료!', `작성하신 항목이 저장되었습니다.`);
+            });
+        }
+
+        function editLog(event, animalId, logId) {
+            event.stopPropagation(); const ani = animals.find(a => a.id === animalId); if(!ani || !ani.daily_logs || !ani.daily_logs[logId]) return;
+            const log = ani.daily_logs[logId]; editingLogId = logId; editingLogOriginalData = log; document.getElementById('rp-animal-id').value = animalId;
+
+            const medSection = document.getElementById('rp-med-section'); const btnAm = document.getElementById('btn-med-am'); const btnPm = document.getElementById('btn-med-pm');
+            if(ani.med_am || ani.med_pm) { medSection.classList.remove('hidden'); btnAm.classList.toggle('hidden', !ani.med_am); btnPm.classList.toggle('hidden', !ani.med_pm); } else { medSection.classList.add('hidden'); }
+
+            const photoHtml = ani.photo ? `<div class="w-10 h-10 rounded-full bg-cover bg-center border-2 border-pink-100" style="background-image: url(${ani.photo})"></div>` : `<div class="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center text-xl">🐾</div>`;
+            document.getElementById('rp-header-info').innerHTML = `${photoHtml}<div class="flex flex-col"><span class="font-black text-gray-800 text-lg leading-tight">${ani.name}</span><span class="text-[10px] text-pink-400 font-bold">일과 기록 수정</span></div>`;
+            document.getElementById('record-action-text').innerText = '수정'; clearFormFields(); 
+
+            if(log.med && log.med.time !== '-') setToggleState('.med-time-btn', log.med.time);
+            if(log.walk) { if(log.walk.time !== '-') setToggleState('.walk-time-btn', log.walk.time); if(log.walk.duration !== '-') document.getElementById('walk-duration').value = log.walk.duration; if(log.walk.condition !== '-') setToggleState('.walk-cond-btn', log.walk.condition, true); }
+            if(log.meal) { if(log.meal.time !== '-') setToggleState('.meal-time-btn', log.meal.time); if(log.meal.amount !== '-') document.getElementById('meal-amount').value = log.meal.amount; if(log.meal.status !== '-') setToggleState('.meal-status-btn', log.meal.status); }
+            if(log.potty) { if(log.potty.type && log.potty.type !== '-') { if(log.potty.type.includes('대변')) forceMultiState('potty-type-feces', true); if(log.potty.type.includes('소변')) forceMultiState('potty-type-urine', true); } if(log.potty.memo && log.potty.memo !== '특이사항 없음') document.getElementById('potty-memo').value = log.potty.memo; }
+            if(log.daily_memo) { document.getElementById('daily-memo').value = log.daily_memo; }
+            closeHistoryPanel(); document.getElementById('record-panel').classList.remove('translate-x-full');
+        }
+
+        // 캘린더 스케줄 (기존 기능)
         function renderCalendar() {
-            const year = currentDate.getFullYear(); const month = currentDate.getMonth();
-            document.getElementById('cal-month-title').innerText = `${year}년 ${month + 1}월`;
-            const firstDay = new Date(year, month, 1).getDay(); const lastDate = new Date(year, month + 1, 0).getDate(); 
-            const calDays = document.getElementById('cal-days'); calDays.innerHTML = '';
+            const year = currentDate.getFullYear(); const month = currentDate.getMonth(); document.getElementById('cal-month-title').innerText = `${year}년 ${month + 1}월`;
+            const firstDay = new Date(year, month, 1).getDay(); const lastDate = new Date(year, month + 1, 0).getDate(); const calDays = document.getElementById('cal-days'); calDays.innerHTML = '';
             const today = new Date(); const isCurrentMonth = (today.getFullYear() === year && today.getMonth() === month);
-            for (let i = 0; i < firstDay; i++) { calDays.innerHTML += `<div class="cal-day empty"></div>`; }
+            for (let i = 0; i < firstDay; i++) calDays.innerHTML += `<div class="cal-day empty"></div>`;
             for (let i = 1; i <= lastDate; i++) {
-                const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
-                let classes = 'cal-day'; if (isCurrentMonth && today.getDate() === i) classes += ' today';
+                const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`; let classes = 'cal-day'; if (isCurrentMonth && today.getDate() === i) classes += ' today';
                 const dayOfWeek = new Date(year, month, i).getDay(); if (dayOfWeek === 0) classes += ' sun'; if (dayOfWeek === 6) classes += ' sat';
                 const daySchedule = schedules[dateString]; const hasSchedule = daySchedule && (daySchedule.am || daySchedule.pm || daySchedule.off || daySchedule.half);
                 const dotHtml = hasSchedule ? '<div class="cal-dot"></div>' : '';
@@ -1132,140 +1329,6 @@
             }).join('');
         }
         function askDeleteEvent(event, eventId) { event.stopPropagation(); openModal('confirm', '일정 삭제', '이 일정을 삭제하시겠습니까?', () => { database.ref('events/' + eventId).remove(); }); }
-
-        // --- 과거 기록 열람 패널 ---
-        function openHistoryFromProfile() { const id = document.getElementById('pp-animal-id').value; openHistoryPanel(null, Number(id)); }
-        function openHistoryPanel(event, id) {
-            if(event) event.stopPropagation(); const ani = animals.find(a => a.id === id); if(!ani) return;
-            document.getElementById('hp-animal-id').value = id; 
-            const photoHtml = ani.photo ? `<div class="w-10 h-10 rounded-full bg-cover bg-center border-2 border-pink-100" style="background-image: url(${ani.photo})"></div>` : `<div class="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center text-xl">🐾</div>`;
-            document.getElementById('hp-header-info').innerHTML = `${photoHtml}<div class="flex flex-col"><span class="font-black text-gray-800 text-lg leading-tight">${ani.name}</span><span class="text-[10px] text-pink-400 font-bold">과거 일과 기록</span></div>`;
-            renderHistory(ani); document.getElementById('history-panel').classList.remove('translate-x-full');
-        }
-        function closeHistoryPanel() { document.getElementById('history-panel').classList.add('translate-x-full'); }
-        function toggleAccordion(id) { document.getElementById(id).classList.toggle('hidden'); }
-        function renderHistory(ani) {
-            const container = document.getElementById('hp-logs-container');
-            if(!ani.daily_logs || Object.keys(ani.daily_logs).length === 0) { container.innerHTML = `<div class="flex flex-col items-center justify-center h-full text-gray-400 font-bold mt-20"><span class="text-4xl mb-3">📭</span><p>아직 작성된 일과 기록이 없습니다.</p></div>`; return; }
-            const logsByDate = {};
-            Object.entries(ani.daily_logs).forEach(([logKey, log]) => { log.id = logKey; const dateKey = log.date_str || "날짜 미상"; if(!logsByDate[dateKey]) logsByDate[dateKey] = []; logsByDate[dateKey].push(log); });
-            const sortedDates = Object.keys(logsByDate).sort((a, b) => b.localeCompare(a));
-            container.innerHTML = sortedDates.map((date, index) => {
-                const logs = logsByDate[date].sort((a,b) => b.timestamp - a.timestamp); const accId = `acc-date-${index}`; const isOpen = index === 0; 
-                const logsHtml = logs.map(log => {
-                    let content = '';
-                    if(log.walk) content += `<div class="flex items-start gap-2 mb-1"><span class="text-base">🐕</span> <p><strong class="text-gray-900">산책:</strong> ${log.walk.time} / ${log.walk.duration} / ${log.walk.condition}</p></div>`;
-                    if(log.meal) content += `<div class="flex items-start gap-2 mb-1"><span class="text-base">🥣</span> <p><strong class="text-gray-900">급여:</strong> ${log.meal.time} / ${log.meal.amount} / ${log.meal.status}</p></div>`;
-                    if(log.med) content += `<div class="flex items-start gap-2 mb-1"><span class="text-base">💊</span> <p><strong class="text-gray-900">복약:</strong> ${log.med.time}</p></div>`;
-                    if(log.potty) content += `<div class="flex items-start gap-2 mb-1"><span class="text-base">💩</span> <p><strong class="text-gray-900">배변:</strong> ${log.potty.type} / ${log.potty.memo}</p></div>`;
-                    if(log.daily_memo) content += `<div class="flex items-start gap-2 mb-1 mt-2 p-2 bg-blue-50/50 rounded-lg border border-blue-100"><span class="text-base">📝</span> <p class="text-gray-900 leading-tight">${log.daily_memo.replace(/\n/g, '<br>')}</p></div>`;
-                    return `
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-pink-50 mb-3 relative group">
-                        <div class="flex justify-between items-center mb-2 pb-2 border-b border-gray-50">
-                            <div class="flex items-center gap-2">
-                                <span class="text-xs text-gray-500 font-bold">${log.time_str || ''}</span><span class="text-[10px] bg-pink-50 text-pink-500 px-2 py-1 rounded-md font-black">작성: ${log.trainer_name}</span>
-                            </div>
-                            <div class="flex gap-1">
-                                <button onclick="editLog(event, ${ani.id}, '${log.id}')" class="text-[10px] px-2 py-1 bg-gray-50 text-gray-500 rounded-md font-bold active:scale-95 hover:bg-gray-100">수정</button>
-                                <button onclick="askDeleteLog(event, ${ani.id}, '${log.id}')" class="text-[10px] px-2 py-1 bg-red-50 text-red-500 rounded-md font-bold active:scale-95 hover:bg-red-100">삭제</button>
-                            </div>
-                        </div>
-                        <div class="text-sm text-gray-700">${content}</div>
-                    </div>`;
-                }).join('');
-                return `
-                <div class="mb-4">
-                    <button onclick="toggleAccordion('${accId}')" class="w-full flex justify-between items-center bg-pink-100 text-pink-600 px-4 py-3 rounded-2xl font-black shadow-sm active:scale-95 transition-all">
-                        <span>📅 ${date}</span><span class="text-xs bg-white px-2 py-1 rounded-lg text-pink-400">${logs.length}건 기록 ▼</span>
-                    </button>
-                    <div id="${accId}" class="${isOpen ? '' : 'hidden'} mt-3 pl-2 border-l-2 border-pink-100">${logsHtml}</div>
-                </div>`;
-            }).join('');
-        }
-        function askDeleteLog(event, animalId, logId) { event.stopPropagation(); openModal('confirm', '기록을 삭제할까요?', '해당 시간의 일과 기록이 영구적으로 삭제됩니다.', () => { database.ref('animals/' + animalId + '/daily_logs/' + logId).remove(); }); }
-
-        // --- 일과 기록 작성 패널 ---
-        function setToggleState(selector, text, isPartial = false) { document.querySelectorAll(selector).forEach(btn => { if(isPartial ? btn.innerText.includes(text) : btn.innerText === text) { btn.classList.remove('btn-inactive'); btn.classList.add('btn-active'); } }); }
-        function forceMultiState(id, isActive) { const btn = document.getElementById(id); if(isActive) { btn.classList.remove('btn-inactive'); btn.classList.add('btn-active'); } }
-        function toggleSelect(clickedBtn, groupClass) { const wasActive = clickedBtn.classList.contains('btn-active'); document.querySelectorAll(`.${groupClass}-btn`).forEach(btn => { btn.classList.remove('btn-active'); btn.classList.add('btn-inactive'); }); if (!wasActive) { clickedBtn.classList.remove('btn-inactive'); clickedBtn.classList.add('btn-active'); } }
-        function toggleMulti(clickedBtn) { if(clickedBtn.classList.contains('btn-active')) { clickedBtn.classList.remove('btn-active', 'bg-pink-100', 'text-pink-600', 'border-pink-300'); clickedBtn.classList.add('btn-inactive', 'bg-white', 'text-gray-500', 'border-gray-200'); } else { clickedBtn.classList.remove('btn-inactive', 'bg-white', 'text-gray-500', 'border-gray-200'); clickedBtn.classList.add('btn-active', 'bg-pink-100', 'text-pink-600', 'border-pink-300'); } }
-        function setPottyMemo(text) { document.getElementById('potty-memo').value = text; }
-        
-        function clearFormFields() {
-            document.querySelectorAll('.med-time-btn').forEach(b => { b.classList.remove('btn-active'); b.classList.add('btn-inactive'); });
-            ['walk-time', 'walk-cond', 'meal-time', 'meal-status'].forEach(cls => { document.querySelectorAll(`.${cls}-btn`).forEach(b => { b.classList.remove('btn-active'); b.classList.add('btn-inactive'); }); });
-            document.getElementById('potty-type-feces').className = 'potty-type-btn flex-1 py-3 rounded-2xl border btn-inactive'; document.getElementById('potty-type-urine').className = 'potty-type-btn flex-1 py-3 rounded-2xl border btn-inactive';
-            document.getElementById('walk-duration').value = ''; document.getElementById('meal-amount').value = ''; document.getElementById('potty-memo').value = ''; document.getElementById('daily-memo').value = '';
-        }
-        function resetRecordForm() { editingLogId = null; editingLogOriginalData = null; document.getElementById('record-action-text').innerText = '기록'; clearFormFields(); }
-
-        function openRecordFromProfile() { const id = document.getElementById('pp-animal-id').value; openRecordPanel(Number(id)); }
-
-        function openRecordPanel(id) {
-            const ani = animals.find(a => a.id === id); if(!ani) return;
-            document.getElementById('rp-animal-id').value = id;
-            const medSection = document.getElementById('rp-med-section'); const btnAm = document.getElementById('btn-med-am'); const btnPm = document.getElementById('btn-med-pm');
-            if(ani.med_am || ani.med_pm) { medSection.classList.remove('hidden'); btnAm.classList.toggle('hidden', !ani.med_am); btnPm.classList.toggle('hidden', !ani.med_pm); } 
-            else { medSection.classList.add('hidden'); }
-            const photoHtml = ani.photo ? `<div class="w-10 h-10 rounded-full bg-cover bg-center border-2 border-pink-100" style="background-image: url(${ani.photo})"></div>` : `<div class="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center text-xl">🐾</div>`;
-            document.getElementById('rp-header-info').innerHTML = `${photoHtml}<div class="flex flex-col"><span class="font-black text-gray-800 text-lg leading-tight">${ani.name}</span><span class="text-[10px] text-pink-400 font-bold">일과 기록 작성</span></div>`;
-            resetRecordForm(); document.getElementById('record-panel').classList.remove('translate-x-full');
-        }
-        function closeRecordPanel() { document.getElementById('record-panel').classList.add('translate-x-full'); document.activeElement.blur(); }
-
-        function saveDetailLog() {
-            const id = document.getElementById('rp-animal-id').value; if(!id) return;
-            const medTimeBtn = document.querySelector('.med-time-btn.btn-active'); const medTime = medTimeBtn ? medTimeBtn.innerText : null;
-            const walkTimeBtn = document.querySelector('.walk-time-btn.btn-active'); const walkTime = walkTimeBtn ? walkTimeBtn.innerText : null;
-            const walkDuration = document.getElementById('walk-duration').value.trim();
-            const walkCondBtn = document.querySelector('.walk-cond-btn.btn-active'); const walkCond = walkCondBtn ? walkCondBtn.innerText.split(' ')[1] : null;
-            const mealTimeBtn = document.querySelector('.meal-time-btn.btn-active'); const mealTime = mealTimeBtn ? mealTimeBtn.innerText : null;
-            const mealAmount = document.getElementById('meal-amount').value.trim();
-            const mealStatusBtn = document.querySelector('.meal-status-btn.btn-active'); const mealStatus = mealStatusBtn ? mealStatusBtn.innerText : null;
-            const pottyTypes = []; if(document.getElementById('potty-type-feces').classList.contains('btn-active')) pottyTypes.push("대변"); if(document.getElementById('potty-type-urine').classList.contains('btn-active')) pottyTypes.push("소변");
-            const pottyMemo = document.getElementById('potty-memo').value.trim(); const dailyMemo = document.getElementById('daily-memo').value.trim();
-
-            if(!medTime && !walkTime && !walkDuration && !mealTime && !mealAmount && pottyTypes.length === 0 && !pottyMemo && !dailyMemo) { openModal('error', '빈 기록입니다', '최소 하나 이상의 항목을 작성해주세요.'); return; }
-
-            let logData = { trainer_name: currentTrainerName };
-            if(editingLogId && editingLogOriginalData) {
-                logData.timestamp = editingLogOriginalData.timestamp; logData.date_str = editingLogOriginalData.date_str; logData.time_str = editingLogOriginalData.time_str;
-            } else {
-                const now = new Date(); logData.timestamp = Date.now(); logData.date_str = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`; logData.time_str = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-            }
-
-            if(medTime) logData.med = { time: medTime }; else logData.med = null;
-            if(walkTime || walkDuration || walkCond) logData.walk = { time: walkTime || '-', duration: walkDuration || '-', condition: walkCond || '-' }; else logData.walk = null; 
-            if(mealTime || mealAmount || mealStatus) logData.meal = { time: mealTime || '-', amount: mealAmount || '-', status: mealStatus || '-' }; else logData.meal = null;
-            if(pottyTypes.length > 0 || pottyMemo) logData.potty = { type: pottyTypes.join(', ') || '-', memo: pottyMemo || '특이사항 없음' }; else logData.potty = null;
-            if(dailyMemo) logData.daily_memo = dailyMemo; else logData.daily_memo = null;
-
-            const targetLogId = editingLogId ? editingLogId : Date.now();
-            database.ref('animals/' + id + '/daily_logs/' + targetLogId).update(logData).then(() => {
-                closeRecordPanel(); if(editingLogId) openModal('success', '수정 완료!', '기록이 성공적으로 수정되었습니다.'); else openModal('success', '기록 완료!', `작성하신 항목이 저장되었습니다.`);
-            });
-        }
-
-        function editLog(event, animalId, logId) {
-            event.stopPropagation(); const ani = animals.find(a => a.id === animalId); if(!ani || !ani.daily_logs || !ani.daily_logs[logId]) return;
-            const log = ani.daily_logs[logId]; editingLogId = logId; editingLogOriginalData = log;
-            document.getElementById('rp-animal-id').value = animalId;
-
-            const medSection = document.getElementById('rp-med-section'); const btnAm = document.getElementById('btn-med-am'); const btnPm = document.getElementById('btn-med-pm');
-            if(ani.med_am || ani.med_pm) { medSection.classList.remove('hidden'); btnAm.classList.toggle('hidden', !ani.med_am); btnPm.classList.toggle('hidden', !ani.med_pm); } else { medSection.classList.add('hidden'); }
-
-            const photoHtml = ani.photo ? `<div class="w-10 h-10 rounded-full bg-cover bg-center border-2 border-pink-100" style="background-image: url(${ani.photo})"></div>` : `<div class="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center text-xl">🐾</div>`;
-            document.getElementById('rp-header-info').innerHTML = `${photoHtml}<div class="flex flex-col"><span class="font-black text-gray-800 text-lg leading-tight">${ani.name}</span><span class="text-[10px] text-pink-400 font-bold">일과 기록 수정</span></div>`;
-            document.getElementById('record-action-text').innerText = '수정';
-            clearFormFields(); 
-
-            if(log.med && log.med.time !== '-') setToggleState('.med-time-btn', log.med.time);
-            if(log.walk) { if(log.walk.time !== '-') setToggleState('.walk-time-btn', log.walk.time); if(log.walk.duration !== '-') document.getElementById('walk-duration').value = log.walk.duration; if(log.walk.condition !== '-') setToggleState('.walk-cond-btn', log.walk.condition, true); }
-            if(log.meal) { if(log.meal.time !== '-') setToggleState('.meal-time-btn', log.meal.time); if(log.meal.amount !== '-') document.getElementById('meal-amount').value = log.meal.amount; if(log.meal.status !== '-') setToggleState('.meal-status-btn', log.meal.status); }
-            if(log.potty) { if(log.potty.type && log.potty.type !== '-') { if(log.potty.type.includes('대변')) forceMultiState('potty-type-feces', true); if(log.potty.type.includes('소변')) forceMultiState('potty-type-urine', true); } if(log.potty.memo && log.potty.memo !== '특이사항 없음') document.getElementById('potty-memo').value = log.potty.memo; }
-            if(log.daily_memo) { document.getElementById('daily-memo').value = log.daily_memo; }
-            closeHistoryPanel(); document.getElementById('record-panel').classList.remove('translate-x-full');
-        }
 
         function openModal(type, title, desc, onConfirm) {
             const modal = document.getElementById('custom-modal'); const btns = document.getElementById('modal-btns');
