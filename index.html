@@ -16,16 +16,19 @@
         .card { background: white; border-radius: 28px; padding: 20px; border: 1px solid #ffe4e9; box-shadow: 0 10px 20px rgba(255, 105, 180, 0.03); }
         .modal-bg { background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(6px); z-index: 10000; position: fixed; inset: 0; display: none; align-items: center; justify-content: center; }
         .modal-bg.active { display: flex; }
-        #photo-preview { background-size: cover; background-position: center; transition: all 0.3s; }
+        #photo-preview, #edit-photo-preview { background-size: cover; background-position: center; transition: all 0.3s; }
         
         .content-area { padding-bottom: 120px; position: relative; z-index: 10; }
         .save-btn { cursor: pointer; position: relative; z-index: 100; touch-action: manipulation; -webkit-appearance: none; }
         .save-btn:active { transform: scale(0.96); opacity: 0.9; }
+
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
         .slide-panel { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .btn-active { background-color: #fbcfe8; color: #db2777; border-color: #f472b6; font-weight: 900; }
         .btn-inactive { background-color: #f9fafb; color: #9ca3af; border-color: #e5e7eb; }
+
         .grade-btn { transition: all 0.2s; }
         .grade-active { border-width: 2px !important; font-weight: 900; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transform: scale(1.05); }
         .g1.grade-active { border-color: #22c55e !important; background-color: #dcfce7 !important; color: #166534 !important; }
@@ -36,8 +39,6 @@
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
-        @keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(255, 105, 180, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(255, 105, 180, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 105, 180, 0); } }
-        .pulse-anim { animation: pulse-ring 2s infinite; }
         
         .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
         .cal-day { padding: 12px 4px; border-radius: 12px; font-weight: bold; font-size: 14px; cursor: pointer; position: relative; transition: all 0.2s; }
@@ -48,56 +49,21 @@
         .cal-day.sat { color: #3b82f6; }
         .cal-dot { position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; background-color: #f472b6; border-radius: 50%; }
         .cal-day.today .cal-dot { background-color: white; }
+
         .status-badge { display: inline-flex; align-items: center; justify-content: center; height: 20px; padding: 0 6px; border-radius: 6px; font-size: 10px; font-weight: 900; margin-right: 4px; }
         .status-done { background-color: #dcfce7; color: #059669; }
         .status-none { background-color: #f3f4f6; color: #9ca3af; }
     </style>
 </head>
-<body class="max-w-md mx-auto p-4 relative" onload="checkAuth()">
+<body class="max-w-md mx-auto p-4 relative" onload="initApp()">
     
     <div id="onboarding-panel" class="fixed inset-0 bg-white z-[9999] flex flex-col items-center justify-center p-6 hidden">
         <div class="w-full max-w-sm animate-fade-in text-center">
-            <div class="text-6xl mb-4">🐾</div>
-            <h1 class="text-2xl font-black text-gray-800 mb-2">내품애 관리 시스템</h1>
-            <p class="text-gray-500 font-bold mb-8 text-sm">외부 접근이 차단된 안전한 시스템입니다.<br>소속 훈련사님의 이름을 입력하고 권한을 요청하세요.</p>
-            
+            <div class="text-6xl mb-6">🐾</div>
+            <h1 class="text-2xl font-black text-gray-800 mb-2">환영합니다!</h1>
+            <p class="text-gray-500 font-bold mb-8">기록 작성 시 표시될 훈련사님의<br>이름(또는 직함)을 입력해주세요.</p>
             <input type="text" id="setup-trainer-name" placeholder="예: 김현우 훈련사" class="w-full p-4 border border-pink-100 rounded-2xl outline-none bg-gray-50 text-center font-black text-lg focus:border-pink-400 focus:bg-white transition-colors mb-4 shadow-sm">
-            
-            <button onclick="requestAccess()" class="w-full py-4 pink-gradient text-white font-black text-lg rounded-2xl shadow-lg active:scale-95 transition-transform mb-6">
-                접속 권한 요청하기
-            </button>
-            
-            <button onclick="showAdminCodeInput()" class="text-[10px] text-gray-300 font-bold underline">🔑 관리자 코드로 접속</button>
-            
-            <div id="admin-code-area" class="hidden mt-3">
-                <input type="password" id="setup-admin-code" placeholder="초기비밀번호: 0000" class="w-2/3 p-2 border border-gray-200 rounded-xl outline-none bg-gray-50 text-center font-black text-sm mb-2">
-                <button onclick="loginAsAdmin()" class="w-2/3 py-2 bg-gray-800 text-white font-black text-sm rounded-xl shadow-md active:scale-95 transition-transform">관리자 즉시 승인</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="waiting-panel" class="fixed inset-0 bg-white z-[9999] flex flex-col items-center justify-center p-6 hidden">
-        <div class="w-full max-w-sm text-center">
-            <div class="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-6 pulse-anim">
-                <span class="text-3xl">⏳</span>
-            </div>
-            <h1 class="text-2xl font-black text-gray-800 mb-2">승인 대기 중입니다</h1>
-            <p class="text-gray-500 font-bold text-sm mb-6">관리자(최고 권한자)가 승인을 완료하면<br>화면이 자동으로 전환됩니다.</p>
-            <div class="bg-gray-50 p-4 rounded-xl text-xs text-gray-400 font-bold border border-gray-100">
-                요청자 이름: <span id="wait-trainer-name" class="text-pink-500 font-black"></span>
-            </div>
-        </div>
-    </div>
-
-    <div id="admin-approve-modal" class="modal-bg z-[10000]">
-        <div class="bg-white w-[90%] max-w-sm rounded-[35px] p-6 text-center shadow-2xl relative max-h-[80vh] overflow-hidden flex flex-col">
-            <button onclick="closeAdminApproveModal()" class="absolute top-4 right-5 text-2xl text-gray-400 hover:text-gray-600">&times;</button>
-            <div class="text-4xl mb-2 mt-2">👑</div>
-            <h3 class="text-xl font-black mb-1 text-gray-800">멤버 승인 관리</h3>
-            <p class="text-gray-400 text-xs mb-4 font-bold">어플 접속을 요청한 훈련사 목록입니다.</p>
-            
-            <div id="request-list-container" class="flex-1 overflow-y-auto space-y-3 mb-2 px-1 pb-4 text-left">
-                </div>
+            <button onclick="saveTrainerProfile()" class="w-full py-4 pink-gradient text-white font-black text-lg rounded-2xl shadow-lg active:scale-95 transition-transform">앱 시작하기</button>
         </div>
     </div>
 
@@ -111,24 +77,20 @@
         </div>
     </div>
 
-    <div class="content-area hidden" id="main-content">
-        <header class="py-6 flex justify-between items-center relative">
-            <button id="btn-admin-manage" onclick="openAdminApproveModal()" class="hidden flex items-center gap-1 bg-gray-800 text-white px-3 py-1.5 rounded-full shadow-sm active:scale-95 transition-transform z-10">
-                <span class="text-sm">👑</span>
-                <span class="text-[10px] font-black">승인 관리</span>
-                <div id="admin-req-badge" class="hidden absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
-            </button>
-            <div id="header-spacer" class="w-10"></div> <div class="text-center absolute left-1/2 transform -translate-x-1/2 w-full pointer-events-none">
-                <h1 class="text-3xl font-black text-[#ff69b4] mb-1">내품애 센터</h1>
-                <p class="text-gray-500 text-xs font-bold tracking-tight">반려동물과 행복한 서대문</p>
-            </div>
+    <header class="py-6 flex justify-between items-center relative z-20">
+        <div></div> 
+        <div class="text-center absolute left-1/2 transform -translate-x-1/2 w-full pointer-events-none">
+            <h1 class="text-3xl font-black text-[#ff69b4] mb-1">내품애 센터</h1>
+            <p class="text-gray-500 text-xs font-bold tracking-tight">반려동물과 행복한 서대문</p>
+        </div>
+        <button onclick="openProfileEditModal()" class="flex items-center gap-1.5 bg-pink-50 border border-pink-100 px-3 py-1.5 rounded-full text-pink-500 shadow-sm active:scale-95 transition-transform z-10">
+            <span id="header-trainer-name" class="text-[11px] font-black max-w-[60px] truncate">로그인</span>
+            <span class="text-sm">👤</span>
+        </button>
+    </header>
 
-            <button onclick="openProfileEditModal()" class="flex items-center gap-1.5 bg-pink-50 border border-pink-100 px-3 py-1.5 rounded-full text-pink-500 shadow-sm active:scale-95 transition-transform z-10 ml-auto">
-                <span id="header-trainer-name" class="text-[11px] font-black max-w-[60px] truncate">로그인</span>
-                <span class="text-sm">👤</span>
-            </button>
-        </header>
-
+    <div class="content-area" id="main-content">
+        
         <div id="view-list" class="space-y-4">
             <div class="relative px-2 mb-2">
                 <div class="absolute inset-y-0 left-5 flex items-center pointer-events-none"><span class="text-gray-400 text-lg">🔍</span></div>
@@ -166,12 +128,16 @@
                 </div>
                 <div id="cal-days" class="cal-grid"></div>
             </div>
+            <div class="px-2">
+                <p class="text-xs text-gray-400 font-bold mb-1">💡 날짜를 누르면 상세 근무표를 열람/수정할 수 있습니다.</p>
+                <p class="text-xs text-gray-400 font-bold">💡 핑크색 점(•)은 근무표가 작성된 날을 의미합니다.</p>
+            </div>
         </div>
 
         <div id="view-events" class="hidden space-y-4">
             <div class="flex justify-between items-center px-2 mb-2 mt-2">
                 <h2 class="text-lg font-black text-gray-800">📢 센터 주요 일정</h2>
-                <button onclick="openEventAddPanel()" class="bg-pink-50 text-pink-500 text-xs font-bold px-3 py-2 rounded-xl active:scale-95 shadow-sm border border-pink-100">+ 일정 추가</button>
+                <button onclick="openEventPanel()" class="bg-pink-50 text-pink-500 text-xs font-bold px-3 py-2 rounded-xl active:scale-95 shadow-sm border border-pink-100">+ 일정 추가</button>
             </div>
             <div id="event-container" class="space-y-4 px-1 pb-10"></div>
         </div>
@@ -179,7 +145,7 @@
         <div id="view-reg" class="hidden space-y-6 pb-10">
             <div class="card space-y-4">
                 <div class="flex justify-between items-center">
-                    <h2 id="reg-title" class="text-lg font-bold text-gray-700">📸 신규 보호 동물 등록</h2>
+                    <h2 class="text-lg font-bold text-gray-700">📸 신규 보호 동물 등록</h2>
                 </div>
                 
                 <div id="photo-preview" onclick="document.getElementById('in-photo').click()" class="w-full h-52 rounded-3xl bg-pink-50 flex items-center justify-center border-2 border-dashed border-pink-200 relative overflow-hidden cursor-pointer">
@@ -234,7 +200,7 @@
 
                     <div class="col-span-2 mt-2">
                         <p class="text-xs font-bold text-gray-400 mb-2 px-1">기본 성격 (여러 개 선택 가능)</p>
-                        <div class="flex flex-wrap gap-2" id="in-personality-container">
+                        <div class="flex flex-wrap gap-2">
                             <button type="button" onclick="toggleMulti(this)" class="in-per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">활발함</button>
                             <button type="button" onclick="toggleMulti(this)" class="in-per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">소심함</button>
                             <button type="button" onclick="toggleMulti(this)" class="in-per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">사람 좋아함</button>
@@ -288,6 +254,7 @@
             <span class="text-2xl">🐾</span><span class="text-[9px] font-black text-pink-500">아이 등록</span>
         </button>
     </nav>
+
 
     <div id="profile-panel" class="slide-panel fixed inset-0 bg-gray-50 z-[120] transform translate-x-full flex flex-col h-full overflow-hidden">
         <div class="px-5 py-4 bg-white border-b border-pink-100 flex justify-between items-center shadow-sm sticky top-0 z-10 pt-[max(env(safe-area-inset-top),16px)]">
@@ -450,7 +417,6 @@
         <div class="flex-1 overflow-y-auto p-5 pb-32 space-y-6">
             <div class="bg-white rounded-3xl p-5 shadow-sm border border-indigo-100">
                 <h3 class="text-base font-black text-indigo-700 mb-4">새 훈련 기록 추가</h3>
-                
                 <p class="text-[10px] font-black text-gray-400 mb-1">분석할 문제 행동 (예: 산책 시 짖음)</p>
                 <input type="text" id="bh-target" class="w-full p-3 border border-indigo-50 rounded-xl outline-none bg-gray-50 text-sm font-bold focus:border-indigo-300 mb-4">
 
@@ -579,13 +545,52 @@
         </div>
     </div>
 
-    <div id="admin-approve-modal" class="modal-bg z-[10000]">
-        <div class="bg-white w-[90%] max-w-sm rounded-[35px] p-6 text-center shadow-2xl relative max-h-[80vh] overflow-hidden flex flex-col">
-            <button onclick="closeAdminApproveModal()" class="absolute top-4 right-5 text-2xl text-gray-400 hover:text-gray-600">&times;</button>
-            <div class="text-4xl mb-2 mt-2">👑</div>
-            <h3 class="text-xl font-black mb-1 text-gray-800">멤버 승인 관리</h3>
-            <p class="text-gray-400 text-xs mb-4 font-bold">어플 접속을 요청한 훈련사 목록입니다.</p>
-            <div id="request-list-container" class="flex-1 overflow-y-auto space-y-3 mb-2 px-1 pb-4 text-left"></div>
+    <div id="schedule-panel" class="slide-panel fixed inset-0 bg-gray-50 z-[120] transform translate-x-full flex flex-col h-full overflow-hidden">
+        <div class="px-5 py-4 bg-white border-b border-pink-100 flex justify-between items-center shadow-sm sticky top-0 z-10 pt-[max(env(safe-area-inset-top),16px)]">
+            <button onclick="closeSchedulePanel()" class="text-gray-400 text-3xl font-black active:scale-90 transition-transform">&lsaquo;</button>
+            <span id="sp-date-title" class="font-black text-gray-700">근무표</span>
+            <div class="w-6"></div>
+        </div>
+        <div class="flex-1 overflow-y-auto p-5 pb-32 space-y-4">
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-pink-100">
+                <h3 class="text-sm font-black text-gray-800 mb-2">☀️ 오전 근무자</h3><input type="text" id="sch-am" class="w-full p-3 border border-pink-50 rounded-xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300">
+            </div>
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-pink-100">
+                <h3 class="text-sm font-black text-gray-800 mb-2">🌙 오후 근무자</h3><input type="text" id="sch-pm" class="w-full p-3 border border-pink-50 rounded-xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300">
+            </div>
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-pink-100">
+                <h3 class="text-sm font-black text-red-400 mb-2">🌴 연차 (휴무)</h3><input type="text" id="sch-off" class="w-full p-3 border border-red-50 rounded-xl outline-none bg-gray-50 text-sm font-bold focus:border-red-300">
+            </div>
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-pink-100">
+                <h3 class="text-sm font-black text-blue-400 mb-2">🌗 반차</h3><input type="text" id="sch-half" class="w-full p-3 border border-blue-50 rounded-xl outline-none bg-gray-50 text-sm font-bold focus:border-blue-300">
+            </div>
+        </div>
+        <div class="absolute bottom-0 left-0 right-0 bg-white border-t border-pink-100 p-4 pb-[max(env(safe-area-inset-bottom),16px)] z-20">
+            <button onclick="saveSchedule()" class="w-full py-4 pink-gradient text-white font-black text-lg rounded-2xl shadow-lg active:scale-95 transition-transform">근무표 저장하기</button>
+            <input type="hidden" id="sp-date-key" value="">
+        </div>
+    </div>
+
+    <div id="event-panel" class="slide-panel fixed inset-0 bg-gray-50 z-[120] transform translate-x-full flex flex-col h-full overflow-hidden">
+        <div class="px-5 py-4 bg-white border-b border-pink-100 flex justify-between items-center shadow-sm sticky top-0 z-10 pt-[max(env(safe-area-inset-top),16px)]">
+            <button onclick="closeEventPanel()" class="text-gray-400 text-3xl font-black active:scale-90 transition-transform">&lsaquo;</button>
+            <span id="event-panel-title" class="font-black text-gray-700">새 일정 등록</span>
+            <div class="w-6"></div>
+        </div>
+        <div class="flex-1 overflow-y-auto p-5 pb-32 space-y-4">
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-pink-100">
+                <p class="text-xs font-bold text-gray-400 mb-1">일자 (필수)</p>
+                <input type="date" id="ev-date" class="w-full p-3 border border-pink-50 rounded-xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300 mb-4">
+                <p class="text-xs font-bold text-gray-400 mb-1">시간 (선택)</p>
+                <input type="text" id="ev-time" placeholder="예: 14:00 ~ 17:00 / 종일" class="w-full p-3 border border-pink-50 rounded-xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300 mb-4">
+                <p class="text-xs font-bold text-gray-400 mb-1">행사/업무명 (필수)</p>
+                <input type="text" id="ev-title" placeholder="예: OO기업 자원봉사 17명 방문" class="w-full p-3 border border-pink-50 rounded-xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300 mb-4">
+                <p class="text-xs font-bold text-gray-400 mb-1">상세 내용 메모</p>
+                <textarea id="ev-desc" placeholder="필요한 물품이나 주요 전달사항을 적어주세요." class="w-full p-3 border border-pink-50 rounded-xl outline-none bg-gray-50 text-sm font-bold h-28 focus:border-pink-300"></textarea>
+            </div>
+        </div>
+        <div class="absolute bottom-0 left-0 right-0 bg-white border-t border-pink-100 p-4 pb-[max(env(safe-area-inset-bottom),16px)] z-20">
+            <button id="event-save-btn" onclick="saveEvent()" class="w-full py-4 pink-gradient text-white font-black text-lg rounded-2xl shadow-lg active:scale-95 transition-transform">일정 저장하기</button>
         </div>
     </div>
 
@@ -599,11 +604,21 @@
     </div>
 
     <script>
-        // === 보안 및 인증 로직 (기존 유지) ===
-        let currentTrainerName = "";
-        let currentTrainerId = "";
-        let isAdmin = false;
-        let deviceId = localStorage.getItem('naepumae_device_id');
+        let currentTrainerName = localStorage.getItem('naepumae_trainer_name');
+        let currentTrainerId = localStorage.getItem('naepumae_trainer_id');
+        
+        let editingLogId = null;
+        let editingLogOriginalData = null;
+        let editingAnimalProfileId = null; 
+        let editingEventId = null; // [신규] 이벤트 수정용 ID 변수
+        let currentSearchQuery = '';
+
+        let currentDate = new Date();
+        let schedules = {}; 
+        let eventsList = []; 
+
+        const dogBreeds = ['믹스견', '말티즈', '푸들', '포메라니안', '진돗개', '골든 리트리버', '비숑 프리제', '치와와', '시츄', '요크셔테리어', '직접 입력'];
+        const catBreeds = ['코리안 숏헤어', '페르시안', '러시안 블루', '샴', '먼치킨', '랙돌', '스코티시 폴드', '브리티시 숏헤어', '직접 입력'];
 
         const firebaseConfig = {
             apiKey: "AIzaSyAitCQVYKsqytLzT_O9_k0lXT7bAsPhjLY",
@@ -617,172 +632,99 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        let isAppStarted = false; 
-
-        function checkAuth() {
-            if(!deviceId) {
-                deviceId = 'dev_' + Date.now() + Math.random().toString(36).substr(2);
-                localStorage.setItem('naepumae_device_id', deviceId);
-                document.getElementById('onboarding-panel').classList.remove('hidden');
-            } else {
-                database.ref('users/' + deviceId).on('value', snap => {
-                    const user = snap.val();
-                    if(!user) {
-                        document.getElementById('onboarding-panel').classList.remove('hidden');
-                        document.getElementById('waiting-panel').classList.add('hidden');
-                        document.getElementById('main-content').classList.add('hidden');
-                    } else if(user.status === 'pending') {
-                        document.getElementById('wait-trainer-name').innerText = user.name;
-                        document.getElementById('onboarding-panel').classList.add('hidden');
-                        document.getElementById('waiting-panel').classList.remove('hidden');
-                        document.getElementById('main-content').classList.add('hidden');
-                    } else if(user.status === 'approved') {
-                        currentTrainerName = user.name;
-                        currentTrainerId = deviceId;
-                        isAdmin = (user.role === 'admin');
-                        
-                        document.getElementById('header-trainer-name').innerText = currentTrainerName;
-                        document.querySelectorAll('#current-trainer-display').forEach(el => el.innerText = currentTrainerName);
-                        
-                        if(isAdmin) document.getElementById('btn-admin-manage').classList.remove('hidden');
-                        else document.getElementById('btn-admin-manage').classList.add('hidden');
-
-                        document.getElementById('onboarding-panel').classList.add('hidden');
-                        document.getElementById('waiting-panel').classList.add('hidden');
-                        document.getElementById('main-content').classList.remove('hidden');
-
-                        if(!isAppStarted) {
-                            startAppSync();
-                            isAppStarted = true;
-                            showView('list');
-                        }
-                    }
-                });
-            }
-        }
-
-        function requestAccess() {
-            const name = document.getElementById('setup-trainer-name').value.trim();
-            if(!name) { alert('이름이나 직함을 입력해주세요.'); return; }
-            database.ref('users/' + deviceId).set({ name: name, status: 'pending', role: 'trainer', timestamp: Date.now() });
-        }
-
-        function showAdminCodeInput() {
-            document.getElementById('admin-code-area').classList.remove('hidden');
-        }
-
-        function loginAsAdmin() {
-            const name = document.getElementById('setup-trainer-name').value.trim();
-            const code = document.getElementById('setup-admin-code').value.trim();
-            if(!name) { alert('이름을 먼저 입력해주세요.'); return; }
-            if(code === '0000') {
-                database.ref('users/' + deviceId).set({ name: name, status: 'approved', role: 'admin', timestamp: Date.now() });
-            } else {
-                alert('관리자 코드가 일치하지 않습니다.');
-            }
-        }
-
-        function openAdminApproveModal() {
-            document.getElementById('admin-approve-modal').classList.add('active');
-            document.getElementById('admin-req-badge').classList.add('hidden'); // 알림 배지 숨김
-        }
-        function closeAdminApproveModal() { document.getElementById('admin-approve-modal').classList.remove('active'); }
-
-        function approveUser(uid) { database.ref('users/' + uid).update({ status: 'approved' }); }
-        function rejectUser(uid) { database.ref('users/' + uid).remove(); }
-
-        // --- 메인 데이터 동기화 (권한 획득 후 실행) ---
         let animals = [];
         let currentFilter = 'all'; 
-        let currentSearchQuery = '';
-        let editingLogId = null; let editingLogOriginalData = null; let editingAnimalProfileId = null; 
-        let currentDate = new Date(); let schedules = {}; let eventsList = []; 
 
-        const dogBreeds = ['믹스견', '말티즈', '푸들', '포메라니안', '진돗개', '골든 리트리버', '비숑 프리제', '치와와', '시츄', '요크셔테리어', '직접 입력'];
-        const catBreeds = ['코리안 숏헤어', '페르시안', '러시안 블루', '샴', '먼치킨', '랙돌', '스코티시 폴드', '브리티시 숏헤어', '직접 입력'];
-
-        function startAppSync() {
-            // 관리자용 승인 요청 리스너
-            if(isAdmin) {
-                database.ref('users').on('value', snap => {
-                    const users = snap.val();
-                    const listContainer = document.getElementById('request-list-container');
-                    let pendingCount = 0;
-                    let html = '';
-                    if(users) {
-                        Object.keys(users).forEach(uid => {
-                            if(users[uid].status === 'pending') {
-                                pendingCount++;
-                                html += `
-                                <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex justify-between items-center">
-                                    <div>
-                                        <p class="text-sm font-black text-gray-800">${users[uid].name}</p>
-                                        <p class="text-[10px] text-gray-400">요청: ${new Date(users[uid].timestamp).toLocaleDateString()}</p>
-                                    </div>
-                                    <div class="flex gap-1">
-                                        <button onclick="approveUser('${uid}')" class="bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg text-xs font-bold active:scale-95 border border-indigo-100">승인</button>
-                                        <button onclick="rejectUser('${uid}')" class="bg-white text-gray-400 px-3 py-1.5 rounded-lg text-xs font-bold active:scale-95 border border-gray-200">거절</button>
-                                    </div>
-                                </div>`;
-                            }
-                        });
-                    }
-                    if(pendingCount > 0) {
-                        document.getElementById('admin-req-badge').classList.remove('hidden');
-                        listContainer.innerHTML = html;
-                    } else {
-                        document.getElementById('admin-req-badge').classList.add('hidden');
-                        listContainer.innerHTML = `<div class="text-center py-10 text-gray-400 font-bold text-xs">대기 중인 요청이 없습니다.</div>`;
-                    }
-                });
+        function initApp() {
+            if(!currentTrainerName || !currentTrainerId) {
+                document.getElementById('onboarding-panel').classList.remove('hidden');
+            } else {
+                applyTrainerProfile();
+                showView('list');
             }
-
-            // 동기화
-            database.ref('animals').on('value', (snapshot) => {
-                const data = snapshot.val(); animals = [];
-                if (data) { Object.keys(data).forEach(key => animals.push(data[key])); animals.sort((a, b) => b.id - a.id); }
-                renderFilters();
-                if (!document.getElementById('view-list').classList.contains('hidden')) renderTasks();
-                if (!document.getElementById('view-dashboard').classList.contains('hidden')) renderDashboard();
-
-                const profilePanel = document.getElementById('profile-panel');
-                if(!profilePanel.classList.contains('translate-x-full')) {
-                    const activeId = document.getElementById('pp-animal-id').value; const activeAni = animals.find(a => a.id == activeId);
-                    if(activeAni) populateProfilePanel(activeAni); 
-                }
-                const behaviorPanel = document.getElementById('behavior-panel');
-                if(!behaviorPanel.classList.contains('translate-x-full')) {
-                    const activeId = document.getElementById('pp-animal-id').value; const activeAni = animals.find(a => a.id == activeId);
-                    if(activeAni) renderBehaviorHistory(activeAni); 
-                }
-                const historyPanel = document.getElementById('history-panel');
-                if(!historyPanel.classList.contains('translate-x-full')) {
-                    const activeId = document.getElementById('hp-animal-id').value; const activeAni = animals.find(a => a.id == activeId);
-                    if(activeAni) renderHistory(activeAni);
-                }
-            });
-
-            database.ref('schedules').on('value', (snapshot) => { schedules = snapshot.val() || {}; if (!document.getElementById('view-schedule').classList.contains('hidden')) renderCalendar(); });
-            database.ref('events').on('value', (snapshot) => { 
-                const data = snapshot.val(); eventsList = [];
-                if(data) { Object.keys(data).forEach(k => eventsList.push({...data[k], id: k})); eventsList.sort((a, b) => new Date(a.date) - new Date(b.date)); }
-                if (!document.getElementById('view-events').classList.contains('hidden')) renderEvents();
-            });
         }
 
-        // --- 내 정보 수정 (Approved 이후 작동) ---
+        function saveTrainerProfile() {
+            const inputName = document.getElementById('setup-trainer-name').value.trim();
+            if(!inputName) { alert('이름을 입력해주세요!'); return; }
+            currentTrainerName = inputName;
+            currentTrainerId = 'tr_' + Date.now().toString(36) + Math.random().toString(36).substr(2);
+            localStorage.setItem('naepumae_trainer_name', currentTrainerName);
+            localStorage.setItem('naepumae_trainer_id', currentTrainerId);
+            document.getElementById('onboarding-panel').classList.add('hidden');
+            applyTrainerProfile();
+            showView('list');
+        }
+
         function openProfileEditModal() { document.getElementById('edit-trainer-name').value = currentTrainerName; document.getElementById('profile-edit-modal').classList.add('active'); }
         function closeProfileEditModal() { document.getElementById('profile-edit-modal').classList.remove('active'); }
         function updateTrainerProfile() {
             const newName = document.getElementById('edit-trainer-name').value.trim();
             if(!newName) return;
-            database.ref('users/' + deviceId).update({ name: newName }).then(() => { closeProfileEditModal(); });
+            currentTrainerName = newName; localStorage.setItem('naepumae_trainer_name', currentTrainerName);
+            applyTrainerProfile(); closeProfileEditModal();
+        }
+        function applyTrainerProfile() {
+            document.getElementById('header-trainer-name').innerText = currentTrainerName;
+            const displays = document.querySelectorAll('#current-trainer-display');
+            displays.forEach(d => d.innerText = currentTrainerName);
         }
 
+        // ================= DB 동기화 로직 =================
+        database.ref('animals').on('value', (snapshot) => {
+            const data = snapshot.val();
+            animals = [];
+            if (data) { Object.keys(data).forEach(key => animals.push(data[key])); animals.sort((a, b) => b.id - a.id); }
+            renderFilters();
+            if (!document.getElementById('view-list').classList.contains('hidden')) renderTasks();
+            if (!document.getElementById('view-dashboard').classList.contains('hidden')) renderDashboard();
 
-        // === 이미지 최적화 및 폼 로직 ===
+            const profilePanel = document.getElementById('profile-panel');
+            if(!profilePanel.classList.contains('translate-x-full')) {
+                const activeId = document.getElementById('pp-animal-id').value; const activeAni = animals.find(a => a.id == activeId);
+                if(activeAni) populateProfilePanel(activeAni); 
+            }
+            const behaviorPanel = document.getElementById('behavior-panel');
+            if(!behaviorPanel.classList.contains('translate-x-full')) {
+                const activeId = document.getElementById('pp-animal-id').value; const activeAni = animals.find(a => a.id == activeId);
+                if(activeAni) renderBehaviorHistory(activeAni); 
+            }
+            const historyPanel = document.getElementById('history-panel');
+            if(!historyPanel.classList.contains('translate-x-full')) {
+                const activeId = document.getElementById('hp-animal-id').value; const activeAni = animals.find(a => a.id == activeId);
+                if(activeAni) renderHistory(activeAni);
+            }
+        });
+
+        database.ref('schedules').on('value', (snapshot) => { 
+            schedules = snapshot.val() || {}; 
+            if (!document.getElementById('view-schedule').classList.contains('hidden')) renderCalendar(); 
+        });
+
+        database.ref('events').on('value', (snapshot) => { 
+            const data = snapshot.val(); eventsList = [];
+            if(data) { Object.keys(data).forEach(k => eventsList.push({...data[k], id: k})); eventsList.sort((a, b) => new Date(a.date) - new Date(b.date)); }
+            if (!document.getElementById('view-events').classList.contains('hidden')) renderEvents();
+        });
+
+        // ================= 메인 뷰 제어 =================
+        function showView(view) {
+            ['reg', 'list', 'schedule', 'events', 'dashboard'].forEach(v => {
+                document.getElementById('view-'+v).classList.toggle('hidden', view !== v);
+                const navBtn = document.getElementById('nav-'+v);
+                if(navBtn) { navBtn.classList.toggle('opacity-40', view !== v); navBtn.classList.toggle('opacity-100', view === v); }
+            });
+            window.scrollTo(0,0);
+            
+            if(view === 'list') renderTasks();
+            else if(view === 'dashboard') renderDashboard();
+            else if(view === 'schedule') renderCalendar();
+            else if(view === 'events') renderEvents();
+            else if(view === 'reg' && !editingAnimalProfileId) resetRegForm();
+        }
+
+        // ================= 이미지 헬퍼 =================
         let currentPhotoBase64 = null; let currentEditPhotoBase64 = null;
-
         function handleFileSelect(event, mode='in') {
             const file = event.target.files[0]; if (!file) return;
             const reader = new FileReader();
@@ -803,7 +745,6 @@
             if(mode === 'in') { currentPhotoBase64 = null; document.getElementById('photo-preview').style.backgroundImage = 'none'; document.getElementById('photo-placeholder').classList.remove('hidden'); document.getElementById('del-photo-btn').classList.add('hidden'); document.getElementById('in-photo').value = ''; } 
             else { currentEditPhotoBase64 = null; document.getElementById('edit-photo-preview').style.backgroundImage = 'none'; document.getElementById('edit-photo-placeholder').classList.remove('hidden'); document.getElementById('edit-del-photo-btn').classList.add('hidden'); document.getElementById('edit-photo').value = ''; }
         }
-
         function setSelectValue(id, validOptions, value) { const el = document.getElementById(id); el.value = validOptions.includes(value) ? value : ""; }
 
         function updateBreeds(mode='in') {
@@ -817,14 +758,13 @@
             if(breedSelect.value === '직접 입력') breedCustom.classList.remove('hidden'); else { breedCustom.classList.add('hidden'); breedCustom.value = ''; }
         }
 
+        // ================= 신규 등록 =================
         function resetRegForm() {
             editingAnimalProfileId = null;
             document.getElementById('reg-title').innerText = "📸 신규 보호 동물 등록"; 
-            
             ['in-name', 'in-type', 'in-gender', 'in-age', 'in-health-memo', 'in-med-info', 'in-memo', 'in-size', 'in-group'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ""; });
             updateBreeds('in'); document.getElementById('in-status').value = "";
             document.getElementById('in-med-am').checked = false; document.getElementById('in-med-pm').checked = false;
-            
             document.querySelectorAll('.in-per-btn').forEach(btn => { btn.classList.remove('btn-active', 'bg-pink-100', 'text-pink-600', 'border-pink-300'); btn.classList.add('btn-inactive', 'bg-white', 'text-gray-500', 'border-gray-200'); });
             removePhoto(null, 'in'); 
         }
@@ -833,14 +773,9 @@
             document.querySelectorAll('#view-reg input, #view-reg textarea, #view-reg select').forEach(el => el.blur());
             const name = document.getElementById('in-name').value.trim();
             if(!name) { openModal('error', '이름을 적어주세요!', '아이의 이름을 입력해야 완료됩니다.'); return; }
-            
-            let breedVal = document.getElementById('in-breed').value;
-            if(breedVal === '직접 입력') breedVal = document.getElementById('in-breed-custom').value.trim();
-            if(!breedVal) breedVal = '미상';
-
+            let breedVal = document.getElementById('in-breed').value; if(breedVal === '직접 입력') breedVal = document.getElementById('in-breed-custom').value.trim(); if(!breedVal) breedVal = '미상';
             const selectedPersonalities = Array.from(document.querySelectorAll('.in-per-btn.btn-active')).map(b => b.innerText);
             const targetId = Date.now();
-            
             let saveObj = {
                 id: targetId, photo: currentPhotoBase64, name: name, type: document.getElementById('in-type').value || '미상', breed: breedVal,
                 size: document.getElementById('in-size').value || '해당없음', play_group: document.getElementById('in-group').value || '미정',
@@ -850,32 +785,23 @@
                 health_memo: document.getElementById('in-health-memo').value.trim(), med_info: document.getElementById('in-med-info').value.trim(),
                 med_am: document.getElementById('in-med-am').checked, med_pm: document.getElementById('in-med-pm').checked
             };
-
             database.ref('animals/' + targetId).set(saveObj).then(() => { resetRegForm(); openModal('success', '등록 성공! ✨', `${name}의 정보가 저장되었습니다.`); showView('list'); });
         }
 
-
-        // === 개체 정보 수정 패널 (완전 분리) ===
+        // ================= 정보 수정 패널 =================
         function openEditPanel() {
             const id = document.getElementById('pp-animal-id').value; const ani = animals.find(a => a.id == id); if(!ani) return;
             editingAnimalProfileId = ani.id;
-
             document.getElementById('edit-name').value = ani.name; 
             setSelectValue('edit-type', ['개', '고양이'], ani.type); updateBreeds('edit');
-
             const breedSelect = document.getElementById('edit-breed'); let isCustom = true;
             for(let i=0; i<breedSelect.options.length; i++) { if(breedSelect.options[i].value === ani.breed) { isCustom = false; break; } }
             if(isCustom && ani.breed && ani.breed !== '미상') { breedSelect.value = '직접 입력'; checkCustomBreed('edit'); document.getElementById('edit-breed-custom').value = ani.breed; } 
             else { breedSelect.value = ani.breed === '미상' ? "" : ani.breed; checkCustomBreed('edit'); }
-
-            setSelectValue('edit-size', ['소형견', '중형견', '대형견', '해당없음'], ani.size);
-            setSelectValue('edit-group', ['A그룹', 'B그룹', 'C그룹', '단독 활동'], ani.play_group);
-            setSelectValue('edit-gender', ['남아', '여아', '중성화된 남아', '중성화된 여아'], ani.gender);
-            document.getElementById('edit-age').value = ani.age;
+            setSelectValue('edit-size', ['소형견', '중형견', '대형견', '해당없음'], ani.size); setSelectValue('edit-group', ['A그룹', 'B그룹', 'C그룹', '단독 활동'], ani.play_group);
+            setSelectValue('edit-gender', ['남아', '여아', '중성화된 남아', '중성화된 여아'], ani.gender); document.getElementById('edit-age').value = ani.age;
             setSelectValue('edit-status', ['보호 중 🏡', '임시보호 🏨', '입양 대기 💝'], ani.status);
-            
-            document.getElementById('edit-memo').value = ani.memo;
-            document.getElementById('edit-health-memo').value = ani.health_memo || ''; document.getElementById('edit-med-info').value = ani.med_info || '';
+            document.getElementById('edit-memo').value = ani.memo; document.getElementById('edit-health-memo').value = ani.health_memo || ''; document.getElementById('edit-med-info').value = ani.med_info || '';
             document.getElementById('edit-med-am').checked = ani.med_am || false; document.getElementById('edit-med-pm').checked = ani.med_pm || false;
 
             const pArr = ani.personality ? ani.personality.split(',').map(s=>s.trim()) : [];
@@ -886,7 +812,6 @@
 
             if(ani.photo) { currentEditPhotoBase64 = ani.photo; document.getElementById('edit-photo-preview').style.backgroundImage = `url(${ani.photo})`; document.getElementById('edit-photo-placeholder').classList.add('hidden'); document.getElementById('edit-del-photo-btn').classList.remove('hidden'); } 
             else { removePhoto(null, 'edit'); }
-
             document.getElementById('edit-panel').classList.remove('translate-x-full');
         }
 
@@ -895,7 +820,6 @@
         function saveEditedAnimal() {
             document.querySelectorAll('#edit-panel input, #edit-panel textarea, #edit-panel select').forEach(el => el.blur());
             const name = document.getElementById('edit-name').value.trim(); if(!name) { openModal('error', '이름을 적어주세요!', '아이의 이름을 입력해야 완료됩니다.'); return; }
-            
             let breedVal = document.getElementById('edit-breed').value; if(breedVal === '직접 입력') breedVal = document.getElementById('edit-breed-custom').value.trim(); if(!breedVal) breedVal = '미상';
             const selectedPersonalities = Array.from(document.querySelectorAll('.edit-per-btn.btn-active')).map(b => b.innerText);
             const targetId = editingAnimalProfileId; const existingAni = animals.find(a => a.id === targetId);
@@ -911,32 +835,13 @@
             };
 
             if(existingAni) {
-                if(existingAni.daily_logs) saveObj.daily_logs = existingAni.daily_logs;
-                if(existingAni.behavior_logs) saveObj.behavior_logs = existingAni.behavior_logs;
+                if(existingAni.daily_logs) saveObj.daily_logs = existingAni.daily_logs; if(existingAni.behavior_logs) saveObj.behavior_logs = existingAni.behavior_logs;
                 if(!currentEditPhotoBase64 && existingAni.photo) saveObj.photo = existingAni.photo; 
             }
-
             database.ref('animals/' + targetId).set(saveObj).then(() => { closeEditPanel(); openModal('success', '수정 완료!', `${name}의 정보가 업데이트되었습니다.`); });
         }
 
-
-        // === 메인 뷰 제어 ===
-        function showView(view) {
-            ['reg', 'list', 'schedule', 'events', 'dashboard'].forEach(v => {
-                document.getElementById('view-'+v).classList.toggle('hidden', view !== v);
-                const navBtn = document.getElementById('nav-'+v);
-                if(navBtn) { navBtn.classList.toggle('opacity-40', view !== v); navBtn.classList.toggle('opacity-100', view === v); }
-            });
-            window.scrollTo(0,0);
-            
-            if(view === 'list') renderTasks();
-            else if(view === 'dashboard') renderDashboard();
-            else if(view === 'schedule') renderCalendar();
-            else if(view === 'events') renderEvents();
-            else if(view === 'reg') resetRegForm(); 
-        }
-
-        // --- 필터 / 검색 ---
+        // ================= 필터 및 리스트 렌더링 =================
         function renderFilters() {
             const container = document.getElementById('filter-container');
             const filters = [ { id: 'all', label: '전체 보기' }, { id: 'dog', label: '개 🐶' }, { id: 'cat', label: '고양이 🐱' }, { id: 'protecting', label: '보호 중 🏡' }, { id: 'temp', label: '임시보호 🏨' }, { id: 'adopt', label: '입양 대기 💝' }, { id: 'grA', label: 'A그룹(합사)' }, { id: 'grB', label: 'B그룹(합사)' }, { id: 'grC', label: 'C그룹(합사)' }, { id: 'grAlone', label: '단독 활동 🔴' } ];
@@ -945,20 +850,12 @@
         function setFilter(filterType) { currentFilter = filterType; renderFilters(); renderTasks(); }
         function handleSearch() { currentSearchQuery = document.getElementById('search-input').value.toLowerCase().trim(); renderTasks(); }
 
-        // --- 리스트 렌더링 ---
         function renderTasks() {
             const container = document.getElementById('task-container');
             const filteredAnimals = animals.filter(a => {
-                if (currentFilter === 'dog' && a.type !== '개') return false;
-                if (currentFilter === 'cat' && a.type !== '고양이') return false;
-                if (currentFilter === 'protecting' && !(a.status && a.status.includes('보호 중'))) return false;
-                if (currentFilter === 'temp' && !(a.status && a.status.includes('임시보호'))) return false;
-                if (currentFilter === 'adopt' && !(a.status && a.status.includes('입양 대기'))) return false;
-                if (currentFilter === 'grA' && a.play_group !== 'A그룹') return false;
-                if (currentFilter === 'grB' && a.play_group !== 'B그룹') return false;
-                if (currentFilter === 'grC' && a.play_group !== 'C그룹') return false;
-                if (currentFilter === 'grAlone' && a.play_group !== '단독 활동') return false;
-                
+                if (currentFilter === 'dog' && a.type !== '개') return false; if (currentFilter === 'cat' && a.type !== '고양이') return false;
+                if (currentFilter === 'protecting' && !(a.status && a.status.includes('보호 중'))) return false; if (currentFilter === 'temp' && !(a.status && a.status.includes('임시보호'))) return false; if (currentFilter === 'adopt' && !(a.status && a.status.includes('입양 대기'))) return false;
+                if (currentFilter === 'grA' && a.play_group !== 'A그룹') return false; if (currentFilter === 'grB' && a.play_group !== 'B그룹') return false; if (currentFilter === 'grC' && a.play_group !== 'C그룹') return false; if (currentFilter === 'grAlone' && a.play_group !== '단독 활동') return false;
                 if (currentSearchQuery) {
                     const searchStr = currentSearchQuery;
                     const match = (a.name && a.name.toLowerCase().includes(searchStr)) || (a.breed && a.breed.toLowerCase().includes(searchStr)) || (a.personality && a.personality.toLowerCase().includes(searchStr)) || (a.play_group && a.play_group.toLowerCase().includes(searchStr));
@@ -973,8 +870,7 @@
             filteredAnimals.forEach(a => {
                 const photoHtml = a.photo ? `<div class="w-16 h-16 rounded-[18px] bg-cover bg-center shrink-0 shadow-sm border border-pink-50" style="background-image: url(${a.photo})"></div>` : `<div class="w-16 h-16 rounded-[18px] bg-pink-50 flex items-center justify-center shrink-0 text-pink-200 text-2xl">🐾</div>`;
                 let badgeColor = 'bg-blue-50 text-blue-500'; 
-                if(a.status && a.status.includes('입양 대기')) badgeColor = 'bg-pink-500 text-white shadow-md';
-                else if(a.status && a.status.includes('임시보호')) badgeColor = 'bg-yellow-100 text-yellow-600 shadow-sm border border-yellow-200';
+                if(a.status && a.status.includes('입양 대기')) badgeColor = 'bg-pink-500 text-white shadow-md'; else if(a.status && a.status.includes('임시보호')) badgeColor = 'bg-yellow-100 text-yellow-600 shadow-sm border border-yellow-200';
                 const shortStatus = a.status ? a.status.split(' ')[0] + ' ' + a.status.split(' ')[1] : '보호 중 🏡';
 
                 const sizeBadge = a.size && a.size !== '해당없음' && a.size !== '미정' ? `<span class="px-2 py-0.5 rounded-md text-[9px] font-black bg-teal-50 text-teal-600 border border-teal-100 mr-1">${a.size}</span>` : '';
@@ -997,7 +893,7 @@
             });
         }
 
-        // --- 대시보드 렌더링 ---
+        // ================= 대시보드 =================
         function renderDashboard() {
             const now = new Date(); const todayStr = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`;
             document.getElementById('dash-date-title').innerText = `${now.getMonth()+1}월 ${now.getDate()}일 케어 현황`;
@@ -1011,7 +907,10 @@
                 if(a.daily_logs) {
                     Object.values(a.daily_logs).forEach(log => {
                         if(log.date_str === todayStr) {
-                            if(log.walk) { if(log.walk.time !== '-') walks[log.walk.time] = true; if(log.walk.condition === '나쁨') { alertsHtml += `<div class="bg-red-50 border border-red-100 p-3 rounded-xl mb-2 flex items-start gap-2 cursor-pointer" onclick="openProfilePanel(${a.id})"><span class="text-lg">🚨</span><div><p class="text-xs font-black text-red-600">${a.name} <span class="font-bold text-gray-500">산책 컨디션 나쁨</span></p></div></div>`; alertCount++; } }
+                            if(log.walk) {
+                                if(log.walk.time !== '-') walks[log.walk.time] = true;
+                                if(log.walk.condition === '나쁨') { alertsHtml += `<div class="bg-red-50 border border-red-100 p-3 rounded-xl mb-2 flex items-start gap-2 cursor-pointer" onclick="openProfilePanel(${a.id})"><span class="text-lg">🚨</span><div><p class="text-xs font-black text-red-600">${a.name} <span class="font-bold text-gray-500">산책 컨디션 나쁨</span></p></div></div>`; alertCount++; }
+                            }
                             if(log.meal && log.meal.time !== '-') meals[log.meal.time] = true;
                             if(log.med && log.med.time !== '-') meds[log.med.time] = true; 
                             if(log.potty) {
@@ -1058,26 +957,23 @@
             listContainer.innerHTML = listHtml;
         }
 
-        // --- 프로필 오픈 ---
+        // ================= 프로필 조회 =================
         function openProfilePanel(id) {
             const ani = animals.find(a => a.id === id); if(!ani) return; document.getElementById('pp-animal-id').value = id;
             populateProfilePanel(ani); document.getElementById('profile-panel').classList.remove('translate-x-full');
         }
         function closeProfilePanel() { document.getElementById('profile-panel').classList.add('translate-x-full'); }
-
         function populateProfilePanel(ani) {
             if(ani.photo) { document.getElementById('pp-photo').style.backgroundImage = `url(${ani.photo})`; document.getElementById('pp-photo').innerText = ''; } 
             else { document.getElementById('pp-photo').style.backgroundImage = 'none'; document.getElementById('pp-photo').innerText = '🐾'; }
             
             const shortStatus = ani.status ? ani.status.split(' ')[0] + ' ' + ani.status.split(' ')[1] : '보호 중 🏡';
             let badgeClass = 'bg-blue-500 text-white';
-            if(ani.status && ani.status.includes('입양 대기')) badgeClass = 'bg-pink-500 text-white';
-            else if(ani.status && ani.status.includes('임시보호')) badgeClass = 'bg-yellow-400 text-white';
+            if(ani.status && ani.status.includes('입양 대기')) badgeClass = 'bg-pink-500 text-white'; else if(ani.status && ani.status.includes('임시보호')) badgeClass = 'bg-yellow-400 text-white';
 
             const statusEl = document.getElementById('pp-status');
             statusEl.innerText = shortStatus; statusEl.className = `px-3 py-1 rounded-full text-[10px] font-black shadow-sm mb-2 ${badgeClass}`;
-            document.getElementById('pp-name').innerText = ani.name; 
-            document.getElementById('pp-info').innerText = `${ani.type||'동물'} · ${ani.breed} · ${ani.gender} · ${ani.age}`;
+            document.getElementById('pp-name').innerText = ani.name; document.getElementById('pp-info').innerText = `${ani.type||'동물'} · ${ani.breed} · ${ani.gender} · ${ani.age}`;
             
             const sizeBadge = ani.size && ani.size !== '해당없음' && ani.size !== '미정' ? `<span class="px-2 py-1 rounded-md text-[10px] font-black bg-teal-50 text-teal-600 border border-teal-100">${ani.size}</span>` : '';
             const groupBadge = ani.play_group && ani.play_group !== '미정' ? `<span class="px-2 py-1 rounded-md text-[10px] font-black ${ani.play_group === '단독 활동' ? 'bg-red-50 text-red-500 border border-red-100' : (ani.play_group === 'A그룹' ? 'bg-purple-50 text-purple-600 border border-purple-100' : (ani.play_group === 'B그룹' ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-cyan-50 text-cyan-600 border border-cyan-100'))}">${ani.play_group}</span>` : '';
@@ -1089,20 +985,15 @@
             const healthContainer = document.getElementById('pp-health-container');
             if (ani.health_memo || ani.med_info) {
                 healthContainer.classList.remove('hidden'); document.getElementById('pp-health-memo').innerText = ani.health_memo || '건강 특이사항 없음';
-                let medNeedStr = []; if(ani.med_am) medNeedStr.push('아침'); if(ani.med_pm) medNeedStr.push('저녁');
-                const timeStr = medNeedStr.length > 0 ? `[${medNeedStr.join('/')} 필요] ` : '';
+                let medNeedStr = []; if(ani.med_am) medNeedStr.push('아침'); if(ani.med_pm) medNeedStr.push('저녁'); const timeStr = medNeedStr.length > 0 ? `[${medNeedStr.join('/')} 필요] ` : '';
                 document.getElementById('pp-med-info').innerText = timeStr + (ani.med_info || '복약 정보 없음');
             } else { healthContainer.classList.add('hidden'); }
             document.getElementById('pp-memo').innerText = ani.memo || '메모가 없습니다.';
         }
         function askDeleteAnimal() { const id = document.getElementById('pp-animal-id').value; openModal('confirm', '아이 정보 영구 삭제', '이 동물의 프로필과 모든 기록이 완전히 삭제됩니다. 진행할까요?', () => { database.ref('animals/' + id).remove(); closeProfilePanel(); }); }
 
-        // --- 기타 공통 스크립트 연결 ---
-        function openRecordFromProfile() { const id = document.getElementById('pp-animal-id').value; openRecordPanel(Number(id)); }
-        function openHistoryFromProfile() { const id = document.getElementById('pp-animal-id').value; openHistoryPanel(null, Number(id)); }
+        // ================= 행동 분석 =================
         function openBehaviorFromProfile() { const id = document.getElementById('pp-animal-id').value; openBehaviorPanel(Number(id)); }
-
-        // 훈련 분석 로직
         function setGrade(level) { document.querySelectorAll('.grade-btn').forEach(b => b.classList.remove('grade-active')); document.querySelector(`.g${level}`).classList.add('grade-active'); document.getElementById('bh-grade').value = level; }
         function formatABC(a, b) {
             if(!a || !b) return ""; let fa = a.trim(); let fb = b.trim();
@@ -1110,7 +1001,6 @@
             if(fb.endsWith('는다')) fb = fb.slice(0, -2) + '는 경향이 있습니다.'; else if(fb.endsWith('ㄴ다')) fb = fb.slice(0, -2) + '는 경향이 있습니다.'; else if(fb.endsWith('다')) fb = fb.slice(0, -1) + '는 경향이 있습니다.'; else if(!fb.endsWith('경향이 있습니다.')) fb += '는 경향이 있습니다.';
             return `<span class="text-indigo-500">${fa}</span> <span class="text-indigo-800">${fb}</span>`;
         }
-
         function openBehaviorPanel(id) {
             const ani = animals.find(a => a.id === id); if(!ani) return;
             document.getElementById('bh-target').value = ''; document.getElementById('bh-a').value = ''; document.getElementById('bh-b').value = ''; document.getElementById('bh-c').value = ''; document.getElementById('bh-memo').value = ''; setGrade(3); 
@@ -1158,7 +1048,8 @@
             }).join('');
         }
 
-        // --- 일반 일과 로직 ---
+        // ================= 일과 기록 & 과거 기록 =================
+        function openHistoryFromProfile() { const id = document.getElementById('pp-animal-id').value; openHistoryPanel(null, Number(id)); }
         function openHistoryPanel(event, id) {
             if(event) event.stopPropagation(); const ani = animals.find(a => a.id === id); if(!ani) return;
             document.getElementById('hp-animal-id').value = id; 
@@ -1197,7 +1088,13 @@
                         <div class="text-sm text-gray-700">${content}</div>
                     </div>`;
                 }).join('');
-                return `<div class="mb-4"><button onclick="toggleAccordion('${accId}')" class="w-full flex justify-between items-center bg-pink-100 text-pink-600 px-4 py-3 rounded-2xl font-black shadow-sm active:scale-95 transition-all"><span>📅 ${date}</span><span class="text-xs bg-white px-2 py-1 rounded-lg text-pink-400">${logs.length}건 기록 ▼</span></button><div id="${accId}" class="${isOpen ? '' : 'hidden'} mt-3 pl-2 border-l-2 border-pink-100">${logsHtml}</div></div>`;
+                return `
+                <div class="mb-4">
+                    <button onclick="toggleAccordion('${accId}')" class="w-full flex justify-between items-center bg-pink-100 text-pink-600 px-4 py-3 rounded-2xl font-black shadow-sm active:scale-95 transition-all">
+                        <span>📅 ${date}</span><span class="text-xs bg-white px-2 py-1 rounded-lg text-pink-400">${logs.length}건 기록 ▼</span>
+                    </button>
+                    <div id="${accId}" class="${isOpen ? '' : 'hidden'} mt-3 pl-2 border-l-2 border-pink-100">${logsHtml}</div>
+                </div>`;
             }).join('');
         }
         function askDeleteLog(event, animalId, logId) { event.stopPropagation(); openModal('confirm', '기록을 삭제할까요?', '해당 시간의 일과 기록이 영구적으로 삭제됩니다.', () => { database.ref('animals/' + animalId + '/daily_logs/' + logId).remove(); }); }
@@ -1216,9 +1113,9 @@
         }
         function resetRecordForm() { editingLogId = null; editingLogOriginalData = null; document.getElementById('record-action-text').innerText = '기록'; clearFormFields(); }
 
+        function openRecordFromProfile() { const id = document.getElementById('pp-animal-id').value; openRecordPanel(Number(id)); }
         function openRecordPanel(id) {
-            const ani = animals.find(a => a.id === id); if(!ani) return;
-            document.getElementById('rp-animal-id').value = id;
+            const ani = animals.find(a => a.id === id); if(!ani) return; document.getElementById('rp-animal-id').value = id;
             const medSection = document.getElementById('rp-med-section'); const btnAm = document.getElementById('btn-med-am'); const btnPm = document.getElementById('btn-med-pm');
             if(ani.med_am || ani.med_pm) { medSection.classList.remove('hidden'); btnAm.classList.toggle('hidden', !ani.med_am); btnPm.classList.toggle('hidden', !ani.med_pm); } else { medSection.classList.add('hidden'); }
             const photoHtml = ani.photo ? `<div class="w-10 h-10 rounded-full bg-cover bg-center border-2 border-pink-100" style="background-image: url(${ani.photo})"></div>` : `<div class="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center text-xl">🐾</div>`;
@@ -1274,7 +1171,7 @@
             closeHistoryPanel(); document.getElementById('record-panel').classList.remove('translate-x-full');
         }
 
-        // 캘린더 스케줄 (기존 기능)
+        // ================= 일정/행사 관리 (수정 기능 포함) =================
         function renderCalendar() {
             const year = currentDate.getFullYear(); const month = currentDate.getMonth(); document.getElementById('cal-month-title').innerText = `${year}년 ${month + 1}월`;
             const firstDay = new Date(year, month, 1).getDay(); const lastDate = new Date(year, month + 1, 0).getDate(); const calDays = document.getElementById('cal-days'); calDays.innerHTML = '';
@@ -1302,14 +1199,42 @@
             else { database.ref('schedules/' + dateKey).set(scheduleData).then(() => { closeSchedulePanel(); openModal('success', '저장 완료!', '근무표가 공유되었습니다.'); }); }
         }
 
-        function openEventAddPanel() { document.getElementById('ev-date').value = ''; document.getElementById('ev-time').value = ''; document.getElementById('ev-title').value = ''; document.getElementById('ev-desc').value = ''; document.getElementById('event-add-panel').classList.remove('translate-x-full'); }
-        function closeEventAddPanel() { document.getElementById('event-add-panel').classList.add('translate-x-full'); }
+        // [수정됨] 이벤트 패널 로직 (수정 기능 통합)
+        function openEventPanel(eventId = null) { 
+            if(eventId) {
+                const ev = eventsList.find(e => e.id === eventId);
+                if(ev) {
+                    editingEventId = eventId;
+                    document.getElementById('ev-date').value = ev.date || '';
+                    document.getElementById('ev-time').value = ev.time === '시간 미정' ? '' : (ev.time || '');
+                    document.getElementById('ev-title').value = ev.title || '';
+                    document.getElementById('ev-desc').value = ev.desc || '';
+                    document.getElementById('event-panel-title').innerText = '일정 수정';
+                    document.getElementById('event-save-btn').innerText = '수정 내용 저장하기';
+                }
+            } else {
+                editingEventId = null;
+                document.getElementById('ev-date').value = ''; document.getElementById('ev-time').value = ''; document.getElementById('ev-title').value = ''; document.getElementById('ev-desc').value = ''; 
+                document.getElementById('event-panel-title').innerText = '새 일정 등록';
+                document.getElementById('event-save-btn').innerText = '일정 저장하기';
+            }
+            document.getElementById('event-panel').classList.remove('translate-x-full'); 
+        }
+        function closeEventPanel() { document.getElementById('event-panel').classList.add('translate-x-full'); }
+        
         function saveEvent() {
             const date = document.getElementById('ev-date').value; const time = document.getElementById('ev-time').value.trim(); const title = document.getElementById('ev-title').value.trim(); const desc = document.getElementById('ev-desc').value.trim();
             if(!date || !title) { openModal('error', '입력 오류', '일자와 행사명은 필수 입력 항목입니다.'); return; }
+            
+            const targetId = editingEventId ? editingEventId : Date.now();
             const eventData = { date: date, time: time || '시간 미정', title: title, desc: desc, createdBy: currentTrainerName, timestamp: Date.now() };
-            database.ref('events/' + Date.now()).set(eventData).then(() => { closeEventAddPanel(); openModal('success', '일정 등록 완료', '센터 행사가 성공적으로 등록되었습니다.'); });
+            
+            database.ref('events/' + targetId).update(eventData).then(() => { 
+                closeEventPanel(); 
+                openModal('success', editingEventId ? '수정 완료' : '일정 등록 완료', '센터 행사가 성공적으로 저장되었습니다.'); 
+            });
         }
+
         function renderEvents() {
             const container = document.getElementById('event-container'); const today = new Date(); today.setHours(0,0,0,0);
             if(eventsList.length === 0) { container.innerHTML = `<div class="text-center py-20 text-gray-400 font-bold">등록된 행사 및 일정이 없습니다.</div>`; return; }
@@ -1317,14 +1242,18 @@
                 const evDate = new Date(ev.date); const isPast = evDate < today; const days = ['일', '월', '화', '수', '목', '금', '토']; const dayName = days[evDate.getDay()]; const dateStr = `${evDate.getMonth()+1}/${evDate.getDate()}(${dayName})`;
                 return `
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-pink-100 relative ${isPast ? 'opacity-50' : ''}">
-                    <button onclick="askDeleteEvent(event, '${ev.id}')" class="absolute top-4 right-4 text-gray-300 hover:text-red-400 font-bold text-lg">&times;</button>
-                    <div class="flex items-center gap-3 mb-2">
+                    <div class="absolute top-4 right-4 flex gap-1">
+                        <button onclick="openEventPanel('${ev.id}')" class="text-[10px] px-2 py-1 bg-gray-50 text-gray-500 rounded-md font-bold active:scale-95 hover:bg-gray-100 border border-gray-100">수정</button>
+                        <button onclick="askDeleteEvent(event, '${ev.id}')" class="text-[10px] px-2 py-1 bg-red-50 text-red-500 rounded-md font-bold active:scale-95 hover:bg-red-100 border border-red-100">삭제</button>
+                    </div>
+                    
+                    <div class="flex items-center gap-3 mb-2 mt-1">
                         <div class="bg-pink-50 text-pink-600 px-3 py-1.5 rounded-xl font-black text-sm text-center min-w-[70px]">${dateStr}</div>
                         <div class="text-xs font-bold text-gray-500 bg-gray-50 px-2 py-1 rounded-md">⏰ ${ev.time}</div>
                     </div>
-                    <h3 class="text-base font-black text-gray-800 mb-1 leading-tight pr-6">${ev.title}</h3>
+                    <h3 class="text-base font-black text-gray-800 mb-1 leading-tight pr-20">${ev.title}</h3>
                     ${ev.desc ? `<p class="text-sm text-gray-600 font-bold bg-pink-50/30 p-2 rounded-lg mt-2">${ev.desc.replace(/\n/g, '<br>')}</p>` : ''}
-                    <p class="text-[10px] text-gray-400 mt-2 text-right">등록: ${ev.createdBy}</p>
+                    <p class="text-[10px] text-gray-400 mt-2 text-right">작성: ${ev.createdBy}</p>
                 </div>`;
             }).join('');
         }
