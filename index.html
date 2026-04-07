@@ -20,7 +20,7 @@
         
         .content-area { padding-bottom: 120px; position: relative; z-index: 10; }
         .save-btn { cursor: pointer; position: relative; z-index: 100; touch-action: manipulation; -webkit-appearance: none; }
-        .save-btn:active { transform: scale(0.96); opacity: 0.9; }
+        .save-btn:active:not(:disabled) { transform: scale(0.96); opacity: 0.9; }
 
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -205,7 +205,7 @@
         <div id="view-reg" class="hidden space-y-6 pb-10">
             <div class="card space-y-4">
                 <div class="flex justify-between items-center">
-                    <h2 class="text-lg font-bold text-gray-700">📸 신규 보호 동물 등록</h2>
+                    <h2 class="text-lg font-bold text-gray-700" id="reg-title">📸 신규 보호 동물 등록</h2>
                 </div>
                 <div id="photo-preview" onclick="document.getElementById('in-photo').click()" class="w-full h-52 rounded-3xl bg-pink-50 flex items-center justify-center border-2 border-dashed border-pink-200 relative overflow-hidden cursor-pointer">
                     <div id="photo-placeholder" class="text-center text-pink-300"><span class="text-5xl">📸</span><p class="text-xs font-bold mt-2">사진 선택</p></div>
@@ -653,10 +653,24 @@
 
         function saveNewAnimal() {
             document.querySelectorAll('#view-reg input, #view-reg textarea, #view-reg select').forEach(el => el.blur());
-            const name = document.getElementById('in-name').value.trim(); if(!name) { openModal('error', '이름을 적어주세요!', '아이의 이름을 입력해야 완료됩니다.'); return; }
-            let breedVal = document.getElementById('in-breed').value; if(breedVal === '직접 입력') breedVal = document.getElementById('in-breed-custom').value.trim(); if(!breedVal) breedVal = '미상';
+            const name = document.getElementById('in-name').value.trim(); 
+            if(!name) { openModal('error', '이름을 적어주세요!', '아이의 이름을 입력해야 완료됩니다.'); return; }
+            
+            // [UI/UX 개선] 중복 클릭 방지를 위한 버튼 상태 제어
+            const submitBtn = document.querySelector('#view-reg .save-btn');
+            if (submitBtn.disabled) return; 
+            submitBtn.disabled = true; 
+            const originalBtnText = submitBtn.innerText;
+            submitBtn.innerText = '데이터 저장 중입니다... ⏳'; 
+            submitBtn.classList.add('opacity-70', 'cursor-not-allowed'); 
+            
+            let breedVal = document.getElementById('in-breed').value; 
+            if(breedVal === '직접 입력') breedVal = document.getElementById('in-breed-custom').value.trim(); 
+            if(!breedVal) breedVal = '미상';
+            
             const selectedPersonalities = Array.from(document.querySelectorAll('.in-per-btn.btn-active')).map(b => b.innerText);
             const targetId = Date.now();
+            
             let saveObj = {
                 id: targetId, photo: currentPhotoBase64, name: name, type: document.getElementById('in-type').value || '미상', breed: breedVal,
                 size: document.getElementById('in-size').value || '해당없음', play_group: document.getElementById('in-group').value || '미정',
@@ -665,7 +679,22 @@
                 memo: document.getElementById('in-memo').value || '', health_memo: document.getElementById('in-health-memo').value.trim(), med_info: document.getElementById('in-med-info').value.trim(),
                 med_am: document.getElementById('in-med-am').checked, med_pm: document.getElementById('in-med-pm').checked
             };
-            database.ref('animals/' + targetId).set(saveObj).then(() => { resetRegForm(); openModal('success', '등록 성공! ✨', `${name}의 정보가 저장되었습니다.`); showView('list'); });
+            
+            database.ref('animals/' + targetId).set(saveObj)
+                .then(() => { 
+                    resetRegForm(); 
+                    openModal('success', '등록 성공! ✨', `${name}의 정보가 저장되었습니다.`); 
+                    showView('list'); 
+                })
+                .catch((error) => {
+                    console.error("Firebase 저장 오류:", error);
+                    openModal('error', '등록 실패', '네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+                })
+                .finally(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = originalBtnText;
+                    submitBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+                });
         }
 
         function openEditPanel() {
@@ -807,7 +836,6 @@
                 }
                 if(a.med_am && !meds['아침 약 완료'] && now.getHours() >= 13) { alertsHtml += `<div class="bg-indigo-50 border border-indigo-100 p-3 rounded-xl mb-2 flex items-start gap-2 cursor-pointer active:scale-[0.98]" onclick="openProfilePanel(${a.id})"><span class="text-lg">💊</span><div><p class="text-xs font-black text-indigo-600">${a.name} <span class="font-bold text-gray-500">아침 약 투여 미확인</span></p></div></div>`; alertCount++; }
 
-                // [핵심 수정] 고양이가 아닌 모든 아이들 산책 타겟 포함 (타입이 '미상'이거나 없어도 포함)
                 let isTaskTarget = false; let isTaskDone = false;
                 const isDog = (a.type !== '고양이'); 
 
@@ -866,7 +894,6 @@
                     if(list.length === 0) return `<p class="text-xs text-gray-400 my-4 text-center w-full">해당하는 아이가 없습니다.</p>`;
                     return `<div class="grid grid-cols-4 sm:grid-cols-5 gap-y-5 gap-x-2 mt-3 w-full">` + list.map(a => {
                         const photo = a.photo ? `<div class="w-14 h-14 rounded-full bg-cover bg-center border-2 border-white shadow-sm mx-auto" style="background-image: url(${a.photo})"></div>` : `<div class="w-14 h-14 rounded-full bg-pink-50 flex items-center justify-center text-xl border-2 border-white shadow-sm mx-auto">🐾</div>`;
-                        // 대기 중인 아이 클릭 시 바로 기록 창 오픈 연동
                         return `<div class="flex flex-col items-center cursor-pointer active:scale-95 transition-transform" onclick="${type === 'pending' ? `openRecordPanel(${a.id})` : `openProfilePanel(${a.id})`}">
                             ${photo}<span class="text-[10px] font-black text-gray-700 mt-1.5 w-full text-center truncate px-1">${a.name}</span>
                         </div>`;
