@@ -367,7 +367,7 @@
         </div>
         <div class="flex-1 overflow-y-auto p-5 pb-32 space-y-6">
             <div class="bg-white rounded-3xl p-5 shadow-sm border border-indigo-100">
-                <h3 class="text-base font-black text-indigo-700 mb-4">새 훈련 기록 추가</h3>
+                <h3 id="bh-panel-title" class="text-base font-black text-indigo-700 mb-4">새 훈련 기록 추가</h3>
                 <p class="text-[10px] font-black text-gray-400 mb-1">분석할 문제 행동 (예: 산책 시 짖음)</p>
                 <input type="text" id="bh-target" class="w-full p-3 border border-indigo-50 rounded-xl outline-none bg-gray-50 text-sm font-bold focus:border-indigo-300 mb-4">
                 <p class="text-[10px] font-black text-gray-400 mb-2">ABC 모델 분석 (문장 자동완성)</p>
@@ -387,7 +387,7 @@
                 <input type="hidden" id="bh-grade" value="0">
                 <p class="text-[10px] font-black text-gray-400 mb-1">DSCC 훈련 및 소거 과정 메모</p>
                 <textarea id="bh-memo" placeholder="어떤 방식으로 훈련을 진행했고, 어떤 반응을 보였는지 기록해주세요." class="w-full p-3 border border-indigo-50 rounded-xl outline-none bg-gray-50 text-sm font-bold h-24 focus:border-indigo-300"></textarea>
-                <button onclick="saveBehaviorLog()" class="w-full py-3 bg-indigo-500 text-white font-black rounded-xl shadow-md mt-3 active:scale-95 transition-transform">훈련 기록 추가하기</button>
+                <button id="bh-save-btn" onclick="saveBehaviorLog()" class="w-full py-3 bg-indigo-500 text-white font-black rounded-xl shadow-md mt-3 active:scale-95 transition-transform">훈련 기록 추가하기</button>
             </div>
             <div>
                 <h3 class="text-sm font-black text-gray-600 mb-3 ml-1">📈 훈련 진행 타임라인</h3>
@@ -528,7 +528,7 @@
         let isAdmin = false;
         let deviceId = localStorage.getItem('naepumae_device_id');
         
-        let editingLogId = null; let editingLogOriginalData = null; let editingAnimalProfileId = null; let editingEventId = null; 
+        let editingLogId = null; let editingLogOriginalData = null; let editingAnimalProfileId = null; let editingEventId = null; let editingBehaviorLogId = null;
         let currentSearchQuery = ''; let currentDashTab = 'animal'; let currentDashTask = 'walk_am';
         let currentDate = new Date(); let schedules = {}; let eventsList = []; let animals = []; let currentFilter = 'all'; 
 
@@ -656,7 +656,6 @@
             const name = document.getElementById('in-name').value.trim(); 
             if(!name) { openModal('error', '이름을 적어주세요!', '아이의 이름을 입력해야 완료됩니다.'); return; }
             
-            // [UI/UX 개선] 중복 클릭 방지를 위한 버튼 상태 제어
             const submitBtn = document.querySelector('#view-reg .save-btn');
             if (submitBtn.disabled) return; 
             submitBtn.disabled = true; 
@@ -1034,6 +1033,9 @@
         }
         function openBehaviorPanel(id) {
             const ani = animals.find(a => a.id === id); if(!ani) return;
+            editingBehaviorLogId = null;
+            document.getElementById('bh-panel-title').innerText = '새 훈련 기록 추가';
+            document.getElementById('bh-save-btn').innerText = '훈련 기록 추가하기';
             document.getElementById('bh-target').value = ''; document.getElementById('bh-a').value = ''; document.getElementById('bh-b').value = ''; document.getElementById('bh-c').value = ''; document.getElementById('bh-memo').value = ''; setGrade(3); 
             renderBehaviorHistory(ani); document.getElementById('behavior-panel').classList.remove('translate-x-full');
         }
@@ -1042,39 +1044,86 @@
             const id = document.getElementById('pp-animal-id').value; if(!id) return;
             const target = document.getElementById('bh-target').value.trim(); const a = document.getElementById('bh-a').value.trim(); const b = document.getElementById('bh-b').value.trim(); const c = document.getElementById('bh-c').value.trim(); const memo = document.getElementById('bh-memo').value.trim(); const grade = document.getElementById('bh-grade').value;
             if(!target || !a || !b) { openModal('error', '입력 오류', '분석할 문제 행동과 A(상황), B(행동)는 필수 입력 사항입니다.'); return; }
-            const now = new Date(); const dateStr = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`;
-            const logData = { timestamp: Date.now(), trainer_name: currentTrainerName, date_str: dateStr, target: target, a: a, b: b, c: c, grade: grade, memo: memo };
-            database.ref('animals/' + id + '/behavior_logs/' + Date.now()).set(logData).then(() => {
-                openModal('success', '훈련 기록 추가', '새로운 행동 분석 기록이 추가되었습니다.');
+            
+            const targetLogId = editingBehaviorLogId ? editingBehaviorLogId : Date.now();
+            let logData = { target: target, a: a, b: b, c: c, grade: grade, memo: memo };
+            
+            if(!editingBehaviorLogId) {
+                const now = new Date(); const dateStr = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`;
+                logData.timestamp = Date.now();
+                logData.trainer_name = currentTrainerName;
+                logData.date_str = dateStr;
+            }
+
+            database.ref('animals/' + id + '/behavior_logs/' + targetLogId).update(logData).then(() => {
+                openModal('success', editingBehaviorLogId ? '훈련 기록 수정' : '훈련 기록 추가', editingBehaviorLogId ? '행동 분석 기록이 성공적으로 수정되었습니다.' : '새로운 행동 분석 기록이 추가되었습니다.');
+                editingBehaviorLogId = null;
+                document.getElementById('bh-panel-title').innerText = '새 훈련 기록 추가';
+                document.getElementById('bh-save-btn').innerText = '훈련 기록 추가하기';
                 document.getElementById('bh-target').value = ''; document.getElementById('bh-a').value = ''; document.getElementById('bh-b').value = ''; document.getElementById('bh-c').value = ''; document.getElementById('bh-memo').value = ''; setGrade(3);
             });
         }
         function renderBehaviorHistory(ani) {
             const container = document.getElementById('behavior-history-container');
             if(!ani.behavior_logs || Object.keys(ani.behavior_logs).length === 0) { container.innerHTML = `<div class="text-center py-10 text-indigo-300 font-bold bg-white rounded-2xl border border-indigo-50 mt-4"><p>아직 작성된 훈련/행동 트래킹 기록이 없습니다.</p></div>`; return; }
-            const logsArray = Object.values(ani.behavior_logs).sort((a, b) => b.timestamp - a.timestamp); 
+            const logsArray = Object.entries(ani.behavior_logs).map(([k, v]) => ({...v, id: k})).sort((a, b) => b.timestamp - a.timestamp); 
             const gradeColors = { 1: { b: 'border-green-500', bg: 'bg-green-100', t: 'text-green-700', icon: '🟢' }, 2: { b: 'border-blue-500', bg: 'bg-blue-100', t: 'text-blue-700', icon: '🔵' }, 3: { b: 'border-yellow-500', bg: 'bg-yellow-100', t: 'text-yellow-700', icon: '🟡' }, 4: { b: 'border-orange-500', bg: 'bg-orange-100', t: 'text-orange-700', icon: '🟠' }, 5: { b: 'border-red-500', bg: 'bg-red-100', t: 'text-red-700', icon: '🔴' } };
             container.innerHTML = logsArray.map((log, index) => {
                 const isLatest = index === 0; const gColor = gradeColors[log.grade] || gradeColors[3]; const sentence = formatABC(log.a, log.b);
                 return `
                 <div class="relative pl-8 mb-6 ${isLatest ? 'opacity-100' : 'opacity-80'}">
                     <div class="absolute left-[11px] top-1.5 w-2.5 h-2.5 rounded-full ${gColor.bg} border-2 ${gColor.b} z-10"></div>
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-indigo-50 hover:shadow-md transition-shadow">
-                        <div class="flex justify-between items-start mb-2">
-                            <div><span class="px-2 py-1 rounded-md text-[10px] font-black ${gColor.bg} ${gColor.t}">${gColor.icon} ${log.grade}단계</span><span class="text-[11px] font-black text-gray-500 ml-2">${log.date_str}</span></div>
-                            <span class="text-[10px] bg-indigo-50 text-indigo-400 px-2 py-1 rounded font-bold">${log.trainer_name}</span>
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-indigo-50 hover:shadow-md transition-shadow relative">
+                        <div class="absolute top-4 right-4 flex gap-1">
+                            <button onclick="editBehaviorLog(event, ${ani.id}, '${log.id}')" class="text-[10px] px-2 py-1 bg-gray-50 text-gray-500 rounded-md font-bold active:scale-95 hover:bg-gray-100 border border-gray-100">수정</button>
+                            <button onclick="askDeleteBehaviorLog(event, ${ani.id}, '${log.id}')" class="text-[10px] px-2 py-1 bg-red-50 text-red-500 rounded-md font-bold active:scale-95 hover:bg-red-100 border border-red-100">삭제</button>
                         </div>
-                        <h4 class="text-sm font-black text-gray-800 mb-2 truncate">🎯 ${log.target}</h4>
+                        <div class="flex items-center gap-2 mb-2 pr-20">
+                            <span class="px-2 py-1 rounded-md text-[10px] font-black ${gColor.bg} ${gColor.t}">${gColor.icon} ${log.grade}단계</span>
+                            <span class="text-[11px] font-black text-gray-500">${log.date_str}</span>
+                        </div>
+                        <h4 class="text-sm font-black text-gray-800 mb-2 truncate pr-20">🎯 ${log.target}</h4>
                         <div class="bg-indigo-50/50 p-3 rounded-xl mb-3">
                             <p class="text-xs font-black leading-relaxed">"${sentence}"</p>
                             <div class="mt-2 space-y-1 text-[10px] font-bold text-gray-500">
                                 <div class="flex"><span class="w-4 text-indigo-400">A:</span> <span class="flex-1">${log.a}</span></div><div class="flex"><span class="w-4 text-indigo-400">B:</span> <span class="flex-1">${log.b}</span></div><div class="flex"><span class="w-4 text-indigo-400">C:</span> <span class="flex-1">${log.c || '-'}</span></div>
                             </div>
                         </div>
-                        ${log.memo ? `<div class="text-xs text-gray-600 font-bold bg-gray-50 p-3 rounded-xl border border-gray-100">📋 ${log.memo.replace(/\n/g, '<br>')}</div>` : ''}
+                        <div class="flex justify-between items-end mt-1">
+                            <div class="flex-1 mr-2">${log.memo ? `<div class="text-xs text-gray-600 font-bold bg-gray-50 p-3 rounded-xl border border-gray-100">📋 ${log.memo.replace(/\n/g, '<br>')}</div>` : ''}</div>
+                            <span class="text-[10px] bg-indigo-50 text-indigo-400 px-2 py-1 rounded font-bold whitespace-nowrap">${log.trainer_name}</span>
+                        </div>
                     </div>
                 </div>`;
             }).join('');
+        }
+        function editBehaviorLog(event, animalId, logId) {
+            event.stopPropagation(); const ani = animals.find(a => a.id === animalId); if(!ani || !ani.behavior_logs || !ani.behavior_logs[logId]) return;
+            const log = ani.behavior_logs[logId];
+            editingBehaviorLogId = logId;
+            document.getElementById('bh-panel-title').innerText = '훈련 기록 수정';
+            document.getElementById('bh-save-btn').innerText = '수정 내용 저장하기';
+            document.getElementById('bh-target').value = log.target || '';
+            document.getElementById('bh-a').value = log.a || '';
+            document.getElementById('bh-b').value = log.b || '';
+            document.getElementById('bh-c').value = log.c || '';
+            document.getElementById('bh-memo').value = log.memo || '';
+            setGrade(log.grade || 3);
+            
+            document.getElementById('behavior-panel').querySelector('.overflow-y-auto').scrollTo({top: 0, behavior: 'smooth'});
+        }
+        function askDeleteBehaviorLog(event, animalId, logId) {
+            event.stopPropagation(); 
+            openModal('confirm', '훈련 기록 삭제', '이 행동 분석 기록을 완전히 삭제하시겠습니까?', () => { 
+                database.ref('animals/' + animalId + '/behavior_logs/' + logId).remove().then(() => {
+                    if(editingBehaviorLogId === logId) {
+                        editingBehaviorLogId = null;
+                        document.getElementById('bh-panel-title').innerText = '새 훈련 기록 추가';
+                        document.getElementById('bh-save-btn').innerText = '훈련 기록 추가하기';
+                        document.getElementById('bh-target').value = ''; document.getElementById('bh-a').value = ''; document.getElementById('bh-b').value = ''; document.getElementById('bh-c').value = ''; document.getElementById('bh-memo').value = ''; setGrade(3);
+                    }
+                }); 
+            }); 
         }
 
         // === 12. 과거 기록 열람 ===
@@ -1198,7 +1247,7 @@
             document.getElementById('modal-icon').innerText = type === 'success' ? '✨' : (type === 'error' ? '💡' : '🗑️');
             document.getElementById('modal-title').innerText = title; document.getElementById('modal-desc').innerText = desc; modal.classList.add('active');
             if (type === 'confirm') {
-                btns.innerHTML = `<button onclick="closeModal()" class="flex-1 py-4 bg-gray-50 text-gray-400 font-black rounded-2xl">취소</button><button id="modal-confirm-btn" class="flex-1 py-4 bg-red-500 text-white font-black rounded-2xl shadow-md">확인</button>`;
+                btns.innerHTML = `<button onclick="closeModal()" class="flex-1 py-4 bg-gray-50 text-gray-400 font-black rounded-2xl">취소</button><button id="modal-confirm-btn" class="flex-1 py-4 bg-red-50 text-red-500 font-black rounded-2xl shadow-md border border-red-100">확인</button>`;
                 document.getElementById('modal-confirm-btn').onclick = () => { onConfirm(); closeModal(); };
             } else { btns.innerHTML = `<button onclick="closeModal()" class="w-full py-4 pink-gradient text-white font-black rounded-2xl shadow-md">확인</button>`; }
         }
