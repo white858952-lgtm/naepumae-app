@@ -229,10 +229,14 @@
                     <select id="in-gender" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-500 text-sm font-bold">
                         <option value="" disabled selected>성별 (중성화)</option><option value="남아">남아</option><option value="여아">여아</option><option value="중성화된 남아">중성화된 남아</option><option value="중성화된 여아">중성화된 여아</option>
                     </select>
-                    <input type="text" id="in-age" placeholder="추정 나이" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-pink-50/20 text-sm font-bold">
+                    <input type="text" id="in-age" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-pink-50/20 text-sm font-bold" placeholder="추정 나이">
                     
-                    <select id="in-status" class="col-span-2 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-600 text-sm font-bold shadow-sm">
-                        <option value="" disabled selected>보호 상태</option><option value="보호 중 🏡">보호 중 (입양 대기 전)</option><option value="임시보호 🏨">임시보호 (호텔링/위탁)</option><option value="입양 대기 💝">입양 대기 (확정 완료)</option>
+                    <select id="in-meal-type" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-500 text-sm font-bold">
+                        <option value="제한급여" selected>제한급여 (아침/저녁)</option>
+                        <option value="자율배식">자율배식 (항상 완료)</option>
+                    </select>
+                    <select id="in-status" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-600 text-sm font-bold shadow-sm">
+                        <option value="" disabled selected>보호 상태</option><option value="보호 중 🏡">보호 중 (입양 대기)</option><option value="임시보호 🏨">임시보호 (위탁)</option><option value="입양 대기 💝">입양 대기 (확정)</option>
                     </select>
 
                     <div class="col-span-2 mt-2">
@@ -251,8 +255,20 @@
 
                     <div class="col-span-2 mt-2 bg-green-50/50 p-4 rounded-2xl border border-green-100">
                         <p class="text-xs font-black text-green-600 mb-2">🏥 건강 및 복약 정보</p>
-                        <input type="text" id="in-health-memo" placeholder="건강 특이사항 (예: 슬개골 탈구 2기)" class="w-full p-3 border border-green-100 rounded-xl outline-none bg-white text-sm font-bold focus:border-green-300 mb-2">
-                        <p class="text-[10px] font-bold text-green-700 mb-1">✅ 체크한 약만 대시보드(투데이) 뱃지로 나타납니다.</p>
+                        <input type="text" id="in-health-memo" placeholder="건강 특이사항 (예: 슬개골 탈구 2기)" class="w-full p-3 border border-green-100 rounded-xl outline-none bg-white text-sm font-bold focus:border-green-300 mb-3">
+                        
+                        <p class="text-[10px] font-bold text-green-700 mb-1">📅 투약 요일 선택 (선택된 요일만 투데이 탭에 표시됩니다)</p>
+                        <div class="flex gap-1 mb-3 justify-center">
+                            <button type="button" onclick="toggleMedDay(this)" class="in-med-day-btn flex-1 py-1.5 rounded-lg border border-green-300 bg-green-100 text-green-700 text-xs font-bold active:scale-95 med-day-active">월</button>
+                            <button type="button" onclick="toggleMedDay(this)" class="in-med-day-btn flex-1 py-1.5 rounded-lg border border-green-300 bg-green-100 text-green-700 text-xs font-bold active:scale-95 med-day-active">화</button>
+                            <button type="button" onclick="toggleMedDay(this)" class="in-med-day-btn flex-1 py-1.5 rounded-lg border border-green-300 bg-green-100 text-green-700 text-xs font-bold active:scale-95 med-day-active">수</button>
+                            <button type="button" onclick="toggleMedDay(this)" class="in-med-day-btn flex-1 py-1.5 rounded-lg border border-green-300 bg-green-100 text-green-700 text-xs font-bold active:scale-95 med-day-active">목</button>
+                            <button type="button" onclick="toggleMedDay(this)" class="in-med-day-btn flex-1 py-1.5 rounded-lg border border-green-300 bg-green-100 text-green-700 text-xs font-bold active:scale-95 med-day-active">금</button>
+                            <button type="button" onclick="toggleMedDay(this)" class="in-med-day-btn flex-1 py-1.5 rounded-lg border border-green-300 bg-green-100 text-green-700 text-xs font-bold active:scale-95 med-day-active">토</button>
+                            <button type="button" onclick="toggleMedDay(this)" class="in-med-day-btn flex-1 py-1.5 rounded-lg border border-green-300 bg-green-100 text-green-700 text-xs font-bold active:scale-95 med-day-active">일</button>
+                        </div>
+
+                        <p class="text-[10px] font-bold text-green-700 mb-1">💊 필요 약물 선택</p>
                         <div class="flex gap-3 mb-2">
                             <label class="flex items-center gap-1.5 text-xs font-bold text-gray-700 bg-white px-3 py-2 rounded-lg border border-green-100 w-1/2 justify-center"><input type="checkbox" id="in-med-am" class="w-4 h-4 accent-green-500"> 아침 약 필요</label>
                             <label class="flex items-center gap-1.5 text-xs font-bold text-gray-700 bg-white px-3 py-2 rounded-lg border border-green-100 w-1/2 justify-center"><input type="checkbox" id="in-med-pm" class="w-4 h-4 accent-green-500"> 저녁 약 필요</label>
@@ -330,7 +346,9 @@
                     <select id="edit-group" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-500 text-sm font-bold"><option value="" disabled selected>야외 활동 그룹</option><option value="A그룹">A그룹 (합사)</option><option value="B그룹">B그룹 (합사)</option><option value="C그룹">C그룹 (합사)</option><option value="단독 활동">단독 활동 (격리)</option></select>
                     <select id="edit-gender" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-500 text-sm font-bold"><option value="" disabled selected>성별 (중성화)</option><option value="남아">남아</option><option value="여아">여아</option><option value="중성화된 남아">중성화된 남아</option><option value="중성화된 여아">중성화된 여아</option></select>
                     <input type="text" id="edit-age" placeholder="추정 나이" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-pink-50/20 text-sm font-bold">
-                    <select id="edit-status" class="col-span-2 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-600 text-sm font-bold shadow-sm"><option value="" disabled selected>보호 상태</option><option value="보호 중 🏡">보호 중 (입양 대기 전)</option><option value="임시보호 🏨">임시보호 (호텔링/위탁)</option><option value="입양 대기 💝">입양 대기 (확정 완료)</option></select>
+                    
+                    <select id="edit-meal-type" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-500 text-sm font-bold"><option value="제한급여" selected>제한급여 (아침/저녁)</option><option value="자율배식">자율배식 (항상 완료)</option></select>
+                    <select id="edit-status" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-600 text-sm font-bold shadow-sm"><option value="" disabled selected>보호 상태</option><option value="보호 중 🏡">보호 중 (입양 대기 전)</option><option value="임시보호 🏨">임시보호 (호텔링/위탁)</option><option value="입양 대기 💝">입양 대기 (확정 완료)</option></select>
                     
                     <div class="col-span-2 mt-2">
                         <p class="text-xs font-bold text-gray-400 mb-2 px-1">기본 성격 (여러 개 선택 가능)</p>
@@ -340,8 +358,20 @@
                     </div>
                     <div class="col-span-2 mt-2 bg-green-50/50 p-4 rounded-2xl border border-green-100">
                         <p class="text-xs font-black text-green-600 mb-2">🏥 건강 및 복약 정보</p>
-                        <input type="text" id="edit-health-memo" placeholder="건강 특이사항 (예: 슬개골 탈구 2기)" class="w-full p-3 border border-green-100 rounded-xl outline-none bg-white text-sm font-bold focus:border-green-300 mb-2">
-                        <p class="text-[10px] font-bold text-green-700 mb-1">✅ 체크한 약만 대시보드(투데이) 뱃지로 나타납니다.</p>
+                        <input type="text" id="edit-health-memo" placeholder="건강 특이사항 (예: 슬개골 탈구 2기)" class="w-full p-3 border border-green-100 rounded-xl outline-none bg-white text-sm font-bold focus:border-green-300 mb-3">
+                        
+                        <p class="text-[10px] font-bold text-green-700 mb-1">📅 투약 요일 선택 (선택된 요일만 투데이 탭에 표시됩니다)</p>
+                        <div class="flex gap-1 mb-3 justify-center">
+                            <button type="button" onclick="toggleMedDay(this)" class="edit-med-day-btn flex-1 py-1.5 rounded-lg border border-green-300 bg-green-100 text-green-700 text-xs font-bold active:scale-95 med-day-active">월</button>
+                            <button type="button" onclick="toggleMedDay(this)" class="edit-med-day-btn flex-1 py-1.5 rounded-lg border border-green-300 bg-green-100 text-green-700 text-xs font-bold active:scale-95 med-day-active">화</button>
+                            <button type="button" onclick="toggleMedDay(this)" class="edit-med-day-btn flex-1 py-1.5 rounded-lg border border-green-300 bg-green-100 text-green-700 text-xs font-bold active:scale-95 med-day-active">수</button>
+                            <button type="button" onclick="toggleMedDay(this)" class="edit-med-day-btn flex-1 py-1.5 rounded-lg border border-green-300 bg-green-100 text-green-700 text-xs font-bold active:scale-95 med-day-active">목</button>
+                            <button type="button" onclick="toggleMedDay(this)" class="edit-med-day-btn flex-1 py-1.5 rounded-lg border border-green-300 bg-green-100 text-green-700 text-xs font-bold active:scale-95 med-day-active">금</button>
+                            <button type="button" onclick="toggleMedDay(this)" class="edit-med-day-btn flex-1 py-1.5 rounded-lg border border-green-300 bg-green-100 text-green-700 text-xs font-bold active:scale-95 med-day-active">토</button>
+                            <button type="button" onclick="toggleMedDay(this)" class="edit-med-day-btn flex-1 py-1.5 rounded-lg border border-green-300 bg-green-100 text-green-700 text-xs font-bold active:scale-95 med-day-active">일</button>
+                        </div>
+
+                        <p class="text-[10px] font-bold text-green-700 mb-1">💊 필요 약물 선택</p>
                         <div class="flex gap-3 mb-2">
                             <label class="flex items-center gap-1.5 text-xs font-bold text-gray-700 bg-white px-3 py-2 rounded-lg border border-green-100 w-1/2 justify-center"><input type="checkbox" id="edit-med-am" class="w-4 h-4 accent-green-500"> 아침 약 필요</label>
                             <label class="flex items-center gap-1.5 text-xs font-bold text-gray-700 bg-white px-3 py-2 rounded-lg border border-green-100 w-1/2 justify-center"><input type="checkbox" id="edit-med-pm" class="w-4 h-4 accent-green-500"> 저녁 약 필요</label>
@@ -439,18 +469,24 @@
             </section>
             
             <section class="border border-pink-100 p-4 rounded-2xl bg-white shadow-sm">
-                <h3 class="text-lg font-black text-gray-800 mb-3">🥣 밥 급여 기록</h3>
-                <div class="flex gap-2 mb-3">
-                    <button type="button" onclick="toggleSelect(this, 'meal-time')" class="meal-time-btn flex-1 py-2 rounded-xl border btn-inactive">아침</button>
-                    <button type="button" onclick="toggleSelect(this, 'meal-time')" class="meal-time-btn flex-1 py-2 rounded-xl border btn-inactive">저녁</button>
+                <div id="rp-meal-inputs">
+                    <h3 class="text-lg font-black text-gray-800 mb-3">🥣 밥 급여 기록</h3>
+                    <div class="flex gap-2 mb-3">
+                        <button type="button" onclick="toggleSelect(this, 'meal-time')" class="meal-time-btn flex-1 py-2 rounded-xl border btn-inactive">아침</button>
+                        <button type="button" onclick="toggleSelect(this, 'meal-time')" class="meal-time-btn flex-1 py-2 rounded-xl border btn-inactive">저녁</button>
+                    </div>
+                    <input type="text" id="meal-amount" placeholder="급여량 (예: 150g, 종이컵 1컵)" class="w-full p-4 border border-pink-100 rounded-2xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300 mb-3">
+                    <p class="text-xs font-bold text-gray-500 mb-2">밥 먹은 정도</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button" onclick="toggleSelect(this, 'meal-status')" class="meal-status-btn py-2 rounded-xl border btn-inactive text-sm">완식</button>
+                        <button type="button" onclick="toggleSelect(this, 'meal-status')" class="meal-status-btn py-2 rounded-xl border btn-inactive text-sm">조금 남김</button>
+                        <button type="button" onclick="toggleSelect(this, 'meal-status')" class="meal-status-btn py-2 rounded-xl border btn-inactive text-sm">많이 남김</button>
+                        <button type="button" onclick="toggleSelect(this, 'meal-status')" class="meal-status-btn py-2 rounded-xl border btn-inactive text-sm">먹지 않음</button>
+                    </div>
                 </div>
-                <input type="text" id="meal-amount" placeholder="급여량 (예: 150g, 종이컵 1컵)" class="w-full p-4 border border-pink-100 rounded-2xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300 mb-3">
-                <p class="text-xs font-bold text-gray-500 mb-2">밥 먹은 정도</p>
-                <div class="grid grid-cols-2 gap-2">
-                    <button type="button" onclick="toggleSelect(this, 'meal-status')" class="meal-status-btn py-2 rounded-xl border btn-inactive text-sm">완식</button>
-                    <button type="button" onclick="toggleSelect(this, 'meal-status')" class="meal-status-btn py-2 rounded-xl border btn-inactive text-sm">조금 남김</button>
-                    <button type="button" onclick="toggleSelect(this, 'meal-status')" class="meal-status-btn py-2 rounded-xl border btn-inactive text-sm">많이 남김</button>
-                    <button type="button" onclick="toggleSelect(this, 'meal-status')" class="meal-status-btn py-2 rounded-xl border btn-inactive text-sm">먹지 않음</button>
+                <div id="rp-meal-freemessage" class="hidden">
+                    <h3 class="text-lg font-black text-gray-800 mb-3">🥣 밥 급여 기록</h3>
+                    <p class="text-sm font-bold text-yellow-600 bg-yellow-50 p-4 rounded-xl text-center border border-yellow-100">이 아이는 자율배식 중입니다. 😋</p>
                 </div>
             </section>
 
@@ -639,11 +675,26 @@
         }
         function checkCustomBreed(mode='in') { const breedSelect = document.getElementById(`${mode}-breed`); const breedCustom = document.getElementById(`${mode}-breed-custom`); if(breedSelect.value === '직접 입력') breedCustom.classList.remove('hidden'); else { breedCustom.classList.add('hidden'); breedCustom.value = ''; } }
 
+        function toggleMedDay(btn) {
+            btn.classList.toggle('med-day-active');
+            if(btn.classList.contains('med-day-active')) {
+                btn.classList.remove('bg-white', 'text-gray-400', 'border-gray-200');
+                btn.classList.add('bg-green-100', 'text-green-700', 'border-green-300');
+            } else {
+                btn.classList.remove('bg-green-100', 'text-green-700', 'border-green-300');
+                btn.classList.add('bg-white', 'text-gray-400', 'border-gray-200');
+            }
+        }
+
         function resetRegForm() {
             editingAnimalProfileId = null; document.getElementById('reg-title').innerText = "📸 신규 보호 동물 등록"; 
             ['in-name', 'in-type', 'in-gender', 'in-age', 'in-health-memo', 'in-med-info', 'in-memo', 'in-size', 'in-group'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ""; });
             updateBreeds('in'); document.getElementById('in-status').value = ""; document.getElementById('in-med-am').checked = false; document.getElementById('in-med-pm').checked = false;
+            document.getElementById('in-meal-type').value = '제한급여';
             document.querySelectorAll('.in-per-btn').forEach(btn => { btn.classList.remove('btn-active', 'bg-pink-100', 'text-pink-600', 'border-pink-300'); btn.classList.add('btn-inactive', 'bg-white', 'text-gray-500', 'border-gray-200'); });
+            document.querySelectorAll('.in-med-day-btn').forEach(btn => {
+                if(!btn.classList.contains('med-day-active')) toggleMedDay(btn); // 모두 활성화
+            });
             removePhoto(null, 'in'); 
         }
 
@@ -664,15 +715,17 @@
             if(!breedVal) breedVal = '미상';
             
             const selectedPersonalities = Array.from(document.querySelectorAll('.in-per-btn.btn-active')).map(b => b.innerText);
+            const medDays = Array.from(document.querySelectorAll('#view-reg .in-med-day-btn.med-day-active')).map(b => b.innerText).join(',');
             const targetId = Date.now();
             
             let saveObj = {
                 id: targetId, photo: currentPhotoBase64, name: name, type: document.getElementById('in-type').value || '미상', breed: breedVal,
                 size: document.getElementById('in-size').value || '해당없음', play_group: document.getElementById('in-group').value || '미정',
                 gender: document.getElementById('in-gender').value || '미정', age: document.getElementById('in-age').value || '미상',
+                meal_type: document.getElementById('in-meal-type').value || '제한급여',
                 status: document.getElementById('in-status').value || '보호 중 🏡', personality: selectedPersonalities.join(', ') || '정보없음',
                 memo: document.getElementById('in-memo').value || '', health_memo: document.getElementById('in-health-memo').value.trim(), med_info: document.getElementById('in-med-info').value.trim(),
-                med_am: document.getElementById('in-med-am').checked, med_pm: document.getElementById('in-med-pm').checked
+                med_am: document.getElementById('in-med-am').checked, med_pm: document.getElementById('in-med-pm').checked, med_days: medDays
             };
             
             database.ref('animals/' + targetId).set(saveObj)
@@ -704,7 +757,9 @@
             setSelectValue('edit-size', ['소형견', '중형견', '대형견', '해당없음'], ani.size); setSelectValue('edit-group', ['A그룹', 'B그룹', 'C그룹', '단독 활동'], ani.play_group);
             setSelectValue('edit-gender', ['남아', '여아', '중성화된 남아', '중성화된 여아'], ani.gender); document.getElementById('edit-age').value = ani.age;
             setSelectValue('edit-status', ['보호 중 🏡', '임시보호 🏨', '입양 대기 💝'], ani.status);
-            document.getElementById('edit-memo').value = ani.memo; document.getElementById('edit-health-memo').value = ani.health_memo || ''; document.getElementById('edit-med-info').value = ani.med_info || '';
+            setSelectValue('edit-meal-type', ['제한급여', '자율배식'], ani.meal_type || '제한급여');
+
+            document.getElementById('edit-memo').value = ani.memo || ''; document.getElementById('edit-health-memo').value = ani.health_memo || ''; document.getElementById('edit-med-info').value = ani.med_info || '';
             document.getElementById('edit-med-am').checked = ani.med_am || false; document.getElementById('edit-med-pm').checked = ani.med_pm || false;
 
             const pArr = ani.personality ? ani.personality.split(',').map(s=>s.trim()) : [];
@@ -712,6 +767,14 @@
                 if(pArr.includes(btn.innerText)) { btn.classList.add('btn-active', 'bg-pink-100', 'text-pink-600', 'border-pink-300'); btn.classList.remove('btn-inactive', 'bg-white', 'text-gray-500', 'border-gray-200'); } 
                 else { btn.classList.remove('btn-active', 'bg-pink-100', 'text-pink-600', 'border-pink-300'); btn.classList.add('btn-inactive', 'bg-white', 'text-gray-500', 'border-gray-200'); }
             });
+
+            const savedMedDays = ani.med_days ? ani.med_days.split(',') : ['월','화','수','목','금','토','일'];
+            document.querySelectorAll('.edit-med-day-btn').forEach(btn => {
+                const isActive = btn.classList.contains('med-day-active');
+                const shouldBeActive = savedMedDays.includes(btn.innerText);
+                if (isActive !== shouldBeActive) { toggleMedDay(btn); }
+            });
+
             if(ani.photo) { currentEditPhotoBase64 = ani.photo; document.getElementById('edit-photo-preview').style.backgroundImage = `url(${ani.photo})`; document.getElementById('edit-photo-placeholder').classList.add('hidden'); document.getElementById('edit-del-photo-btn').classList.remove('hidden'); } 
             else { removePhoto(null, 'edit'); }
             document.getElementById('edit-panel').classList.remove('translate-x-full');
@@ -723,15 +786,17 @@
             const name = document.getElementById('edit-name').value.trim(); if(!name) { openModal('error', '이름을 적어주세요!', '아이의 이름을 입력해야 완료됩니다.'); return; }
             let breedVal = document.getElementById('edit-breed').value; if(breedVal === '직접 입력') breedVal = document.getElementById('edit-breed-custom').value.trim(); if(!breedVal) breedVal = '미상';
             const selectedPersonalities = Array.from(document.querySelectorAll('.edit-per-btn.btn-active')).map(b => b.innerText);
+            const medDays = Array.from(document.querySelectorAll('#edit-panel .edit-med-day-btn.med-day-active')).map(b => b.innerText).join(',');
             const targetId = editingAnimalProfileId; const existingAni = animals.find(a => a.id === targetId);
             
             let saveObj = {
                 id: targetId, photo: currentEditPhotoBase64, name: name, type: document.getElementById('edit-type').value || '미상', breed: breedVal,
                 size: document.getElementById('edit-size').value || '해당없음', play_group: document.getElementById('edit-group').value || '미정',
                 gender: document.getElementById('edit-gender').value || '미정', age: document.getElementById('edit-age').value || '미상',
+                meal_type: document.getElementById('edit-meal-type').value || '제한급여',
                 status: document.getElementById('edit-status').value || '보호 중 🏡', personality: selectedPersonalities.join(', ') || '정보없음',
                 memo: document.getElementById('edit-memo').value || '', health_memo: document.getElementById('edit-health-memo').value.trim(), med_info: document.getElementById('edit-med-info').value.trim(),
-                med_am: document.getElementById('edit-med-am').checked, med_pm: document.getElementById('edit-med-pm').checked
+                med_am: document.getElementById('edit-med-am').checked, med_pm: document.getElementById('edit-med-pm').checked, med_days: medDays
             };
             if(existingAni) { if(existingAni.daily_logs) saveObj.daily_logs = existingAni.daily_logs; if(existingAni.behavior_logs) saveObj.behavior_logs = existingAni.behavior_logs; if(!currentEditPhotoBase64 && existingAni.photo) saveObj.photo = existingAni.photo; }
             database.ref('animals/' + targetId).set(saveObj).then(() => { closeEditPanel(); openModal('success', '수정 완료!', `${name}의 정보가 업데이트되었습니다.`); });
@@ -806,6 +871,9 @@
 
         function renderDashboard() {
             const now = new Date(); const todayStr = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`;
+            const daysArr = ['일', '월', '화', '수', '목', '금', '토'];
+            const todayName = daysArr[now.getDay()];
+            
             document.getElementById('dash-date-title').innerText = `${now.getMonth()+1}월 ${now.getDate()}일 케어 현황`;
             const listContainer = document.getElementById('dash-list-container'); const alertsContainer = document.getElementById('dash-alerts-container');
             let listHtml = ''; let alertsHtml = ''; let alertCount = 0;
@@ -814,6 +882,8 @@
             animals.forEach(a => {
                 let walks = { '오전': false, '오후': false, '저녁': false }; let meals = { '아침': false, '저녁': false }; let meds = { '아침 약 완료': false, '저녁 약 완료': false }; 
                 let hasFeces = false; let hasUrine = false;
+
+                const medDays = a.med_days ? a.med_days : '월,화,수,목,금,토,일';
 
                 if(a.daily_logs) {
                     Object.values(a.daily_logs).forEach(log => {
@@ -829,7 +899,11 @@
                         }
                     });
                 }
-                if(a.med_am && !meds['아침 약 완료'] && now.getHours() >= 13) { alertsHtml += `<div class="bg-indigo-50 border border-indigo-100 p-3 rounded-xl mb-2 flex items-start gap-2 cursor-pointer active:scale-[0.98]" onclick="openProfilePanel(${a.id})"><span class="text-lg">💊</span><div><p class="text-xs font-black text-indigo-600">${a.name} <span class="font-bold text-gray-500">아침 약 투여 미확인</span></p></div></div>`; alertCount++; }
+                
+                // 투약 알림 (오늘이 투약 요일에 해당할 때만 작동)
+                if(a.med_am && !meds['아침 약 완료'] && now.getHours() >= 13 && medDays.includes(todayName)) { 
+                    alertsHtml += `<div class="bg-indigo-50 border border-indigo-100 p-3 rounded-xl mb-2 flex items-start gap-2 cursor-pointer active:scale-[0.98]" onclick="openProfilePanel(${a.id})"><span class="text-lg">💊</span><div><p class="text-xs font-black text-indigo-600">${a.name} <span class="font-bold text-gray-500">아침 약 투여 미확인</span></p></div></div>`; alertCount++; 
+                }
 
                 let isTaskTarget = false; let isTaskDone = false;
                 const isDog = (a.type !== '고양이'); 
@@ -843,17 +917,22 @@
                         if(walks['오전']) doneWalks.push('오전');
                         if(walks['오후']) doneWalks.push('오후');
                         if(walks['저녁']) doneWalks.push('저녁');
-                        if(doneWalks.length > 0) subBadgeHtml = `<span class="px-1.5 py-0.5 bg-green-50 text-green-600 rounded text-[8px] font-black w-full text-center">${doneWalks.join(', ')}</span>`;
+                        if(doneWalks.length > 0) subBadgeHtml = `<span class="px-1.5 py-0.5 bg-green-50 text-green-600 rounded text-[8px] font-black w-full text-center truncate">${doneWalks.join(', ')}</span>`;
                         else subBadgeHtml = `<span class="px-1.5 py-0.5 bg-red-50 text-red-500 rounded text-[8px] font-black w-full text-center">미완료</span>`;
                     } 
                 }
                 else if(currentDashTask === 'meal') { 
                     isTaskTarget = true; 
-                    isTaskDone = meals['아침'] && meals['저녁'];
-                    subBadgeHtml = `<div class="flex gap-0.5 justify-center w-full"><span class="px-1 py-0.5 rounded text-[8px] font-black flex-1 text-center ${meals['아침'] ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-400'}">아침</span><span class="px-1 py-0.5 rounded text-[8px] font-black flex-1 text-center ${meals['저녁'] ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-400'}">저녁</span></div>`;
+                    if (a.meal_type === '자율배식') {
+                        isTaskDone = true;
+                        subBadgeHtml = `<span class="px-1.5 py-0.5 bg-yellow-50 text-yellow-600 border border-yellow-100 rounded text-[8px] font-black w-full text-center">자율배식</span>`;
+                    } else {
+                        isTaskDone = meals['아침'] && meals['저녁'];
+                        subBadgeHtml = `<div class="flex gap-0.5 justify-center w-full"><span class="px-1 py-0.5 rounded text-[8px] font-black flex-1 text-center ${meals['아침'] ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-400'}">아침</span><span class="px-1 py-0.5 rounded text-[8px] font-black flex-1 text-center ${meals['저녁'] ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-400'}">저녁</span></div>`;
+                    }
                 }
                 else if(currentDashTask === 'med') { 
-                    if(a.med_am || a.med_pm) { 
+                    if((a.med_am || a.med_pm) && medDays.includes(todayName)) { 
                         isTaskTarget = true; 
                         isTaskDone = (!a.med_am || meds['아침 약 완료']) && (!a.med_pm || meds['저녁 약 완료']);
                         let medBadges = [];
@@ -872,8 +951,15 @@
                 const getBadge = (isDone, label) => `<span class="status-badge ${isDone ? 'status-done' : 'status-none'}">${label}</span>`;
                 const groupBadge = a.play_group && a.play_group !== '미정' ? `<span class="px-1 py-0.5 rounded text-[8px] font-black mr-1 ${a.play_group === '단독 활동' ? 'bg-red-50 text-red-500 border border-red-100' : 'bg-gray-100 text-gray-500'}">${a.play_group}</span>` : '';
 
+                let mealHtml = '';
+                if(a.meal_type === '자율배식') {
+                    mealHtml = `<div class="flex items-center w-full mt-1.5"><span class="text-xs mr-1">🥣</span> ${getBadge(true, '자율배식')}</div>`;
+                } else {
+                    mealHtml = `<div class="flex items-center w-full mt-1.5"><span class="text-xs mr-1">🥣</span> ${getBadge(meals['아침'], '아침밥')} ${getBadge(meals['저녁'], '저녁밥')}</div>`;
+                }
+
                 let medHtml = '';
-                if(a.med_am || a.med_pm) {
+                if((a.med_am || a.med_pm) && medDays.includes(todayName)) {
                     medHtml = `<div class="flex items-center w-full mt-1.5"><span class="text-xs mr-1">💊</span>`;
                     if(a.med_am) medHtml += ` ${getBadge(meds['아침 약 완료'], '아침약')}`;
                     if(a.med_pm) medHtml += ` ${getBadge(meds['저녁 약 완료'], '저녁약')}`;
@@ -887,7 +973,7 @@
                             <h4 class="font-black text-gray-800 text-sm mb-1.5 truncate">${a.name} ${groupBadge}</h4>
                             <div class="flex flex-wrap items-center">
                                 <div class="flex items-center w-full mt-0.5"><span class="text-xs mr-1">🐕</span> ${getBadge(walks['오전'], '오전')} ${getBadge(walks['오후'], '오후')} ${getBadge(walks['저녁'], '저녁')}</div>
-                                <div class="flex items-center w-full mt-1.5"><span class="text-xs mr-1">🥣</span> ${getBadge(meals['아침'], '아침밥')} ${getBadge(meals['저녁'], '저녁밥')}</div>
+                                ${mealHtml}
                                 <div class="flex items-center w-full mt-1.5"><span class="text-xs mr-1">💩</span> ${getBadge(hasFeces, '대변')} ${getBadge(hasUrine, '소변')}</div>
                                 ${medHtml}
                             </div>
@@ -1029,16 +1115,25 @@
             
             const sizeBadge = ani.size && ani.size !== '해당없음' && ani.size !== '미정' ? `<span class="px-2 py-1 rounded-md text-[10px] font-black bg-teal-50 text-teal-600 border border-teal-100">${ani.size}</span>` : '';
             const groupBadge = ani.play_group && ani.play_group !== '미정' ? `<span class="px-2 py-1 rounded-md text-[10px] font-black ${ani.play_group === '단독 활동' ? 'bg-red-50 text-red-500 border border-red-100' : (ani.play_group === 'A그룹' ? 'bg-purple-50 text-purple-600 border border-purple-100' : (ani.play_group === 'B그룹' ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-cyan-50 text-cyan-600 border border-cyan-100'))}">${ani.play_group}</span>` : '';
-            document.getElementById('pp-classification').innerHTML = sizeBadge + groupBadge;
+            const mealBadge = ani.meal_type === '자율배식' ? `<span class="px-2 py-1 rounded-md text-[10px] font-black bg-yellow-50 text-yellow-600 border border-yellow-100">자율배식</span>` : '';
+            document.getElementById('pp-classification').innerHTML = sizeBadge + groupBadge + mealBadge;
 
             if(ani.personality && ani.personality !== '정보없음') { document.getElementById('pp-tags').innerHTML = ani.personality.split(',').map(t => `<span class="px-2 py-1 bg-pink-50 text-pink-500 border border-pink-100 rounded-md text-[10px] font-black">#${t.trim()}</span>`).join(''); } 
             else { document.getElementById('pp-tags').innerHTML = '<span class="text-xs text-gray-400">등록된 성격이 없습니다.</span>'; }
             
             const healthContainer = document.getElementById('pp-health-container');
-            if (ani.health_memo || ani.med_info) {
+            if (ani.health_memo || ani.med_info || ani.med_am || ani.med_pm) {
                 healthContainer.classList.remove('hidden'); document.getElementById('pp-health-memo').innerText = ani.health_memo || '건강 특이사항 없음';
-                let medNeedStr = []; if(ani.med_am) medNeedStr.push('아침'); if(ani.med_pm) medNeedStr.push('저녁'); const timeStr = medNeedStr.length > 0 ? `[${medNeedStr.join('/')} 필요] ` : '';
-                document.getElementById('pp-med-info').innerText = timeStr + (ani.med_info || '복약 정보 없음');
+                let medNeedStr = []; if(ani.med_am) medNeedStr.push('아침'); if(ani.med_pm) medNeedStr.push('저녁'); 
+                const timeStr = medNeedStr.length > 0 ? `[${medNeedStr.join('/')} 필요] ` : '';
+                const daysStr = ani.med_days ? `[${ani.med_days}] ` : '[매일] ';
+                
+                if (ani.med_am || ani.med_pm || ani.med_info) {
+                    document.getElementById('pp-med-info').innerText = daysStr + timeStr + (ani.med_info || '복약 상세 정보 없음');
+                    document.getElementById('pp-med-info').parentElement.classList.remove('hidden');
+                } else {
+                    document.getElementById('pp-med-info').parentElement.classList.add('hidden');
+                }
             } else { healthContainer.classList.add('hidden'); }
             document.getElementById('pp-memo').innerText = ani.memo || '메모가 없습니다.';
         }
@@ -1210,7 +1305,17 @@
         function openRecordPanel(id) {
             const ani = animals.find(a => a.id === id); if(!ani) return; document.getElementById('rp-animal-id').value = id;
             const medSection = document.getElementById('rp-med-section'); const btnAm = document.getElementById('btn-med-am'); const btnPm = document.getElementById('btn-med-pm');
+            
             if(ani.med_am || ani.med_pm) { medSection.classList.remove('hidden'); btnAm.classList.toggle('hidden', !ani.med_am); btnPm.classList.toggle('hidden', !ani.med_pm); } else { medSection.classList.add('hidden'); }
+            
+            if(ani.meal_type === '자율배식') {
+                document.getElementById('rp-meal-inputs').classList.add('hidden');
+                document.getElementById('rp-meal-freemessage').classList.remove('hidden');
+            } else {
+                document.getElementById('rp-meal-inputs').classList.remove('hidden');
+                document.getElementById('rp-meal-freemessage').classList.add('hidden');
+            }
+
             const photoHtml = ani.photo ? `<div class="w-10 h-10 rounded-full bg-cover bg-center border-2 border-pink-100" style="background-image: url(${ani.photo})"></div>` : `<div class="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center text-xl">🐾</div>`;
             document.getElementById('rp-header-info').innerHTML = `${photoHtml}<div class="flex flex-col"><span class="font-black text-gray-800 text-lg leading-tight">${ani.name}</span><span class="text-[10px] text-pink-400 font-bold">일과 기록 작성</span></div>`;
             resetRecordForm(); document.getElementById('record-panel').classList.remove('translate-x-full');
@@ -1219,6 +1324,8 @@
 
         function saveDetailLog() {
             const id = document.getElementById('rp-animal-id').value; if(!id) return;
+            const ani = animals.find(a => a.id == id); if(!ani) return;
+
             const medTimeBtn = document.querySelector('.med-time-btn.btn-active'); const medTime = medTimeBtn ? medTimeBtn.innerText : null;
             const walkTimeBtn = document.querySelector('.walk-time-btn.btn-active'); const walkTime = walkTimeBtn ? walkTimeBtn.innerText : null;
             const walkDuration = document.getElementById('walk-duration').value.trim(); const walkCondBtn = document.querySelector('.walk-cond-btn.btn-active'); const walkCond = walkCondBtn ? walkCondBtn.innerText.split(' ')[1] : null;
@@ -1235,7 +1342,11 @@
 
             if(medTime) logData.med = { time: medTime }; else logData.med = null;
             if(walkTime || walkDuration || walkCond) logData.walk = { time: walkTime || '-', duration: walkDuration || '-', condition: walkCond || '-' }; else logData.walk = null; 
-            if(mealTime || mealAmount || mealStatus) logData.meal = { time: mealTime || '-', amount: mealAmount || '-', status: mealStatus || '-' }; else logData.meal = null;
+            
+            if(ani.meal_type !== '자율배식' && (mealTime || mealAmount || mealStatus)) {
+                logData.meal = { time: mealTime || '-', amount: mealAmount || '-', status: mealStatus || '-' };
+            } else { logData.meal = null; }
+            
             if(pottyTypes.length > 0 || pottyMemo) logData.potty = { type: pottyTypes.join(', ') || '-', memo: pottyMemo || '특이사항 없음' }; else logData.potty = null;
             if(dailyMemo) logData.daily_memo = dailyMemo; else logData.daily_memo = null;
 
@@ -1252,13 +1363,21 @@
             const medSection = document.getElementById('rp-med-section'); const btnAm = document.getElementById('btn-med-am'); const btnPm = document.getElementById('btn-med-pm');
             if(ani.med_am || ani.med_pm) { medSection.classList.remove('hidden'); btnAm.classList.toggle('hidden', !ani.med_am); btnPm.classList.toggle('hidden', !ani.med_pm); } else { medSection.classList.add('hidden'); }
 
+            if(ani.meal_type === '자율배식') {
+                document.getElementById('rp-meal-inputs').classList.add('hidden');
+                document.getElementById('rp-meal-freemessage').classList.remove('hidden');
+            } else {
+                document.getElementById('rp-meal-inputs').classList.remove('hidden');
+                document.getElementById('rp-meal-freemessage').classList.add('hidden');
+            }
+
             const photoHtml = ani.photo ? `<div class="w-10 h-10 rounded-full bg-cover bg-center border-2 border-pink-100" style="background-image: url(${ani.photo})"></div>` : `<div class="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center text-xl">🐾</div>`;
             document.getElementById('rp-header-info').innerHTML = `${photoHtml}<div class="flex flex-col"><span class="font-black text-gray-800 text-lg leading-tight">${ani.name}</span><span class="text-[10px] text-pink-400 font-bold">일과 기록 수정</span></div>`;
             document.getElementById('record-action-text').innerText = '수정'; clearFormFields(); 
 
             if(log.med && log.med.time !== '-') setToggleState('.med-time-btn', log.med.time);
             if(log.walk) { if(log.walk.time !== '-') setToggleState('.walk-time-btn', log.walk.time); if(log.walk.duration !== '-') document.getElementById('walk-duration').value = log.walk.duration; if(log.walk.condition !== '-') setToggleState('.walk-cond-btn', log.walk.condition, true); }
-            if(log.meal) { if(log.meal.time !== '-') setToggleState('.meal-time-btn', log.meal.time); if(log.meal.amount !== '-') document.getElementById('meal-amount').value = log.meal.amount; if(log.meal.status !== '-') setToggleState('.meal-status-btn', log.meal.status); }
+            if(log.meal && ani.meal_type !== '자율배식') { if(log.meal.time !== '-') setToggleState('.meal-time-btn', log.meal.time); if(log.meal.amount !== '-') document.getElementById('meal-amount').value = log.meal.amount; if(log.meal.status !== '-') setToggleState('.meal-status-btn', log.meal.status); }
             if(log.potty) { if(log.potty.type && log.potty.type !== '-') { if(log.potty.type.includes('대변')) forceMultiState('potty-type-feces', true); if(log.potty.type.includes('소변')) forceMultiState('potty-type-urine', true); } if(log.potty.memo && log.potty.memo !== '특이사항 없음') document.getElementById('potty-memo').value = log.potty.memo; }
             if(log.daily_memo) { document.getElementById('daily-memo').value = log.daily_memo; }
             closeHistoryPanel(); document.getElementById('record-panel').classList.remove('translate-x-full');
