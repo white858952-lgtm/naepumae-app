@@ -157,14 +157,10 @@
             <div id="dash-list-container" class="space-y-3 px-1 pb-10"></div>
 
             <div id="dash-task-container" class="hidden px-2 pb-10">
-                <div class="flex gap-2 overflow-x-auto hide-scrollbar mb-6 pb-2" id="dash-task-chips">
-                    <button onclick="setDashTask('walk_am')" id="task-walk_am" class="whitespace-nowrap px-4 py-2 rounded-full text-[11px] font-black bg-pink-500 text-white shadow-md transition-all">오전 산책</button>
-                    <button onclick="setDashTask('walk_pm')" id="task-walk_pm" class="whitespace-nowrap px-4 py-2 rounded-full text-[11px] font-black bg-white text-gray-400 border border-gray-200 transition-all">오후 산책</button>
-                    <button onclick="setDashTask('walk_ev')" id="task-walk_ev" class="whitespace-nowrap px-4 py-2 rounded-full text-[11px] font-black bg-white text-gray-400 border border-gray-200 transition-all">저녁 산책</button>
-                    <button onclick="setDashTask('meal_am')" id="task-meal_am" class="whitespace-nowrap px-4 py-2 rounded-full text-[11px] font-black bg-white text-gray-400 border border-gray-200 transition-all">아침 급여</button>
-                    <button onclick="setDashTask('meal_pm')" id="task-meal_pm" class="whitespace-nowrap px-4 py-2 rounded-full text-[11px] font-black bg-white text-gray-400 border border-gray-200 transition-all">저녁 급여</button>
-                    <button onclick="setDashTask('med_am')" id="task-med_am" class="whitespace-nowrap px-4 py-2 rounded-full text-[11px] font-black bg-white text-gray-400 border border-gray-200 transition-all">아침 약</button>
-                    <button onclick="setDashTask('med_pm')" id="task-med_pm" class="whitespace-nowrap px-4 py-2 rounded-full text-[11px] font-black bg-white text-gray-400 border border-gray-200 transition-all">저녁 약</button>
+                <div class="flex gap-2 justify-center overflow-x-auto hide-scrollbar mb-6 pb-2" id="dash-task-chips">
+                    <button onclick="setDashTask('walk')" id="task-walk" class="whitespace-nowrap px-5 py-2.5 rounded-full text-xs font-black bg-pink-500 text-white shadow-md transition-all">🐕 산책</button>
+                    <button onclick="setDashTask('meal')" id="task-meal" class="whitespace-nowrap px-5 py-2.5 rounded-full text-xs font-black bg-white text-gray-400 border border-gray-200 transition-all">🥣 급여</button>
+                    <button onclick="setDashTask('med')" id="task-med" class="whitespace-nowrap px-5 py-2.5 rounded-full text-xs font-black bg-white text-gray-400 border border-gray-200 transition-all">💊 투약</button>
                 </div>
                 <div id="dash-task-grid"></div>
             </div>
@@ -529,7 +525,7 @@
         let deviceId = localStorage.getItem('naepumae_device_id');
         
         let editingLogId = null; let editingLogOriginalData = null; let editingAnimalProfileId = null; let editingEventId = null; let editingBehaviorLogId = null;
-        let currentSearchQuery = ''; let currentDashTab = 'animal'; let currentDashTask = 'walk_am';
+        let currentSearchQuery = ''; let currentDashTab = 'animal'; let currentDashTask = 'walk';
         let currentDate = new Date(); let schedules = {}; let eventsList = []; let animals = []; let currentFilter = 'all'; 
 
         const dogBreeds = ['믹스견', '말티즈', '푸들', '포메라니안', '진돗개', '골든 리트리버', '비숑 프리제', '치와와', '시츄', '요크셔테리어', '스피츠', '직접 입력'];
@@ -803,8 +799,8 @@
         }
         function setDashTask(task) {
             currentDashTask = task;
-            const tasks = ['walk_am', 'walk_pm', 'walk_ev', 'meal_am', 'meal_pm', 'med_am', 'med_pm'];
-            tasks.forEach(t => { const btn = document.getElementById(`task-${t}`); if(btn) { btn.className = t === task ? 'whitespace-nowrap px-4 py-2 rounded-full text-[11px] font-black bg-pink-500 text-white shadow-md transition-all' : 'whitespace-nowrap px-4 py-2 rounded-full text-[11px] font-black bg-white text-gray-400 border border-gray-200 transition-all'; } });
+            const tasks = ['walk', 'meal', 'med'];
+            tasks.forEach(t => { const btn = document.getElementById(`task-${t}`); if(btn) { btn.className = t === task ? 'whitespace-nowrap px-5 py-2.5 rounded-full text-xs font-black bg-pink-500 text-white shadow-md transition-all' : 'whitespace-nowrap px-5 py-2.5 rounded-full text-xs font-black bg-white text-gray-400 border border-gray-200 transition-all'; } });
             renderDashboard();
         }
 
@@ -837,16 +833,40 @@
 
                 let isTaskTarget = false; let isTaskDone = false;
                 const isDog = (a.type !== '고양이'); 
+                let subBadgeHtml = '';
 
-                if(currentDashTask === 'walk_am') { if(isDog) { isTaskTarget = true; isTaskDone = walks['오전']; } }
-                else if(currentDashTask === 'walk_pm') { if(isDog) { isTaskTarget = true; isTaskDone = walks['오후']; } }
-                else if(currentDashTask === 'walk_ev') { if(isDog) { isTaskTarget = true; isTaskDone = walks['저녁']; } }
-                else if(currentDashTask === 'meal_am') { isTaskTarget = true; isTaskDone = meals['아침']; }
-                else if(currentDashTask === 'meal_pm') { isTaskTarget = true; isTaskDone = meals['저녁']; }
-                else if(currentDashTask === 'med_am') { if(a.med_am) { isTaskTarget = true; isTaskDone = meds['아침 약 완료']; } }
-                else if(currentDashTask === 'med_pm') { if(a.med_pm) { isTaskTarget = true; isTaskDone = meds['저녁 약 완료']; } }
+                if(currentDashTask === 'walk') { 
+                    if(isDog) { 
+                        isTaskTarget = true; 
+                        isTaskDone = walks['오전'] || walks['오후'] || walks['저녁'];
+                        let doneWalks = [];
+                        if(walks['오전']) doneWalks.push('오전');
+                        if(walks['오후']) doneWalks.push('오후');
+                        if(walks['저녁']) doneWalks.push('저녁');
+                        if(doneWalks.length > 0) subBadgeHtml = `<span class="px-1.5 py-0.5 bg-green-50 text-green-600 rounded text-[8px] font-black w-full text-center">${doneWalks.join(', ')}</span>`;
+                        else subBadgeHtml = `<span class="px-1.5 py-0.5 bg-red-50 text-red-500 rounded text-[8px] font-black w-full text-center">미완료</span>`;
+                    } 
+                }
+                else if(currentDashTask === 'meal') { 
+                    isTaskTarget = true; 
+                    isTaskDone = meals['아침'] && meals['저녁'];
+                    subBadgeHtml = `<div class="flex gap-0.5 justify-center w-full"><span class="px-1 py-0.5 rounded text-[8px] font-black flex-1 text-center ${meals['아침'] ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-400'}">아침</span><span class="px-1 py-0.5 rounded text-[8px] font-black flex-1 text-center ${meals['저녁'] ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-400'}">저녁</span></div>`;
+                }
+                else if(currentDashTask === 'med') { 
+                    if(a.med_am || a.med_pm) { 
+                        isTaskTarget = true; 
+                        isTaskDone = (!a.med_am || meds['아침 약 완료']) && (!a.med_pm || meds['저녁 약 완료']);
+                        let medBadges = [];
+                        if(a.med_am) medBadges.push(`<span class="px-1 py-0.5 rounded text-[8px] font-black flex-1 text-center ${meds['아침 약 완료'] ? 'bg-indigo-50 text-indigo-600' : 'bg-gray-100 text-gray-400'}">아침</span>`);
+                        if(a.med_pm) medBadges.push(`<span class="px-1 py-0.5 rounded text-[8px] font-black flex-1 text-center ${meds['저녁 약 완료'] ? 'bg-indigo-50 text-indigo-600' : 'bg-gray-100 text-gray-400'}">저녁</span>`);
+                        subBadgeHtml = `<div class="flex gap-0.5 justify-center w-full">${medBadges.join('')}</div>`;
+                    } 
+                }
 
-                if(isTaskTarget) { if(isTaskDone) taskDone.push(a); else taskPending.push(a); }
+                if(isTaskTarget) { 
+                    let taskItem = {...a, _subBadgeHtml: subBadgeHtml};
+                    if(isTaskDone) taskDone.push(taskItem); else taskPending.push(taskItem); 
+                }
 
                 const photoHtml = a.photo ? `<div class="w-12 h-12 rounded-full bg-cover bg-center shrink-0 border border-gray-100" style="background-image: url(${a.photo})"></div>` : `<div class="w-12 h-12 rounded-full bg-pink-50 flex items-center justify-center shrink-0 text-pink-200 text-xl border border-pink-100">🐾</div>`;
                 const getBadge = (isDone, label) => `<span class="status-badge ${isDone ? 'status-done' : 'status-none'}">${label}</span>`;
@@ -894,7 +914,9 @@
                     return `<div class="grid grid-cols-4 sm:grid-cols-5 gap-y-5 gap-x-2 mt-3 w-full">` + list.map(a => {
                         const photo = a.photo ? `<div class="w-14 h-14 rounded-full bg-cover bg-center border-2 border-white shadow-sm mx-auto" style="background-image: url(${a.photo})"></div>` : `<div class="w-14 h-14 rounded-full bg-pink-50 flex items-center justify-center text-xl border-2 border-white shadow-sm mx-auto">🐾</div>`;
                         return `<div class="flex flex-col items-center cursor-pointer active:scale-95 transition-transform" onclick="${type === 'pending' ? `openRecordPanel(${a.id})` : `openProfilePanel(${a.id})`}">
-                            ${photo}<span class="text-[10px] font-black text-gray-700 mt-1.5 w-full text-center truncate px-1">${a.name}</span>
+                            ${photo}
+                            <span class="text-[10px] font-black text-gray-700 mt-1.5 mb-0.5 w-full text-center truncate px-1">${a.name}</span>
+                            <div class="w-full px-1">${a._subBadgeHtml || ''}</div>
                         </div>`;
                     }).join('') + `</div>`;
                 };
