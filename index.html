@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>내품애센터 스마트 관리 앱</title>
     
-    <link rel="icon" type="image/png" sizes="192x192" href="여기에_아이콘_이미지_링크를_넣어주세요.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="여기에_아이콘_이미지_링크를_넣어주세요.png">
-    
-    <link rel="apple-touch-icon" href="여기에_아이콘_이미지_링크를_넣어주세요.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="https://i.postimg.cc/abcde123/my-icon.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="https://i.postimg.cc/abcde123/my-icon.png">
+    <link rel="apple-touch-icon" href="https://i.postimg.cc/abcde123/my-icon.png">
+    <meta name="apple-mobile-web-app-title" content="내품애">
     
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
@@ -47,6 +47,10 @@
         @keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(255, 105, 180, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(255, 105, 180, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 105, 180, 0); } }
         .pulse-anim { animation: pulse-ring 2s infinite; }
         
+        /* 튜토리얼 타겟 하이라이트 애니메이션 */
+        @keyframes tut-pulse-anim { 0% { box-shadow: 0 0 0 0 rgba(255, 105, 180, 0.8); } 70% { box-shadow: 0 0 0 15px rgba(255, 105, 180, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 105, 180, 0); } }
+        .tut-target-active { animation: tut-pulse-anim 1.5s infinite !important; border: 2px solid #ff69b4 !important; border-radius: inherit; position: relative; z-index: 10002 !important; }
+
         .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
         .cal-day { padding: 12px 4px; border-radius: 12px; font-weight: bold; font-size: 14px; cursor: pointer; position: relative; transition: all 0.2s; }
         .cal-day:active { transform: scale(0.9); }
@@ -64,18 +68,15 @@
 </head>
 <body class="max-w-md mx-auto p-4 relative" onload="checkAuth()">
     
-    <div id="tutorial-container" class="hidden fixed inset-0 z-[11000] pointer-events-auto">
-        <div class="absolute inset-0" onclick="nextTutorial()"></div>
-        <div id="tutorial-spotlight" class="absolute bg-white/10 border-4 border-pink-400 rounded-3xl shadow-[0_0_0_9999px_rgba(0,0,0,0.7)] transition-all duration-300 pointer-events-none"></div>
-        <div id="tutorial-tooltip" class="absolute w-[85%] max-w-sm bg-white p-6 rounded-3xl shadow-2xl transition-all duration-300 left-1/2 -translate-x-1/2 flex flex-col gap-2 z-10">
-            <h3 id="tut-title" class="text-xl font-black text-pink-500"></h3>
-            <p id="tut-desc" class="text-sm font-bold text-gray-600 leading-relaxed"></p>
-            <div class="flex justify-between items-center mt-3">
-                <button onclick="skipTutorial()" class="text-[11px] text-gray-400 font-bold active:scale-95 px-3 py-2 bg-gray-50 rounded-xl border border-gray-100">건너뛰기</button>
-                <div class="flex items-center gap-3">
-                    <span id="tut-progress" class="text-[10px] font-black text-pink-300 bg-pink-50 px-2 py-1 rounded-lg"></span>
-                    <button onclick="nextTutorial()" id="tut-next-btn" class="bg-pink-500 text-white px-5 py-2.5 rounded-xl text-sm font-black active:scale-95 shadow-md">다음</button>
-                </div>
+    <div id="tutorial-overlay" class="fixed inset-0 bg-black/60 z-[10000] hidden flex-col items-center justify-end pb-32 transition-opacity duration-300 pointer-events-auto">
+        <div id="tutorial-tooltip" class="bg-white rounded-[30px] p-6 shadow-2xl w-[90%] max-w-sm transition-all duration-300 transform scale-95 opacity-0 border border-pink-100 pointer-events-auto relative">
+            <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-pink-500 text-white text-xs font-black px-4 py-1.5 rounded-full shadow-md" id="tut-step-counter">1/23</div>
+            <div class="text-4xl mb-3" id="tut-icon">💡</div>
+            <h3 id="tut-title" class="text-xl font-black text-gray-800 mb-2">환영합니다!</h3>
+            <p id="tut-desc" class="text-sm font-bold text-gray-600 mb-6 leading-relaxed"></p>
+            <div class="flex justify-between items-center mt-2">
+                <button onclick="skipTutorial()" class="text-xs text-gray-400 font-black underline active:scale-95 px-2">튜토리얼 종료</button>
+                <button id="tut-next-btn" onclick="nextTutorial()" class="pink-gradient text-white px-6 py-3 rounded-2xl font-black text-sm active:scale-95 shadow-lg transition-transform">다음 ➔</button>
             </div>
         </div>
     </div>
@@ -105,16 +106,15 @@
     </div>
 
     <div id="admin-approve-modal" class="modal-bg z-[10000]">
-        <div class="bg-white w-[90%] max-w-sm rounded-[35px] p-6 text-center shadow-2xl relative max-h-[80vh] overflow-hidden flex flex-col">
+        <div class="bg-white w-[90%] max-w-sm rounded-[35px] p-6 text-center shadow-2xl relative max-h-[80vh] flex flex-col">
             <button onclick="closeAdminApproveModal()" class="absolute top-4 right-5 text-2xl text-gray-400 hover:text-gray-600">&times;</button>
             <div class="text-4xl mb-2 mt-2">👑</div>
-            <h3 class="text-xl font-black mb-4 text-gray-800">멤버 승인 관리</h3>
-            
-            <div class="flex bg-gray-50 p-1 rounded-xl mb-3 border border-gray-100">
-                <button onclick="setAdminTab('pending')" id="tab-admin-pending" class="flex-1 py-2 text-xs font-black rounded-lg bg-white shadow-sm text-gray-800 transition-all">승인 대기</button>
-                <button onclick="setAdminTab('approved')" id="tab-admin-approved" class="flex-1 py-2 text-xs font-black rounded-lg text-gray-400 transition-all">활동 중인 훈련사</button>
+            <h3 class="text-xl font-black mb-1 text-gray-800">훈련사 멤버 관리</h3>
+            <p class="text-gray-400 text-xs mb-4 font-bold">요청을 승인하거나 기존 권한을 관리하세요.</p>
+            <div class="flex gap-2 mb-3 bg-gray-50 p-1 rounded-xl">
+                <button id="admin-tab-pending" onclick="setAdminTab('pending')" class="flex-1 py-2 text-xs font-black rounded-lg bg-white text-pink-600 shadow-sm transition-all">새로운 요청</button>
+                <button id="admin-tab-approved" onclick="setAdminTab('approved')" class="flex-1 py-2 text-xs font-black rounded-lg text-gray-400 transition-all">기존 훈련사</button>
             </div>
-            
             <div id="request-list-container" class="flex-1 overflow-y-auto space-y-3 mb-2 px-1 pb-4 text-left"></div>
         </div>
     </div>
@@ -142,23 +142,23 @@
         <header class="pt-[max(env(safe-area-inset-top),24px)] pb-6 flex justify-between items-center relative z-20">
             <button id="btn-admin-manage" onclick="openAdminApproveModal()" class="hidden flex items-center gap-1 bg-gray-800 text-white px-3 py-1.5 rounded-full shadow-sm active:scale-95 transition-transform z-10">
                 <span class="text-sm">👑</span><span class="text-[10px] font-black">승인 관리</span>
-                <div id="admin-req-badge" class="hidden absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
+                <div id="admin-req-badge" class="hidden absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></div>
             </button>
             <div id="header-spacer" class="w-10"></div> 
             
-            <div class="text-center absolute left-1/2 transform -translate-x-1/2 w-full pointer-events-none">
+            <div class="text-center absolute left-1/2 transform -translate-x-1/2 w-full pointer-events-none mt-2">
                 <h1 class="text-3xl font-black text-[#ff69b4] mb-1">내품애 센터</h1>
-                <p class="text-gray-500 text-xs font-bold tracking-tight">반려동물과 행복한 서대문</p>
+                <p class="text-gray-500 text-[10px] font-bold tracking-tight">반려동물과 행복한 서대문</p>
             </div>
 
-            <button id="btn-profile-edit" onclick="openProfileEditModal()" class="flex items-center gap-1.5 bg-pink-50 border border-pink-100 px-3 py-1.5 rounded-full text-pink-500 shadow-sm active:scale-95 transition-transform z-10 ml-auto">
+            <button id="header-profile-btn" onclick="openProfileEditModal()" class="flex items-center gap-1.5 bg-pink-50 border border-pink-100 px-3 py-1.5 rounded-full text-pink-500 shadow-sm active:scale-95 transition-transform z-10 ml-auto">
                 <span id="header-trainer-name" class="text-[11px] font-black max-w-[60px] truncate">로그인</span>
                 <span class="text-sm">👤</span>
             </button>
         </header>
 
-        <div id="view-list" class="space-y-4">
-            <div class="relative px-2 mb-2">
+        <div id="view-list" class="space-y-4 mt-2">
+            <div class="relative px-2 mb-2" id="search-input-area">
                 <div class="absolute inset-y-0 left-5 flex items-center pointer-events-none"><span class="text-gray-400 text-lg">🔍</span></div>
                 <input type="text" id="search-input" oninput="handleSearch()" placeholder="이름, 그룹, 성격으로 빠르게 찾기" class="w-full pl-10 pr-4 py-3.5 bg-white border border-pink-100 rounded-2xl text-sm font-bold text-gray-700 shadow-sm outline-none focus:border-pink-300 transition-colors">
             </div>
@@ -166,14 +166,14 @@
             <div id="task-container" class="space-y-4 px-1 pb-10"></div>
         </div>
 
-        <div id="view-dashboard" class="hidden space-y-4">
-            <div class="flex justify-between items-center px-2 mb-2 mt-2">
+        <div id="view-dashboard" class="hidden space-y-4 mt-2">
+            <div class="flex justify-between items-center px-2 mb-2">
                 <h2 class="text-lg font-black text-gray-800" id="dash-date-title">오늘의 케어 현황</h2>
                 <button onclick="renderDashboard()" class="text-gray-400 active:scale-90 transition-transform">🔄 새로고침</button>
             </div>
             <div id="dash-alerts-container" class="px-2 mb-4"></div>
 
-            <div class="px-2 mb-4">
+            <div class="px-2 mb-4" id="dash-tabs-container">
                 <div class="flex bg-pink-50 p-1 rounded-xl shadow-inner border border-pink-100">
                     <button onclick="setDashTab('animal')" id="btn-dash-animal" class="flex-1 py-2 text-xs font-black rounded-lg bg-white shadow-sm text-pink-600 transition-all">🧑‍🐾 아이별 모아보기</button>
                     <button onclick="setDashTab('task')" id="btn-dash-task" class="flex-1 py-2 text-xs font-black rounded-lg text-pink-400 opacity-70 transition-all">📋 업무별 진척도</button>
@@ -188,12 +188,12 @@
                     <button onclick="setDashTask('meal')" id="task-meal" class="whitespace-nowrap px-5 py-2.5 rounded-full text-xs font-black bg-white text-gray-400 border border-gray-200 transition-all">🥣 급여</button>
                     <button onclick="setDashTask('med')" id="task-med" class="whitespace-nowrap px-5 py-2.5 rounded-full text-xs font-black bg-white text-gray-400 border border-gray-200 transition-all">💊 투약</button>
                 </div>
-                <div id="dash-task-grid"></div>
+                <div id="dash-task-grid-wrapper"></div>
             </div>
         </div>
 
-        <div id="view-schedule" class="hidden space-y-4">
-            <div class="card">
+        <div id="view-schedule" class="hidden space-y-4 mt-2">
+            <div class="card" id="cal-card">
                 <div class="flex justify-between items-center mb-6">
                     <button onclick="changeMonth(-1)" class="text-gray-400 text-2xl font-black p-2 active:scale-90">&lsaquo;</button>
                     <h2 id="cal-month-title" class="text-xl font-black text-gray-800">2026년 4월</h2>
@@ -216,16 +216,16 @@
             </div>
         </div>
 
-        <div id="view-events" class="hidden space-y-4">
-            <div class="flex justify-between items-center px-2 mb-2 mt-2">
+        <div id="view-events" class="hidden space-y-4 mt-2">
+            <div class="flex justify-between items-center px-2 mb-2">
                 <h2 class="text-lg font-black text-gray-800">📢 센터 주요 일정</h2>
                 <button onclick="openEventPanel()" class="bg-pink-50 text-pink-500 text-xs font-bold px-3 py-2 rounded-xl active:scale-95 shadow-sm border border-pink-100">+ 일정 추가</button>
             </div>
             <div id="event-container" class="space-y-4 px-1 pb-10"></div>
         </div>
 
-        <div id="view-reg" class="hidden space-y-6 pb-10">
-            <div class="card space-y-4">
+        <div id="view-reg" class="hidden space-y-6 pb-10 mt-2">
+            <div class="card space-y-4" id="reg-form-card">
                 <div class="flex justify-between items-center">
                     <h2 class="text-lg font-bold text-gray-700" id="reg-title">📸 신규 보호 동물 등록</h2>
                 </div>
@@ -307,12 +307,14 @@
                 </div>
             </div>
         </div>
-    </div> <nav class="flex justify-around py-2 shadow-[0_-10px_20px_rgba(0,0,0,0.05)] rounded-t-[28px] items-center z-[100] bg-white fixed bottom-0 left-0 right-0 pb-[max(env(safe-area-inset-bottom),12px)]">
-        <button id="nav-list" onclick="showView('list')" class="flex flex-col items-center gap-1 w-1/5 opacity-100 transition-opacity pt-2"><span class="text-2xl">📋</span><span class="text-[9px] font-black text-pink-500">개체 관리</span></button>
-        <button id="nav-dashboard" onclick="showView('dashboard')" class="flex flex-col items-center gap-1 w-1/5 opacity-40 hover:opacity-100 transition-opacity pt-2"><span class="text-2xl">✨</span><span class="text-[9px] font-black text-pink-500">투데이</span></button>
-        <button id="nav-schedule" onclick="showView('schedule')" class="flex flex-col items-center gap-1 w-1/5 opacity-40 hover:opacity-100 transition-opacity pt-2"><span class="text-2xl">📅</span><span class="text-[9px] font-black text-pink-500">근무표</span></button>
-        <button id="nav-events" onclick="showView('events')" class="flex flex-col items-center gap-1 w-1/5 opacity-40 hover:opacity-100 transition-opacity pt-2"><span class="text-2xl">📢</span><span class="text-[9px] font-black text-pink-500">행사/일정</span></button>
-        <button id="nav-reg" onclick="showView('reg')" class="flex flex-col items-center gap-1 w-1/5 opacity-40 hover:opacity-100 transition-opacity pt-2"><span class="text-2xl">🐾</span><span class="text-[9px] font-black text-pink-500">아이 등록</span></button>
+    </div> 
+    
+    <nav class="flex justify-around py-2 shadow-[0_-10px_20px_rgba(0,0,0,0.05)] rounded-t-[28px] items-center z-[100] bg-white fixed bottom-0 left-0 right-0 pb-[max(env(safe-area-inset-bottom),12px)] transition-all" id="main-nav">
+        <button id="nav-list" onclick="showView('list')" class="flex flex-col items-center gap-1 w-1/5 opacity-100 transition-all pt-2 py-2"><span class="text-2xl">📋</span><span class="text-[9px] font-black text-pink-500">개체 관리</span></button>
+        <button id="nav-dashboard" onclick="showView('dashboard')" class="flex flex-col items-center gap-1 w-1/5 opacity-40 hover:opacity-100 transition-all pt-2 py-2"><span class="text-2xl">✨</span><span class="text-[9px] font-black text-pink-500">투데이</span></button>
+        <button id="nav-schedule" onclick="showView('schedule')" class="flex flex-col items-center gap-1 w-1/5 opacity-40 hover:opacity-100 transition-all pt-2 py-2"><span class="text-2xl">📅</span><span class="text-[9px] font-black text-pink-500">근무표</span></button>
+        <button id="nav-events" onclick="showView('events')" class="flex flex-col items-center gap-1 w-1/5 opacity-40 hover:opacity-100 transition-all pt-2 py-2"><span class="text-2xl">📢</span><span class="text-[9px] font-black text-pink-500">행사/일정</span></button>
+        <button id="nav-reg" onclick="showView('reg')" class="flex flex-col items-center gap-1 w-1/5 opacity-40 hover:opacity-100 transition-all pt-2 py-2"><span class="text-2xl">🐾</span><span class="text-[9px] font-black text-pink-500">아이 등록</span></button>
     </nav>
 
     <div id="profile-panel" class="slide-panel fixed inset-0 bg-gray-50 z-[120] transform translate-x-full flex flex-col h-full overflow-hidden">
@@ -329,7 +331,7 @@
                     <span id="pp-status" class="px-3 py-1 rounded-full text-[10px] font-black shadow-sm mb-2">보호 중</span>
                     <h2 id="pp-name" class="text-3xl font-black text-gray-800 mb-1">이름</h2>
                     <p id="pp-info" class="text-xs text-gray-500 font-bold mb-3">견종 · 성별 · 나이</p>
-                    <div id="pp-classification" class="flex gap-1 mb-4"></div>
+                    <div id="pp-classification" class="flex gap-1 mb-4 flex-wrap justify-center"></div>
                     <div id="pp-tags" class="flex flex-wrap gap-1 justify-center mb-4"></div>
                 </div>
                 <div id="pp-health-container" class="hidden bg-green-50 p-4 rounded-2xl border border-green-100 mb-4">
@@ -341,9 +343,9 @@
                 </div>
             </div>
             <div class="grid grid-cols-2 gap-3">
-                <button onclick="openRecordFromProfile()" class="bg-white border-2 border-pink-400 text-pink-500 py-4 rounded-2xl font-black shadow-sm active:scale-95 transition-all flex flex-col items-center gap-1"><span class="text-2xl">📝</span><span>일과 기록 작성</span></button>
-                <button onclick="openHistoryFromProfile()" class="bg-pink-500 text-white py-4 rounded-2xl font-black shadow-md active:scale-95 transition-all flex flex-col items-center gap-1"><span class="text-2xl">📅</span><span>과거 기록 열람</span></button>
-                <button onclick="openBehaviorFromProfile()" class="col-span-2 bg-indigo-50 border border-indigo-200 text-indigo-600 py-4 rounded-2xl font-black shadow-sm active:scale-95 transition-all flex flex-col items-center gap-1"><span class="text-2xl">🧠</span><span>행동 분석 및 훈련 기록 (DSCC)</span></button>
+                <button id="btn-prof-record" onclick="openRecordFromProfile()" class="bg-white border-2 border-pink-400 text-pink-500 py-4 rounded-2xl font-black shadow-sm active:scale-95 transition-all flex flex-col items-center gap-1"><span class="text-2xl">📝</span><span>일과 기록 작성</span></button>
+                <button id="btn-prof-history" onclick="openHistoryFromProfile()" class="bg-pink-500 text-white py-4 rounded-2xl font-black shadow-md active:scale-95 transition-all flex flex-col items-center gap-1"><span class="text-2xl">📅</span><span>과거 기록 열람</span></button>
+                <button id="btn-prof-behavior" onclick="openBehaviorFromProfile()" class="col-span-2 bg-indigo-50 border border-indigo-200 text-indigo-600 py-4 rounded-2xl font-black shadow-sm active:scale-95 transition-all flex flex-col items-center gap-1"><span class="text-2xl">🧠</span><span>행동 분석 및 훈련 기록 (DSCC)</span></button>
             </div>
             <button onclick="askDeleteAnimal()" class="w-full py-3 mt-4 text-xs text-red-400 font-bold underline active:scale-95">이 동물의 프로필 영구 삭제하기</button>
         </div>
@@ -417,7 +419,7 @@
             <span class="font-black text-indigo-800">행동 분석 및 트래킹</span>
             <div class="w-6"></div>
         </div>
-        <div class="flex-1 overflow-y-auto p-5 pb-32 space-y-6">
+        <div class="flex-1 overflow-y-auto p-5 pb-32 space-y-6" id="behavior-panel-content">
             <div class="bg-white rounded-3xl p-5 shadow-sm border border-indigo-100">
                 <h3 id="bh-panel-title" class="text-base font-black text-indigo-700 mb-4">새 훈련 기록 추가</h3>
                 <p class="text-[10px] font-black text-gray-400 mb-1">분석할 문제 행동 (예: 산책 시 짖음)</p>
@@ -542,55 +544,17 @@
         </div>
     </div>
 
-    <div id="schedule-panel" class="slide-panel fixed inset-0 bg-gray-50 z-[120] transform translate-x-full flex flex-col h-full overflow-hidden">
-        <div class="px-5 py-4 bg-white border-b border-pink-100 flex justify-between items-center shadow-sm sticky top-0 z-10 pt-[max(env(safe-area-inset-top),16px)]">
-            <button onclick="closeSchedulePanel()" class="text-gray-400 text-3xl font-black active:scale-90 transition-transform">&lsaquo;</button>
-            <span id="sp-date-title" class="font-black text-gray-700">근무표</span>
-            <div class="w-6"></div>
-        </div>
-        <div class="flex-1 overflow-y-auto p-5 pb-32 space-y-4">
-            <div class="bg-white rounded-2xl p-5 shadow-sm border border-pink-100"><h3 class="text-sm font-black text-gray-800 mb-2">☀️ 오전 근무자</h3><input type="text" id="sch-am" class="w-full p-3 border border-pink-50 rounded-xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300"></div>
-            <div class="bg-white rounded-2xl p-5 shadow-sm border border-pink-100"><h3 class="text-sm font-black text-gray-800 mb-2">🌙 오후 근무자</h3><input type="text" id="sch-pm" class="w-full p-3 border border-pink-50 rounded-xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300"></div>
-            <div class="bg-white rounded-2xl p-5 shadow-sm border border-pink-100"><h3 class="text-sm font-black text-red-400 mb-2">🌴 연차 (휴무)</h3><input type="text" id="sch-off" class="w-full p-3 border border-red-50 rounded-xl outline-none bg-gray-50 text-sm font-bold focus:border-red-300"></div>
-            <div class="bg-white rounded-2xl p-5 shadow-sm border border-pink-100"><h3 class="text-sm font-black text-blue-400 mb-2">🌗 반차</h3><input type="text" id="sch-half" class="w-full p-3 border border-blue-50 rounded-xl outline-none bg-gray-50 text-sm font-bold focus:border-blue-300"></div>
-        </div>
-        <div class="absolute bottom-0 left-0 right-0 bg-white border-t border-pink-100 p-4 pb-[max(env(safe-area-inset-bottom),16px)] z-20">
-            <button onclick="saveSchedule()" class="w-full py-4 pink-gradient text-white font-black text-lg rounded-2xl shadow-lg active:scale-95 transition-transform">근무표 저장하기</button>
-            <input type="hidden" id="sp-date-key" value="">
-        </div>
-    </div>
-
-    <div id="event-panel" class="slide-panel fixed inset-0 bg-gray-50 z-[120] transform translate-x-full flex flex-col h-full overflow-hidden">
-        <div class="px-5 py-4 bg-white border-b border-pink-100 flex justify-between items-center shadow-sm sticky top-0 z-10 pt-[max(env(safe-area-inset-top),16px)]">
-            <button onclick="closeEventPanel()" class="text-gray-400 text-3xl font-black active:scale-90 transition-transform">&lsaquo;</button>
-            <span id="event-panel-title" class="font-black text-gray-700">새 일정 등록</span>
-            <div class="w-6"></div>
-        </div>
-        <div class="flex-1 overflow-y-auto p-5 pb-32 space-y-4">
-            <div class="bg-white rounded-2xl p-5 shadow-sm border border-pink-100">
-                <p class="text-xs font-bold text-gray-400 mb-1">일자 (필수)</p><input type="date" id="ev-date" class="w-full p-3 border border-pink-50 rounded-xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300 mb-4">
-                <p class="text-xs font-bold text-gray-400 mb-1">시간 (선택)</p><input type="text" id="ev-time" placeholder="예: 14:00 ~ 17:00 / 종일" class="w-full p-3 border border-pink-50 rounded-xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300 mb-4">
-                <p class="text-xs font-bold text-gray-400 mb-1">행사/업무명 (필수)</p><input type="text" id="ev-title" placeholder="예: OO기업 자원봉사 방문" class="w-full p-3 border border-pink-50 rounded-xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300 mb-4">
-                <p class="text-xs font-bold text-gray-400 mb-1">상세 내용 메모</p><textarea id="ev-desc" placeholder="필요한 물품이나 주요 전달사항을 적어주세요." class="w-full p-3 border border-pink-50 rounded-xl outline-none bg-gray-50 text-sm font-bold h-28 focus:border-pink-300"></textarea>
-            </div>
-        </div>
-        <div class="absolute bottom-0 left-0 right-0 bg-white border-t border-pink-100 p-4 pb-[max(env(safe-area-inset-bottom),16px)] z-20">
-            <button id="event-save-btn" onclick="saveEvent()" class="w-full py-4 pink-gradient text-white font-black text-lg rounded-2xl shadow-lg active:scale-95 transition-transform">일정 저장하기</button>
-        </div>
-    </div>
-
     <script>
         // 전역 상태 변수
         let currentTrainerName = localStorage.getItem('naepumae_trainer_name');
         let currentTrainerId = localStorage.getItem('naepumae_trainer_id');
         let isAdmin = false;
         let deviceId = localStorage.getItem('naepumae_device_id');
+        let isTutorialActive = false;
         
         let editingLogId = null; let editingLogOriginalData = null; let editingAnimalProfileId = null; let editingEventId = null; let editingBehaviorLogId = null;
         let currentSearchQuery = ''; let currentDashTab = 'animal'; let currentDashTask = 'walk';
         let currentDate = new Date(); let schedules = {}; let eventsList = []; let animals = []; let currentFilter = 'all'; 
-        
-        let currentAdminTab = 'pending'; let allUsersData = null;
 
         const dogBreeds = ['믹스견', '말티즈', '푸들', '포메라니안', '진돗개', '골든 리트리버', '비숑 프리제', '치와와', '시츄', '요크셔테리어', '스피츠', '직접 입력'];
         const catBreeds = ['코리안 숏헤어', '페르시안', '러시안 블루', '샴', '먼치킨', '랙돌', '스코티시 폴드', '브리티시 숏헤어', '직접 입력'];
@@ -599,81 +563,122 @@
         firebase.initializeApp(firebaseConfig); const database = firebase.database();
         let isAppStarted = false; 
 
-        // === 0. 튜토리얼 (코치 마크) 로직 ===
+        // === [신규] 튜토리얼 기능 ===
         const tutorialSteps = [
-            { target: '#btn-profile-edit', title: '👋 환영합니다!', desc: '이곳에서 훈련사님의 프로필을 확인하고 이름을 언제든 수정할 수 있어요.', pos: 'bottom' },
-            { target: '#nav-dashboard', title: '✨ 투데이 현황', desc: '오늘 진행해야 할 산책, 급여, 투약 업무의 달성률을 한눈에 파악하세요.', pos: 'top' },
-            { target: '#nav-list', title: '📋 개체 관리', desc: '보호 중인 모든 아이들의 목록을 보고, 상세 프로필과 일과 기록을 남길 수 있습니다.', pos: 'top' },
-            { target: '#nav-schedule', title: '📅 근무표', desc: '동료 훈련사님들의 오전/오후 일정과 연차를 캘린더에서 함께 관리해요.', pos: 'top' },
-            { target: '#nav-events', title: '📢 행사/일정', desc: '자원봉사 방문 등 센터의 주요 일정을 등록하고 공유하세요.', pos: 'top' },
-            { target: '#nav-reg', title: '🐾 아이 등록', desc: '새로 구조된 동물을 안전하게 시스템에 등록하는 곳입니다. 자율배식 설정도 가능해요!', pos: 'top' }
+            { icon: '👋', title: '환영합니다!', desc: '우측 상단의 <b>[👤 로그인 이름]</b> 버튼을 누르면 내 정보를 수정할 수 있습니다.<br><br>자, 이제부터 앱의 핵심 기능들을 빠르게 살펴볼까요?', target: 'header-profile-btn' },
+            { icon: '📋', title: '개체 관리', desc: '현재 보호 중인 아이들을 관리하는 메인 화면입니다. 하단 메뉴의 <b>[개체 관리]</b> 탭을 통해 언제든 돌아올 수 있습니다.', target: 'nav-list' },
+            { icon: '🔍', title: '빠른 검색', desc: '화면 상단에서 <b>이름, 그룹, 성격</b> 등을 입력해 원하는 아이를 빠르게 검색할 수 있습니다.', target: 'search-input-area' },
+            { icon: '🏷️', title: '카테고리 및 목록', desc: '<b>강아지, 고양이, 보호 상태 등</b> 버튼을 눌러 필터링하고 아래 목록에서 아이들을 확인할 수 있습니다.', target: 'filter-container' },
+            { icon: '👆', title: '상세 정보 보기', desc: '목록에 있는 <b>첫 번째 아이의 카드</b>를 클릭해보세요!<br><br><span class="text-pink-500 font-black">※ 반짝이는 타겟을 직접 터치해야 넘어갑니다.</span>', target: 'tut-first-animal', requireClick: true },
+            { icon: '🐾', title: '개체 관리 카드', desc: '아이의 상세 프로필입니다. 우측 상단에서 <b>[정보 수정]</b>이 가능하며, 하단 3개의 버튼으로 업무를 처리합니다.', target: null },
+            { icon: '👆', title: '일과 기록 작성', desc: '첫 번째 <b>[📝 일과 기록 작성]</b> 버튼을 클릭해보세요!', target: 'btn-prof-record', requireClick: true },
+            { icon: '📝', title: '일과 기록 작성', desc: '이곳에서 해당 아이의 산책, 급여, 투약, 배변 등을 기록합니다. 다 보셨다면 다음을 눌러주세요.', target: null, onNext: closeRecordPanel },
+            { icon: '👆', title: '과거 기록 열람', desc: '두 번째 <b>[📅 과거 기록 열람]</b> 버튼을 클릭해보세요!', target: 'btn-prof-history', requireClick: true },
+            { icon: '📅', title: '과거 기록 열람', desc: '과거에 작성했던 모든 일과 기록들이 날짜별로 정리되어 있습니다. 수정과 삭제도 가능합니다.', target: null, onNext: closeHistoryPanel },
+            { icon: '👆', title: '행동 분석 및 훈련', desc: '세 번째 <b>[🧠 행동 분석 및 훈련 기록]</b> 버튼을 클릭해보세요!', target: 'btn-prof-behavior', requireClick: true },
+            { icon: '🧠', title: '행동 분석 및 훈련', desc: 'ABC 모델 기반의 문제 행동 분석과 훈련 트래킹 타임라인을 제공합니다.', target: null, onNext: () => { closeBehaviorPanel(); closeProfilePanel(); } },
+            { icon: '👆', title: '투데이 현황', desc: '자, 이제 하단 메뉴에서 <b>[✨ 투데이]</b> 탭을 클릭해보세요!', target: 'nav-dashboard', requireClick: true },
+            { icon: '📊', title: '보기 방식 선택', desc: '대시보드에서는 <b>[아이별 모아보기]</b>와 <b>[업무별 진척도]</b> 두 가지 방식으로 오늘의 현황을 파악할 수 있습니다.', target: 'dash-tabs-container' },
+            { icon: '✅', title: '주요 업무 카테고리', desc: '업무별 진척도에서는 <b>[산책], [급여], [투약]</b> 버튼을 눌러 각 업무의 진행 상황만 따로 볼 수 있습니다.', target: 'dash-task-chips', onEnter: () => setDashTab('task') },
+            { icon: '📈', title: '업무 달성률', desc: '오늘 해야 할 전체 업무 중 얼만큼 완료되었는지 <b>실시간 퍼센트</b>로 보여줍니다.', target: 'dash-progress-area' },
+            { icon: '⏳', title: '대기 중 & 완료', desc: '아직 처리하지 않은 아이들은 <b>대기 중</b>에, 완료된 아이들은 <b>완료</b>로 이동합니다. 얼굴을 누르면 바로 일과를 기록할 수 있습니다!', target: 'dash-task-grid-wrapper' },
+            { icon: '👆', title: '근무표 확인', desc: '하단 메뉴에서 <b>[📅 근무표]</b>를 클릭해보세요!', target: 'nav-schedule', requireClick: true },
+            { icon: '📅', title: '근무표 관리', desc: '달력에서 날짜를 선택하여 훈련사들의 <b>오전/오후 근무 및 휴무 현황</b>을 관리할 수 있습니다.', target: 'cal-card' },
+            { icon: '👆', title: '행사/일정 관리', desc: '하단 메뉴에서 <b>[📢 행사/일정]</b>을 클릭해보세요!', target: 'nav-events', requireClick: true },
+            { icon: '📢', title: '행사/일정', desc: '센터의 주요 행사나 자원봉사 방문, 회의 일정 등을 <b>추가하고 관리하는 공간</b>입니다.', target: 'view-events' },
+            { icon: '👆', title: '아이 등록', desc: '마지막으로 하단 메뉴의 <b>[🐾 아이 등록]</b>을 클릭해보세요!', target: 'nav-reg', requireClick: true },
+            { icon: '📸', title: '신규 동물 등록', desc: '새로 입소한 아이의 사진, 품종, 배식/투약 정보를 입력하는 화면입니다. 내용이 많으니 <b>아래로 스크롤하여</b> 꼼꼼히 채워주세요!', target: 'reg-form-card', onEnter: () => setTimeout(() => window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'}), 300) },
+            { icon: '🎉', title: '튜토리얼 완료!', desc: '모든 기능을 살펴보셨습니다.<br>완벽한 센터 관리를 시작해 보세요!', target: null, onEnter: () => window.scrollTo({top: 0, behavior: 'smooth'}) }
         ];
-        let curTutStep = 0;
 
         function checkTutorial() {
-            // 로컬 스토리지에 기록이 없으면 튜토리얼 시작
-            if(!localStorage.getItem('naepumae_tutorial_done')) {
-                setTimeout(() => startTutorial(), 500); // 화면이 완전히 그려질 때까지 0.5초 대기
-            }
+            if(!localStorage.getItem('naepumae_tutorial_done')) { startTutorial(); }
         }
 
         function startTutorial() {
-            document.getElementById('tutorial-container').classList.remove('hidden');
-            curTutStep = 0;
+            isTutorialActive = true;
+            document.getElementById('tutorial-overlay').classList.remove('hidden');
+            document.getElementById('tutorial-overlay').classList.add('flex');
+            currentTutStep = 0;
             renderTutorialStep();
         }
 
         function renderTutorialStep() {
-            const step = tutorialSteps[curTutStep];
-            const targetEl = document.querySelector(step.target);
-            if(!targetEl) { nextTutorial(); return; } // 타겟을 못 찾으면 다음으로 (안전장치)
+            const step = tutorialSteps[currentTutStep];
+            
+            // [예외 처리] 등록된 동물이 없을 경우 개체 클릭 튜토리얼 스킵 로직
+            if (currentTutStep === 4 && animals.length === 0) {
+                step.icon = '💡';
+                step.title = '개체 상세 관리';
+                step.desc = '아직 등록된 아이가 없네요!<br>나중에 동물을 등록하면 <b>카드를 클릭해 상세 프로필과 일과</b>를 기록할 수 있습니다. 다음을 눌러 대시보드로 이동할게요.';
+                step.requireClick = false;
+                step.target = null;
+                step.onNext = () => { currentTutStep = 11; }; // 다음 단계로 12번(투데이)으로 점프
+            }
 
-            const spot = document.getElementById('tutorial-spotlight');
+            if(step.onEnter) step.onEnter();
+
+            document.getElementById('tut-step-counter').innerText = `${currentTutStep + 1}/${tutorialSteps.length}`;
+            document.getElementById('tut-icon').innerText = step.icon;
+            document.getElementById('tut-title').innerHTML = step.title;
+            document.getElementById('tut-desc').innerHTML = step.desc;
+
             const tooltip = document.getElementById('tutorial-tooltip');
+            tooltip.classList.remove('scale-95', 'opacity-0');
+            tooltip.classList.add('scale-100', 'opacity-100');
 
-            // 화면을 타겟 위치로 부드럽게 스크롤
-            targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            document.getElementById('tut-next-btn').innerText = (currentTutStep === tutorialSteps.length - 1) ? '시작하기 ✨' : '다음 ➔';
 
-            setTimeout(() => {
-                const rect = targetEl.getBoundingClientRect();
+            // 이전 하이라이트 초기화
+            document.querySelectorAll('.tut-target-active').forEach(el => el.classList.remove('tut-target-active'));
+            
+            const overlay = document.getElementById('tutorial-overlay');
+            
+            if(step.requireClick && step.target) {
+                const targetEl = document.getElementById(step.target);
+                if(targetEl) targetEl.classList.add('tut-target-active');
                 
-                // 포커스 링 크기 및 위치 조정
-                spot.style.width = (rect.width + 16) + 'px';
-                spot.style.height = (rect.height + 16) + 'px';
-                spot.style.top = (rect.top - 8) + 'px';
-                spot.style.left = (rect.left - 8) + 'px';
-
-                // 텍스트 변경
-                document.getElementById('tut-title').innerText = step.title;
-                document.getElementById('tut-desc').innerText = step.desc;
-                document.getElementById('tut-progress').innerText = `${curTutStep + 1} / ${tutorialSteps.length}`;
-                document.getElementById('tut-next-btn').innerText = curTutStep === tutorialSteps.length - 1 ? '시작하기' : '다음';
-
-                // 말풍선 위치 조정 (위 혹은 아래)
-                if(step.pos === 'bottom') {
-                    tooltip.style.top = (rect.bottom + 20) + 'px';
-                    tooltip.style.bottom = 'auto';
-                } else {
-                    tooltip.style.bottom = (window.innerHeight - rect.top + 20) + 'px';
-                    tooltip.style.top = 'auto';
-                }
-            }, 300); // 스크롤이 끝난 후 계산
-        }
-
-        function nextTutorial() {
-            if(curTutStep < tutorialSteps.length - 1) {
-                curTutStep++;
-                renderTutorialStep();
+                // 클릭 유도일 때는 화면 클릭을 허용하고 '다음' 버튼 숨김
+                overlay.classList.remove('pointer-events-auto');
+                overlay.classList.add('pointer-events-none');
+                document.getElementById('tut-next-btn').classList.add('hidden');
             } else {
-                endTutorial();
+                if(step.target) {
+                    const targetEl = document.getElementById(step.target);
+                    if(targetEl) targetEl.classList.add('tut-target-active');
+                }
+                // 읽기 모드일 때는 화면 클릭을 막고 '다음' 버튼 보임
+                overlay.classList.remove('pointer-events-none');
+                overlay.classList.add('pointer-events-auto');
+                document.getElementById('tut-next-btn').classList.remove('hidden');
             }
         }
 
-        function skipTutorial() { endTutorial(); }
+        function nextTutorial() {
+            const step = tutorialSteps[currentTutStep];
+            if(step.onNext) step.onNext();
 
-        function endTutorial() {
-            document.getElementById('tutorial-container').classList.add('hidden');
-            localStorage.setItem('naepumae_tutorial_done', 'true'); // 다시 뜨지 않도록 저장
+            const tooltip = document.getElementById('tutorial-tooltip');
+            tooltip.classList.remove('scale-100', 'opacity-100');
+            tooltip.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                currentTutStep++;
+                if(currentTutStep >= tutorialSteps.length) { skipTutorial(); } 
+                else { renderTutorialStep(); }
+            }, 300);
+        }
+
+        function skipTutorial() {
+            isTutorialActive = false;
+            localStorage.setItem('naepumae_tutorial_done', 'true');
+            document.getElementById('tutorial-overlay').classList.add('hidden');
+            document.getElementById('tutorial-overlay').classList.remove('flex');
+            document.querySelectorAll('.tut-target-active').forEach(el => el.classList.remove('tut-target-active'));
+            
+            // 모든 열려있는 패널 닫기
+            closeRecordPanel(); closeHistoryPanel(); closeBehaviorPanel(); closeProfilePanel();
+            showView('list'); window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
         // === 1. 인증 및 권한 ===
@@ -690,7 +695,13 @@
                         document.querySelectorAll('#current-trainer-display').forEach(el => el.innerText = currentTrainerName);
                         document.getElementById('btn-admin-manage').classList.toggle('hidden', !isAdmin);
                         document.getElementById('onboarding-panel').classList.add('hidden'); document.getElementById('waiting-panel').classList.add('hidden'); document.getElementById('main-content').classList.remove('hidden');
-                        if(!isAppStarted) { startAppSync(); isAppStarted = true; showView('list'); checkTutorial(); } // 로그인 성공 시 튜토리얼 체크
+                        
+                        if(!isAppStarted) { 
+                            startAppSync(); 
+                            isAppStarted = true; 
+                            showView('list'); 
+                            setTimeout(checkTutorial, 800); // 앱 로딩 후 튜토리얼 체크
+                        }
                     }
                 });
             }
@@ -702,52 +713,40 @@
             if(!name) { alert('이름을 먼저 입력해주세요.'); return; }
             if(code === '0000') { database.ref('users/' + deviceId).set({ name: name, status: 'approved', role: 'admin', timestamp: Date.now() }); } else { alert('관리자 코드가 일치하지 않습니다.'); }
         }
-        
-        function openAdminApproveModal() { 
-            document.getElementById('admin-approve-modal').classList.add('active'); 
-            renderAdminList(); 
-        }
+
+        // === [신규] 관리자 멤버 관리 로직 ===
+        let adminCurrentTab = 'pending';
+        let allUsersData = null;
+
+        function openAdminApproveModal() { document.getElementById('admin-approve-modal').classList.add('active'); document.getElementById('admin-req-badge').classList.add('hidden'); renderAdminList(); }
         function closeAdminApproveModal() { document.getElementById('admin-approve-modal').classList.remove('active'); }
         
         function setAdminTab(tab) {
-            currentAdminTab = tab;
-            document.getElementById('tab-admin-pending').className = tab === 'pending' ? 'flex-1 py-2 text-xs font-black rounded-lg bg-white shadow-sm text-gray-800 transition-all' : 'flex-1 py-2 text-xs font-black rounded-lg text-gray-400 transition-all';
-            document.getElementById('tab-admin-approved').className = tab === 'approved' ? 'flex-1 py-2 text-xs font-black rounded-lg bg-white shadow-sm text-gray-800 transition-all' : 'flex-1 py-2 text-xs font-black rounded-lg text-gray-400 transition-all';
+            adminCurrentTab = tab;
+            document.getElementById('admin-tab-pending').className = tab === 'pending' ? 'flex-1 py-2 text-xs font-black rounded-lg bg-white text-pink-600 shadow-sm transition-all' : 'flex-1 py-2 text-xs font-black rounded-lg text-gray-400 transition-all';
+            document.getElementById('admin-tab-approved').className = tab === 'approved' ? 'flex-1 py-2 text-xs font-black rounded-lg bg-white text-pink-600 shadow-sm transition-all' : 'flex-1 py-2 text-xs font-black rounded-lg text-gray-400 transition-all';
             renderAdminList();
         }
 
         function renderAdminList() {
             const listContainer = document.getElementById('request-list-container');
-            let html = '';
-            let pendingCount = 0;
-
-            if (allUsersData) {
-                Object.keys(allUsersData).forEach(uid => {
-                    const u = allUsersData[uid];
-                    if (currentAdminTab === 'pending' && u.status === 'pending') {
-                        pendingCount++;
-                        html += `<div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex justify-between items-center mb-2"><div><p class="text-sm font-black text-gray-800">${u.name}</p><p class="text-[10px] text-gray-400">요청: ${new Date(u.timestamp).toLocaleDateString()}</p></div><div class="flex gap-1"><button onclick="approveUser('${uid}')" class="bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg text-xs font-bold active:scale-95 border border-indigo-100">승인</button><button onclick="rejectUser('${uid}')" class="bg-white text-gray-400 px-3 py-1.5 rounded-lg text-xs font-bold active:scale-95 border border-gray-200">거절</button></div></div>`;
-                    } else if (currentAdminTab === 'approved' && u.status === 'approved') {
-                        const roleBadge = u.role === 'admin' ? '<span class="bg-purple-100 text-purple-600 px-1.5 py-0.5 rounded text-[8px] ml-1">최고 관리자</span>' : '';
-                        const removeBtn = u.role !== 'admin' ? `<button onclick="askRemoveTrainer('${uid}', '${u.name}')" class="bg-red-50 text-red-500 px-3 py-1.5 rounded-lg text-xs font-bold active:scale-95 border border-red-100">권한 해제</button>` : '';
-                        html += `<div class="bg-white border border-pink-100 p-3 rounded-xl flex justify-between items-center shadow-sm mb-2"><div><p class="text-sm font-black text-gray-800">${u.name}${roleBadge}</p><p class="text-[10px] text-pink-400">활동 중</p></div><div>${removeBtn}</div></div>`;
-                    }
-                });
-            }
-            
-            if(currentAdminTab === 'pending' && !html) html = `<div class="text-center py-10 text-gray-400 font-bold text-xs">대기 중인 요청이 없습니다.</div>`;
-            if(currentAdminTab === 'approved' && !html) html = `<div class="text-center py-10 text-gray-400 font-bold text-xs">등록된 훈련사가 없습니다.</div>`;
-            
-            listContainer.innerHTML = html;
-        }
-
-        function askRemoveTrainer(uid, name) {
-            if(uid === currentTrainerId) return alert('자기 자신의 권한은 해제할 수 없습니다.');
-            openModal('confirm', '훈련사 권한 해제', `${name} 님의 접속 권한을 해제하시겠습니까? (이후 접속 차단)`, () => {
-                database.ref('users/' + uid).remove();
+            if(!allUsersData) return;
+            let html = ''; let count = 0;
+            Object.keys(allUsersData).forEach(uid => {
+                const u = allUsersData[uid];
+                if(adminCurrentTab === 'pending' && u.status === 'pending') {
+                    count++;
+                    html += `<div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex justify-between items-center mb-2"><div><p class="text-sm font-black text-gray-800">${u.name}</p><p class="text-[10px] text-gray-400">요청: ${new Date(u.timestamp).toLocaleDateString()}</p></div><div class="flex gap-1"><button onclick="approveUser('${uid}')" class="bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg text-xs font-bold active:scale-95 border border-indigo-100">승인</button><button onclick="rejectUser('${uid}')" class="bg-white text-gray-400 px-3 py-1.5 rounded-lg text-xs font-bold active:scale-95 border border-gray-200">거절</button></div></div>`;
+                } else if(adminCurrentTab === 'approved' && u.status === 'approved' && u.role !== 'admin') {
+                    count++;
+                    html += `<div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex justify-between items-center mb-2"><div><p class="text-sm font-black text-gray-800">${u.name}</p><p class="text-[10px] text-pink-400 font-bold">소속 훈련사</p></div><button onclick="askRevokeUser('${uid}', '${u.name}')" class="bg-white text-red-400 px-3 py-1.5 rounded-lg text-xs font-bold active:scale-95 border border-gray-200">권한 해제</button></div>`;
+                }
             });
+            if(count > 0) { listContainer.innerHTML = html; } 
+            else { listContainer.innerHTML = `<div class="text-center py-10 text-gray-400 font-bold text-xs">${adminCurrentTab==='pending'?'대기 중인 요청이 없습니다.':'등록된 훈련사가 없습니다.'}</div>`; }
         }
 
+        function askRevokeUser(uid, name) { openModal('confirm', '권한 해제', `${name} 훈련사의 접속 권한을 해제하시겠습니까?`, () => { rejectUser(uid); }); }
         function approveUser(uid) { database.ref('users/' + uid).update({ status: 'approved' }); }
         function rejectUser(uid) { database.ref('users/' + uid).remove(); }
         
@@ -759,17 +758,10 @@
         function startAppSync() {
             if(isAdmin) {
                 database.ref('users').on('value', snap => {
-                    allUsersData = snap.val();
-                    let pendingCount = 0;
-                    if(allUsersData) {
-                        Object.values(allUsersData).forEach(u => { if(u.status === 'pending') pendingCount++; });
-                    }
-                    if(pendingCount > 0) document.getElementById('admin-req-badge').classList.remove('hidden');
-                    else document.getElementById('admin-req-badge').classList.add('hidden');
-                    
-                    if(document.getElementById('admin-approve-modal').classList.contains('active')) {
-                        renderAdminList();
-                    }
+                    allUsersData = snap.val(); let pendingCount = 0;
+                    if(allUsersData) { Object.values(allUsersData).forEach(u => { if(u.status === 'pending') pendingCount++; }); }
+                    if(pendingCount > 0) document.getElementById('admin-req-badge').classList.remove('hidden'); else document.getElementById('admin-req-badge').classList.add('hidden');
+                    if(document.getElementById('admin-approve-modal').classList.contains('active')) renderAdminList();
                 });
             }
             database.ref('animals').on('value', (snapshot) => {
@@ -800,6 +792,14 @@
             });
             window.scrollTo(0,0);
             if(view === 'list') renderTasks(); else if(view === 'dashboard') renderDashboard(); else if(view === 'schedule') renderCalendar(); else if(view === 'events') renderEvents(); else if(view === 'reg') resetRegForm();
+            
+            // 튜토리얼 네비게이션 훅
+            if(isTutorialActive) {
+                if(view === 'dashboard' && currentTutStep === 12) nextTutorial();
+                if(view === 'schedule' && currentTutStep === 17) nextTutorial();
+                if(view === 'events' && currentTutStep === 19) nextTutorial();
+                if(view === 'reg' && currentTutStep === 21) nextTutorial();
+            }
         }
 
         // === 4. 이미지 업로드 헬퍼 ===
@@ -851,7 +851,7 @@
             document.getElementById('in-meal-type').value = '제한급여';
             document.querySelectorAll('.in-per-btn').forEach(btn => { btn.classList.remove('btn-active', 'bg-pink-100', 'text-pink-600', 'border-pink-300'); btn.classList.add('btn-inactive', 'bg-white', 'text-gray-500', 'border-gray-200'); });
             document.querySelectorAll('.in-med-day-btn').forEach(btn => {
-                if(!btn.classList.contains('med-day-active')) toggleMedDay(btn); // 모두 활성화
+                if(!btn.classList.contains('med-day-active')) toggleMedDay(btn); 
             });
             removePhoto(null, 'in'); 
         }
@@ -985,7 +985,7 @@
             if(filteredAnimals.length === 0) { container.innerHTML = '<div class="text-center py-20 text-gray-400 font-bold">조건에 맞는 아이가 없습니다.</div>'; return; }
             container.innerHTML = `<h3 class="font-black text-gray-400 px-2 mb-3 text-[10px] uppercase tracking-widest">목록 (${filteredAnimals.length})</h3>`;
             
-            filteredAnimals.forEach(a => {
+            filteredAnimals.forEach((a, index) => {
                 const photoHtml = a.photo ? `<div class="w-16 h-16 rounded-[18px] bg-cover bg-center shrink-0 shadow-sm border border-pink-50" style="background-image: url(${a.photo})"></div>` : `<div class="w-16 h-16 rounded-[18px] bg-pink-50 flex items-center justify-center shrink-0 text-pink-200 text-2xl">🐾</div>`;
                 let badgeColor = 'bg-blue-50 text-blue-500'; 
                 if(a.status && a.status.includes('입양 대기')) badgeColor = 'bg-pink-500 text-white shadow-md'; else if(a.status && a.status.includes('임시보호')) badgeColor = 'bg-yellow-100 text-yellow-600 shadow-sm border border-yellow-200';
@@ -993,9 +993,12 @@
 
                 const sizeBadge = a.size && a.size !== '해당없음' && a.size !== '미정' ? `<span class="px-2 py-0.5 rounded-md text-[9px] font-black bg-teal-50 text-teal-600 border border-teal-100 mr-1">${a.size}</span>` : '';
                 const groupBadge = a.play_group && a.play_group !== '미정' ? `<span class="px-2 py-0.5 rounded-md text-[9px] font-black mr-1 ${a.play_group === '단독 활동' ? 'bg-red-50 text-red-500 border border-red-100' : (a.play_group === 'A그룹' ? 'bg-purple-50 text-purple-600 border border-purple-100' : (a.play_group === 'B그룹' ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-cyan-50 text-cyan-600 border border-cyan-100'))}">${a.play_group}</span>` : '';
+                
+                // 튜토리얼용 ID 삽입
+                const tutId = index === 0 ? 'id="tut-first-animal"' : '';
 
                 container.innerHTML += `
-                    <div class="card border-pink-50 mb-4 hover:shadow-lg transition-all cursor-pointer active:scale-[0.98]" onclick="openProfilePanel(${a.id})">
+                    <div ${tutId} class="card border-pink-50 mb-4 hover:shadow-lg transition-all cursor-pointer active:scale-[0.98]" onclick="openProfilePanel(${a.id})">
                         <div class="flex items-center gap-4">
                             ${photoHtml}
                             <div class="flex-1 min-w-0">
@@ -1058,7 +1061,6 @@
                     });
                 }
                 
-                // 투약 알림 (오늘이 투약 요일에 해당할 때만 작동)
                 if(a.med_am && !meds['아침 약 완료'] && now.getHours() >= 13 && medDays.includes(todayName)) { 
                     alertsHtml += `<div class="bg-indigo-50 border border-indigo-100 p-3 rounded-xl mb-2 flex items-start gap-2 cursor-pointer active:scale-[0.98]" onclick="openProfilePanel(${a.id})"><span class="text-lg">💊</span><div><p class="text-xs font-black text-indigo-600">${a.name} <span class="font-bold text-gray-500">아침 약 투여 미확인</span></p></div></div>`; alertCount++; 
                 }
@@ -1148,7 +1150,7 @@
             } else {
                 const total = taskPending.length + taskDone.length; const percent = total === 0 ? 0 : Math.round((taskDone.length / total) * 100);
                 let gridHtml = `
-                    <div class="mb-6 bg-white p-5 rounded-2xl shadow-sm border border-pink-100">
+                    <div id="dash-progress-area" class="mb-6 bg-white p-5 rounded-2xl shadow-sm border border-pink-100">
                         <div class="flex justify-between items-end mb-3"><span class="text-sm font-black text-gray-600">업무 달성률</span><span class="text-2xl font-black text-pink-500">${percent}%</span></div>
                         <div class="w-full bg-pink-50 rounded-full h-3 mb-2"><div class="bg-pink-400 h-3 rounded-full transition-all duration-500" style="width: ${percent}%"></div></div>
                         <p class="text-[10px] text-gray-400 font-bold text-right">총 ${total}마리 중 ${taskDone.length}마리 완료</p>
@@ -1165,11 +1167,13 @@
                     }).join('') + `</div>`;
                 };
                 gridHtml += `
-                    <div class="mb-6"><div class="flex items-center gap-2 mb-2"><div class="w-2 h-4 bg-red-400 rounded-full"></div><h3 class="text-sm font-black text-gray-800">대기 중 (${taskPending.length}) <span class="text-[10px] text-gray-400 font-normal ml-1">얼굴을 누르면 기록 창이 뜹니다.</span></h3></div>
-                    <div class="bg-red-50/30 p-4 rounded-2xl border border-red-50">${renderGrid(taskPending, 'pending')}</div></div>
-                    <div><div class="flex items-center gap-2 mb-2"><div class="w-2 h-4 bg-green-400 rounded-full"></div><h3 class="text-sm font-black text-gray-800">완료 (${taskDone.length})</h3></div>
-                    <div class="bg-green-50/30 p-4 rounded-2xl border border-green-50">${renderGrid(taskDone, 'done')}</div></div>`;
-                document.getElementById('dash-task-grid').innerHTML = gridHtml;
+                    <div id="dash-grid-area">
+                        <div class="mb-6"><div class="flex items-center gap-2 mb-2"><div class="w-2 h-4 bg-red-400 rounded-full"></div><h3 class="text-sm font-black text-gray-800">대기 중 (${taskPending.length}) <span class="text-[10px] text-gray-400 font-normal ml-1">얼굴을 누르면 기록 창이 뜹니다.</span></h3></div>
+                        <div class="bg-red-50/30 p-4 rounded-2xl border border-red-50">${renderGrid(taskPending, 'pending')}</div></div>
+                        <div><div class="flex items-center gap-2 mb-2"><div class="w-2 h-4 bg-green-400 rounded-full"></div><h3 class="text-sm font-black text-gray-800">완료 (${taskDone.length})</h3></div>
+                        <div class="bg-green-50/30 p-4 rounded-2xl border border-green-50">${renderGrid(taskDone, 'done')}</div></div>
+                    </div>`;
+                document.getElementById('dash-task-grid-wrapper').innerHTML = gridHtml;
             }
         }
 
@@ -1257,6 +1261,9 @@
         function openProfilePanel(id) {
             const ani = animals.find(a => a.id === id); if(!ani) return; document.getElementById('pp-animal-id').value = id;
             populateProfilePanel(ani); document.getElementById('profile-panel').classList.remove('translate-x-full');
+            
+            // 튜토리얼 훅
+            if(isTutorialActive && currentTutStep === 4) nextTutorial();
         }
         function closeProfilePanel() { document.getElementById('profile-panel').classList.add('translate-x-full'); }
         function populateProfilePanel(ani) {
@@ -1298,7 +1305,10 @@
         function askDeleteAnimal() { const id = document.getElementById('pp-animal-id').value; openModal('confirm', '아이 정보 영구 삭제', '이 동물의 프로필과 모든 기록이 완전히 삭제됩니다. 진행할까요?', () => { database.ref('animals/' + id).remove(); closeProfilePanel(); }); }
 
         // === 11. 행동 분석(DSCC) ===
-        function openBehaviorFromProfile() { const id = document.getElementById('pp-animal-id').value; openBehaviorPanel(Number(id)); }
+        function openBehaviorFromProfile() { 
+            const id = document.getElementById('pp-animal-id').value; openBehaviorPanel(Number(id)); 
+            if(isTutorialActive && currentTutStep === 10) nextTutorial(); // 튜토리얼 훅
+        }
         function setGrade(level) { document.querySelectorAll('.grade-btn').forEach(b => b.classList.remove('grade-active')); document.querySelector(`.g${level}`).classList.add('grade-active'); document.getElementById('bh-grade').value = level; }
         function formatABC(a, b) {
             if(!a || !b) return ""; let fa = a.trim(); let fb = b.trim();
@@ -1402,7 +1412,10 @@
         }
 
         // === 12. 과거 기록 열람 ===
-        function openHistoryFromProfile() { const id = document.getElementById('pp-animal-id').value; openHistoryPanel(null, Number(id)); }
+        function openHistoryFromProfile() { 
+            const id = document.getElementById('pp-animal-id').value; openHistoryPanel(null, Number(id)); 
+            if(isTutorialActive && currentTutStep === 8) nextTutorial(); // 튜토리얼 훅
+        }
         function openHistoryPanel(event, id) {
             if(event) event.stopPropagation(); const ani = animals.find(a => a.id === id); if(!ani) return;
             document.getElementById('hp-animal-id').value = id; 
@@ -1459,7 +1472,10 @@
         }
         function resetRecordForm() { editingLogId = null; editingLogOriginalData = null; document.getElementById('record-action-text').innerText = '기록'; clearFormFields(); }
 
-        function openRecordFromProfile() { const id = document.getElementById('pp-animal-id').value; openRecordPanel(Number(id)); }
+        function openRecordFromProfile() { 
+            const id = document.getElementById('pp-animal-id').value; openRecordPanel(Number(id)); 
+            if(isTutorialActive && currentTutStep === 6) nextTutorial(); // 튜토리얼 훅
+        }
         function openRecordPanel(id) {
             const ani = animals.find(a => a.id === id); if(!ani) return; document.getElementById('rp-animal-id').value = id;
             const medSection = document.getElementById('rp-med-section'); const btnAm = document.getElementById('btn-med-am'); const btnPm = document.getElementById('btn-med-pm');
