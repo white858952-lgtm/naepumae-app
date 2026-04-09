@@ -44,21 +44,21 @@
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
-        @keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(255, 105, 180, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(255, 105, 180, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 105, 180, 0); } }
-        .pulse-anim { animation: pulse-ring 2s infinite; }
         
-        /* [개선] 밝고 자연스러운 깜빡임 애니메이션 (글씨 가림 방지) */
+        /* [개선] 더 밝고, 대상을 가리지 않는 세련된 깜빡임 애니메이션 (Outline 방식) */
         @keyframes tut-pulse-anim { 
-            0% { box-shadow: 0 0 0 0 rgba(255, 105, 180, 0.9); } 
-            70% { box-shadow: 0 0 0 12px rgba(255, 105, 180, 0); } 
-            100% { box-shadow: 0 0 0 0 rgba(255, 105, 180, 0); } 
+            0% { box-shadow: 0 0 0 0 rgba(255, 20, 147, 0.9); } 
+            70% { box-shadow: 0 0 0 14px rgba(255, 20, 147, 0); } 
+            100% { box-shadow: 0 0 0 0 rgba(255, 20, 147, 0); } 
         }
         .tut-target-active { 
-            animation: tut-pulse-anim 1.2s infinite !important; 
-            border: 3px solid #ff69b4 !important; 
+            animation: tut-pulse-anim 1s infinite !important; 
+            outline: 4px solid #ff1493 !important; 
+            outline-offset: 2px !important;
             border-radius: inherit; 
             position: relative; 
             z-index: 10002 !important; 
+            background-color: white; 
         }
 
         .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
@@ -78,27 +78,28 @@
 </head>
 <body class="max-w-md mx-auto p-4 relative" onload="checkAuth()">
     
-    <div id="tutorial-overlay" class="fixed inset-0 bg-black/20 z-[10000] hidden transition-opacity duration-300 ease-in-out pointer-events-auto">
-        <div id="tutorial-tooltip" class="fixed bg-white rounded-3xl p-5 shadow-2xl w-[85%] max-w-xs transition-all duration-300 ease-in-out opacity-0 border border-pink-100 pointer-events-auto flex flex-col z-[10005]">
-            <div id="tut-arrow" class="absolute w-0 h-0 transition-all duration-300 ease-in-out z-[10006]"></div>
-            
-            <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-pink-500 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-md" id="tut-step-counter">1/24</div>
+    <div id="tutorial-overlay" class="fixed inset-0 bg-black/25 z-[10000] hidden transition-opacity duration-300 ease-in-out pointer-events-none">
+        
+        <div id="tut-pointer" class="fixed z-[10003] hidden text-5xl animate-bounce drop-shadow-lg transition-all duration-300">👇</div>
+
+        <div id="tutorial-tooltip" class="fixed left-1/2 transform -translate-x-1/2 bg-white rounded-3xl p-5 shadow-2xl w-[85%] max-w-[300px] transition-all duration-500 ease-in-out opacity-0 border border-pink-100 pointer-events-auto flex flex-col z-[10005]">
+            <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-pink-500 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-md whitespace-nowrap" id="tut-step-counter">1/24</div>
             <div class="flex items-center gap-2 mb-2 mt-1">
                 <div class="text-2xl" id="tut-icon">💡</div>
                 <h3 id="tut-title" class="text-base font-black text-gray-800">환영합니다!</h3>
             </div>
-            <p id="tut-desc" class="text-xs font-bold text-gray-600 mb-5 leading-relaxed"></p>
+            <p id="tut-desc" class="text-xs font-bold text-gray-600 mb-5 leading-relaxed break-keep"></p>
             <div class="flex justify-between items-center mt-auto w-full gap-2">
                 <button onclick="skipTutorial()" class="text-[10px] text-gray-400 font-black underline active:scale-95 px-1 whitespace-nowrap">튜토리얼 종료</button>
                 <div class="flex gap-2">
                     <button id="tut-prev-btn" onclick="prevTutorial()" class="bg-gray-100 text-gray-500 px-4 py-2 rounded-xl font-black text-[11px] active:scale-95 transition-transform hidden">이전</button>
-                    <button id="tut-next-btn" onclick="nextTutorial()" class="pink-gradient text-white px-5 py-2 rounded-xl font-black text-[11px] active:scale-95 shadow-md transition-transform">다음 ➔</button>
+                    <button id="tut-next-btn" onclick="forceNextTutorial()" class="pink-gradient text-white px-5 py-2 rounded-xl font-black text-[11px] active:scale-95 shadow-md transition-transform">다음 ➔</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="onboarding-panel" class="fixed inset-0 bg-white z-[9999] flex flex-col items-center justify-center p-6 hidden">
+    <div id="onboarding-panel" class="fixed inset-0 bg-white z-[9999] flex flex-col items-center justify-center p-6 hidden pointer-events-auto">
         <div class="w-full max-w-sm animate-fade-in text-center">
             <div class="text-6xl mb-4">🐾</div>
             <h1 class="text-2xl font-black text-gray-800 mb-2">내품애 관리 시스템</h1>
@@ -113,7 +114,7 @@
         </div>
     </div>
 
-    <div id="waiting-panel" class="fixed inset-0 bg-white z-[9999] flex flex-col items-center justify-center p-6 hidden">
+    <div id="waiting-panel" class="fixed inset-0 bg-white z-[9999] flex flex-col items-center justify-center p-6 hidden pointer-events-auto">
         <div class="w-full max-w-sm text-center">
             <div class="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-6 pulse-anim"><span class="text-3xl">⏳</span></div>
             <h1 class="text-2xl font-black text-gray-800 mb-2">승인 대기 중입니다</h1>
@@ -205,10 +206,10 @@
             <div id="dash-list-container" class="space-y-3 px-1 pb-10"></div>
 
             <div id="dash-task-container" class="hidden px-2 pb-10">
-                <div class="flex gap-2 justify-center overflow-x-auto hide-scrollbar mb-6 p-1 rounded-full border border-gray-100 bg-white" id="dash-task-chips">
-                    <button onclick="setDashTask('walk')" id="task-walk" class="whitespace-nowrap px-5 py-2.5 rounded-full text-xs font-black bg-pink-500 text-white shadow-md transition-all">🐕 산책</button>
-                    <button onclick="setDashTask('meal')" id="task-meal" class="whitespace-nowrap px-5 py-2.5 rounded-full text-xs font-black bg-white text-gray-400 transition-all">🥣 급여</button>
-                    <button onclick="setDashTask('med')" id="task-med" class="whitespace-nowrap px-5 py-2.5 rounded-full text-xs font-black bg-white text-gray-400 transition-all">💊 투약</button>
+                <div class="flex gap-2 justify-center overflow-x-auto hide-scrollbar mb-6 p-1 rounded-[20px] border border-gray-100 bg-white" id="dash-task-chips">
+                    <button onclick="setDashTask('walk')" id="task-walk" class="flex-1 whitespace-nowrap px-3 py-2.5 rounded-2xl text-xs font-black bg-pink-500 text-white shadow-md transition-all">🐕 산책</button>
+                    <button onclick="setDashTask('meal')" id="task-meal" class="flex-1 whitespace-nowrap px-3 py-2.5 rounded-2xl text-xs font-black bg-white text-gray-400 transition-all">🥣 급여</button>
+                    <button onclick="setDashTask('med')" id="task-med" class="flex-1 whitespace-nowrap px-3 py-2.5 rounded-2xl text-xs font-black bg-white text-gray-400 transition-all">💊 투약</button>
                 </div>
                 <div id="dash-task-grid-wrapper"></div>
             </div>
@@ -347,7 +348,7 @@
         </div>
         <div id="profile-panel-content" class="flex-1 overflow-y-auto p-5 pb-32 space-y-6">
             <div class="bg-white rounded-3xl p-6 shadow-sm border border-pink-100 relative">
-                <div class="absolute top-4 right-4 flex gap-2"><button onclick="openEditPanel()" class="text-[11px] px-3 py-1.5 bg-pink-50 text-pink-600 rounded-lg font-bold shadow-sm active:scale-95">정보 수정</button></div>
+                <div class="absolute top-4 right-4 flex gap-2"><button id="btn-edit-profile" onclick="openEditPanel()" class="text-[11px] px-3 py-1.5 bg-pink-50 text-pink-600 rounded-lg font-bold shadow-sm active:scale-95">정보 수정</button></div>
                 <div class="flex flex-col items-center mt-2">
                     <div id="pp-photo" class="w-28 h-28 rounded-full bg-cover bg-center shadow-md border-4 border-pink-50 mb-4 flex items-center justify-center bg-pink-100 text-4xl">🐾</div>
                     <span id="pp-status" class="px-3 py-1 rounded-full text-[10px] font-black shadow-sm mb-2">보호 중</span>
@@ -365,9 +366,9 @@
                 </div>
             </div>
             <div class="grid grid-cols-2 gap-3">
-                <button id="btn-prof-record" class="bg-white border-2 border-pink-400 text-pink-500 py-4 rounded-2xl font-black shadow-sm active:scale-95 transition-all flex flex-col items-center gap-1"><span class="text-2xl">📝</span><span>일과 기록 작성</span></button>
-                <button id="btn-prof-history" class="bg-pink-500 text-white py-4 rounded-2xl font-black shadow-md active:scale-95 transition-all flex flex-col items-center gap-1"><span class="text-2xl">📅</span><span>과거 기록 열람</span></button>
-                <button id="btn-prof-behavior" class="col-span-2 bg-indigo-50 border border-indigo-200 text-indigo-600 py-4 rounded-2xl font-black shadow-sm active:scale-95 transition-all flex flex-col items-center gap-1"><span class="text-2xl">🧠</span><span>행동 분석 및 훈련 기록</span></button>
+                <button id="btn-prof-record" onclick="openRecordFromProfile()" class="bg-white border-2 border-pink-400 text-pink-500 py-4 rounded-2xl font-black shadow-sm active:scale-95 transition-all flex flex-col items-center gap-1"><span class="text-2xl">📝</span><span>일과 기록 작성</span></button>
+                <button id="btn-prof-history" onclick="openHistoryFromProfile()" class="bg-pink-500 text-white py-4 rounded-2xl font-black shadow-md active:scale-95 transition-all flex flex-col items-center gap-1"><span class="text-2xl">📅</span><span>과거 기록 열람</span></button>
+                <button id="btn-prof-behavior" onclick="openBehaviorFromProfile()" class="col-span-2 bg-indigo-50 border border-indigo-200 text-indigo-600 py-4 rounded-2xl font-black shadow-sm active:scale-95 transition-all flex flex-col items-center gap-1"><span class="text-2xl">🧠</span><span>행동 분석 및 훈련 기록</span></button>
             </div>
             <button onclick="askDeleteAnimal()" class="w-full py-3 mt-4 text-xs text-red-400 font-bold underline active:scale-95">이 동물의 프로필 영구 삭제하기</button>
         </div>
@@ -580,7 +581,7 @@
         let isAdmin = false;
         let deviceId = localStorage.getItem('naepumae_device_id');
         let isTutorialActive = false;
-        let tutClickHandler = null; // 튜토리얼 클릭 제어용
+        let tutClickHandler = null; 
         
         let editingLogId = null; let editingLogOriginalData = null; let editingAnimalProfileId = null; let editingEventId = null; let editingBehaviorLogId = null;
         let currentSearchQuery = ''; let currentDashTab = 'animal'; let currentDashTask = 'walk';
@@ -601,7 +602,7 @@
             { view: 'list', panel: '', icon: '🏷️', title: '카테고리 및 목록', desc: '<b>강아지, 고양이, 보호 상태 등</b> 카테고리 버튼을 눌러 필터링하고 아래 목록에서 아이들을 확인할 수 있습니다.', target: 'filter-container' },
             { view: 'list', panel: '', icon: '👆', title: '상세 정보 보기', desc: '목록에 있는 개체 카드를 누르면 상세 프로필이 열립니다.<br><br>첫 번째 아이의 <b>카드 영역을 직접 터치</b>해볼까요?', target: 'tut-first-animal', requireClick: true },
             
-            { view: 'list', panel: 'profile', icon: '🐾', title: '개체 관리 카드', desc: '아이의 상세 프로필입니다. 우측 상단에서 <b>[정보 수정]</b>이 가능하며, 하단 3개의 버튼으로 업무를 처리합니다.', target: null, forceBottom: true },
+            { view: 'list', panel: 'profile', icon: '🐾', title: '개체 관리 카드', desc: '아이의 상세 프로필입니다. 우측 상단에서 <b>[정보 수정]</b>이 가능하며, 하단 3개의 버튼으로 업무를 처리합니다.', target: 'btn-edit-profile', forceBottom: true },
             { view: 'list', panel: 'profile', icon: '👆', title: '일과 기록 작성', desc: '아이들의 매일매일의 상태를 기록하는 곳입니다.<br><br>첫 번째 <b>[📝 일과 기록 작성]</b> 버튼을 <b>직접 터치</b>해볼까요?', target: 'btn-prof-record', requireClick: true },
             
             { view: 'list', panel: 'record', icon: '📝', title: '일과 기록 작성', desc: '이곳에서 해당 아이의 산책, 급여, 투약, 배변 등을 기록합니다. 어두운 배경 없이 <b>입력창을 편하게 스크롤</b>하며 볼 수 있어요!', target: null, scroll: true },
@@ -614,19 +615,19 @@
             
             { view: 'list', panel: 'behavior', icon: '🧠', title: '행동 분석 및 훈련', desc: 'ABC 모델 기반의 문제 행동 분석과 훈련 트래킹 타임라인을 제공합니다. 훈련 성과를 1~5단계로 평가해 보세요.', target: null, scroll: true },
 
-            { view: 'dashboard', panel: '', icon: '✨', title: '투데이 현황', desc: '자, 이제 하단 메뉴에서 <b>[✨ 투데이]</b> 탭을 <b>직접 터치</b>해보세요!', target: 'nav-dashboard', requireClick: true },
+            { view: 'list', panel: '', icon: '✨', title: '투데이 현황', desc: '자, 이제 하단 메뉴에서 <b>[✨ 투데이]</b> 탭을 <b>직접 터치</b>해보세요!', target: 'nav-dashboard', requireClick: true },
             { view: 'dashboard', panel: '', icon: '📊', title: '보기 방식 선택', desc: '대시보드에서는 <b>[아이별 모아보기]</b>와 <b>[업무별 진척도]</b> 두 가지 방식으로 오늘의 현황을 파악할 수 있습니다.', target: 'dash-tabs-container' },
             { view: 'dashboard', panel: '', tab: 'task', icon: '✅', title: '주요 업무 카테고리', desc: '업무별 진척도에서는 <b>[산책], [급여], [투약]</b> 버튼을 눌러 각 업무의 진행 상황만 따로 볼 수 있습니다.', target: 'dash-task-chips' },
             { view: 'dashboard', panel: '', tab: 'task', icon: '📈', title: '업무 달성률', desc: '오늘 해야 할 전체 업무 중 얼만큼 완료되었는지 <b>실시간 퍼센트</b>로 보여줍니다.', target: 'dash-progress-area' },
             { view: 'dashboard', panel: '', tab: 'task', icon: '⏳', title: '대기 중 & 완료', desc: '아직 처리하지 않은 아이들은 <b>대기 중</b>에, 완료된 아이들은 <b>완료</b>로 이동합니다. 얼굴을 누르면 바로 일과 기록이 가능합니다!', target: null, scroll: true },
             
-            { view: 'schedule', panel: '', icon: '📅', title: '근무표 관리', desc: '하단 메뉴에서 <b>[📅 근무표]</b> 탭을 <b>직접 터치</b>해보세요!', target: 'nav-schedule', requireClick: true },
+            { view: 'dashboard', panel: '', tab: 'task', icon: '📅', title: '근무표 관리', desc: '하단 메뉴에서 <b>[📅 근무표]</b> 탭을 <b>직접 터치</b>해보세요!', target: 'nav-schedule', requireClick: true },
             { view: 'schedule', panel: '', icon: '📅', title: '근무표 관리', desc: '달력에서 날짜를 선택하여 훈련사들의 <b>오전/오후 근무 및 휴무 현황</b>을 열람하고 수정할 수 있습니다.', target: 'cal-card' },
             
-            { view: 'events', panel: '', icon: '📢', title: '행사/일정', desc: '하단 메뉴에서 <b>[📢 행사/일정]</b> 탭을 <b>직접 터치</b>해보세요!', target: 'nav-events', requireClick: true },
+            { view: 'schedule', panel: '', icon: '📢', title: '행사/일정', desc: '하단 메뉴에서 <b>[📢 행사/일정]</b> 탭을 <b>직접 터치</b>해보세요!', target: 'nav-events', requireClick: true },
             { view: 'events', panel: '', icon: '📢', title: '행사/일정', desc: '센터의 주요 행사나 자원봉사 방문, 회의 일정 등을 <b>추가하고 관리하는 공간</b>입니다.', target: 'tut-event-mock' },
             
-            { view: 'reg', panel: '', icon: '🐾', title: '아이 등록', desc: '하단 메뉴에서 마지막 <b>[🐾 아이 등록]</b> 탭을 <b>직접 터치</b>해보세요!', target: 'nav-reg', requireClick: true },
+            { view: 'events', panel: '', icon: '🐾', title: '아이 등록', desc: '하단 메뉴에서 마지막 <b>[🐾 아이 등록]</b> 탭을 <b>직접 터치</b>해보세요!', target: 'nav-reg', requireClick: true },
             { view: 'reg', panel: '', icon: '📸', title: '신규 동물 등록', desc: '새로 입소한 아이의 사진, 품종, 배식/투약 정보를 꼼꼼하게 입력하는 화면입니다. 내용이 많으니 <b>아래로 스크롤</b> 해보세요.', target: null, scroll: true },
             
             { view: 'list', panel: '', icon: '🎉', title: '튜토리얼 완료!', desc: '모든 기능을 살펴보셨습니다.<br>완벽한 센터 관리를 시작해 보세요!', target: null, btnText: '튜토리얼 완료 ✨' }
@@ -639,7 +640,6 @@
         function startTutorial() {
             isTutorialActive = true;
             document.getElementById('tutorial-overlay').classList.remove('hidden');
-            // 부드러운 시작
             setTimeout(() => { document.getElementById('tutorial-overlay').classList.remove('opacity-0'); }, 50);
             currentTutStep = 0;
             applyTutorialState(tutorialSteps[0]);
@@ -661,17 +661,13 @@
 
         // [핵심] 튜토리얼 상태 동기화 및 렌더링
         function applyTutorialState(step) {
-            // 1. 모든 패널 닫기 (초기화)
             closeProfilePanel(); closeRecordPanel(); closeHistoryPanel(); closeBehaviorPanel();
             
-            // 2. 화면 이동
             showView(step.view);
             
-            // 3. 대시보드 탭 제어
             if (step.view === 'dashboard' && step.tab) { setDashTab(step.tab); } 
             else if (step.view === 'dashboard') { setDashTab('animal'); }
 
-            // 4. 패널(모달) 오픈 로직
             if (step.panel && animals.length > 0) {
                 const animalId = animals[0].id;
                 document.getElementById('pp-animal-id').value = animalId;
@@ -692,29 +688,22 @@
                 }
             }
             
-            // 5. 스크롤 초기화 (항상 맨 위에서 시작)
             window.scrollTo(0,0);
             document.getElementById('record-panel-content').scrollTop = 0;
             document.getElementById('behavior-panel-content').scrollTop = 0;
 
-            // 6. UI 렌더링 지연 실행 (화면 렌더링 후 좌표 계산을 위해)
             setTimeout(() => { renderTutorialStepUI(step); }, 100);
         }
 
         function updateTooltipPosition(targetId, forceBottom = false) {
             const tooltip = document.getElementById('tutorial-tooltip');
-            const arrow = document.getElementById('tut-arrow');
+            const pointer = document.getElementById('tut-pointer');
             
-            tooltip.classList.remove('arrow-top', 'arrow-bottom');
-            arrow.style.cssText = 'position: absolute; width: 0; height: 0; transition: all 0.3s ease;';
-
-            // 타겟이 없거나 바닥 고정이면 기본 위치(중앙/하단)
             if(!targetId || forceBottom) {
                 tooltip.style.top = 'auto';
-                tooltip.style.bottom = forceBottom ? '120px' : '50%';
-                tooltip.style.left = '50%';
-                tooltip.style.transform = forceBottom ? 'translate(-50%, 0)' : 'translate(-50%, 50%)';
-                arrow.style.display = 'none';
+                tooltip.style.bottom = forceBottom ? '100px' : '50%';
+                tooltip.style.transform = forceBottom ? 'translate(-50%, 0) scale(1)' : 'translate(-50%, 50%) scale(1)';
+                pointer.classList.add('hidden');
                 return;
             }
 
@@ -725,56 +714,29 @@
             const targetCenterX = rect.left + rect.width / 2;
             const centerY = rect.top + rect.height / 2;
 
-            tooltip.style.left = '50%';
-            tooltip.style.transform = 'translateX(-50%)';
-            arrow.style.display = 'block';
+            tooltip.style.transform = 'translateX(-50%) scale(1)';
+            pointer.classList.remove('hidden');
 
-            // 화살표 꼬리가 툴팁 가로 길이 내에서 자유롭게 이동
-            let tooltipLeft = window.innerWidth / 2;
-            const tooltipWidth = Math.min(window.innerWidth * 0.85, 320); // max-w-xs
-            let arrowOffset = targetCenterX - tooltipLeft;
-            arrowOffset = Math.max(-tooltipWidth/2 + 20, Math.min(arrowOffset, tooltipWidth/2 - 20));
-
-            // 타겟이 위쪽이면 툴팁은 아래에, 화살표는 위로 뻗음
             if(centerY < window.innerHeight / 2) {
-                let topPos = rect.bottom + 15;
-                tooltip.style.top = topPos + 'px';
+                tooltip.style.top = (rect.bottom + 60) + 'px';
                 tooltip.style.bottom = 'auto';
-                
-                arrow.style.top = '-12px';
-                arrow.style.bottom = 'auto';
-                arrow.style.left = `calc(50% + ${arrowOffset}px)`;
-                arrow.style.transform = 'translateX(-50%)';
-                arrow.style.borderWidth = '0 12px 12px 12px';
-                arrow.style.borderColor = 'transparent transparent white transparent';
+                pointer.innerText = '👆';
+                pointer.style.top = (rect.bottom + 5) + 'px';
+                pointer.style.left = (targetCenterX - 24) + 'px';
             } 
-            // 타겟이 아래쪽이면 툴팁은 위에, 화살표는 아래로 뻗음
             else {
-                let bottomPos = window.innerHeight - rect.top + 15;
                 tooltip.style.top = 'auto';
-                tooltip.style.bottom = bottomPos + 'px';
-                
-                arrow.style.top = 'auto';
-                arrow.style.bottom = '-12px';
-                arrow.style.left = `calc(50% + ${arrowOffset}px)`;
-                arrow.style.transform = 'translateX(-50%)';
-                arrow.style.borderWidth = '12px 12px 0 12px';
-                arrow.style.borderColor = 'white transparent transparent transparent';
+                tooltip.style.bottom = (window.innerHeight - rect.top + 60) + 'px';
+                pointer.innerText = '👇';
+                pointer.style.top = (rect.top - 55) + 'px';
+                pointer.style.left = (targetCenterX - 24) + 'px';
             }
-
-            // 툴팁 화면 이탈 방지
-            setTimeout(() => {
-                const ttRect = tooltip.getBoundingClientRect();
-                if(ttRect.top < 10) { tooltip.style.top = '20px'; tooltip.style.bottom = 'auto'; }
-                if(ttRect.bottom > window.innerHeight - 10) { tooltip.style.bottom = '20px'; tooltip.style.top = 'auto'; }
-            }, 10);
         }
 
         function renderTutorialStepUI(step) {
             const prevBtn = document.getElementById('tut-prev-btn');
             const nextBtn = document.getElementById('tut-next-btn');
 
-            // [예외 처리] 등록된 동물이 없을 경우 개체 클릭 구간 강제 스킵
             if (currentTutStep === 4 && animals.length === 0) {
                 step.icon = '💡'; step.title = '개체 상세 관리';
                 step.desc = '등록된 아이가 없네요!<br>나중에 동물을 등록하면 <b>카드를 클릭해 일과</b>를 기록할 수 있습니다.';
@@ -793,16 +755,13 @@
             
             let descHtml = step.desc;
             if(step.scroll) {
-                descHtml += `<div class="animate-bounce text-pink-500 text-[10px] mt-4 font-black text-center bg-pink-50 p-2 rounded-xl">⬇️ 화면을 아래로 자유롭게 스크롤 해보세요 ⬇️</div>`;
+                descHtml += `<div class="animate-bounce text-pink-500 text-[11px] mt-4 font-black text-center bg-pink-50 py-2 px-1 rounded-xl">⬇️ 화면을 아래로 자유롭게 스크롤 해보세요 ⬇️</div>`;
             }
             document.getElementById('tut-desc').innerHTML = descHtml;
             nextBtn.innerText = step.btnText ? step.btnText : '다음 ➔';
 
             document.querySelectorAll('.tut-target-active').forEach(el => el.classList.remove('tut-target-active'));
             
-            const overlay = document.getElementById('tutorial-overlay');
-            
-            // [중요] 기존에 등록했던 클릭 이벤트 리스너 제거 (이전/다음 버튼 꼬임 방지)
             if (tutClickHandler) {
                 document.removeEventListener('click', tutClickHandler, true);
                 tutClickHandler = null;
@@ -812,26 +771,35 @@
                 const targetEl = document.getElementById(step.target);
                 if(targetEl) {
                     targetEl.classList.add('tut-target-active');
-                    // 클릭 인터셉터 등록
                     tutClickHandler = (e) => {
+                        const tooltip = document.getElementById('tutorial-tooltip');
+                        if (tooltip.contains(e.target)) return; 
+                        
                         if (targetEl.contains(e.target) || targetEl === e.target) {
                             document.removeEventListener('click', tutClickHandler, true);
                             tutClickHandler = null;
                             setTimeout(nextTutorial, 150);
+                        } else {
+                            e.stopPropagation(); e.preventDefault();
                         }
                     };
                     document.addEventListener('click', tutClickHandler, true);
                 }
-                overlay.classList.remove('pointer-events-auto');
-                overlay.classList.add('pointer-events-none');
                 nextBtn.classList.add('hidden');
             } else {
                 if(step.target) {
                     const targetEl = document.getElementById(step.target);
                     if(targetEl) targetEl.classList.add('tut-target-active');
                 }
-                overlay.classList.remove('pointer-events-none');
-                overlay.classList.add('pointer-events-auto');
+                
+                tutClickHandler = (e) => {
+                    const tooltip = document.getElementById('tutorial-tooltip');
+                    if (!tooltip.contains(e.target)) {
+                        e.stopPropagation(); e.preventDefault();
+                    }
+                };
+                document.addEventListener('click', tutClickHandler, true);
+                
                 nextBtn.classList.remove('hidden');
             }
             
@@ -844,7 +812,9 @@
         function prevTutorial() {
             if(currentTutStep > 0) {
                 const tooltip = document.getElementById('tutorial-tooltip');
+                const pointer = document.getElementById('tut-pointer');
                 tooltip.classList.add('opacity-0');
+                pointer.classList.add('hidden');
                 setTimeout(() => { 
                     currentTutStep--; 
                     applyTutorialState(tutorialSteps[currentTutStep]); 
@@ -854,7 +824,9 @@
 
         function nextTutorial() {
             const tooltip = document.getElementById('tutorial-tooltip');
+            const pointer = document.getElementById('tut-pointer');
             tooltip.classList.add('opacity-0');
+            pointer.classList.add('hidden');
             setTimeout(() => {
                 currentTutStep++;
                 if(currentTutStep >= tutorialSteps.length) { skipTutorial(); } 
@@ -866,6 +838,7 @@
             isTutorialActive = false;
             localStorage.setItem('naepumae_tutorial_done', 'true');
             document.getElementById('tutorial-overlay').classList.add('opacity-0');
+            document.getElementById('tut-pointer').classList.add('hidden');
             setTimeout(() => {
                 document.getElementById('tutorial-overlay').classList.add('hidden');
                 document.getElementById('tutorial-overlay').classList.remove('flex');
