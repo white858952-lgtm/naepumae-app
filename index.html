@@ -47,23 +47,19 @@
         @keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(255, 105, 180, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(255, 105, 180, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 105, 180, 0); } }
         .pulse-anim { animation: pulse-ring 2s infinite; }
         
-        /* [개선됨] 빠르고 밝은 하이라이트 애니메이션! (글자색 훼손 방지) */
+        /* [개선] 밝고 자연스러운 깜빡임 애니메이션 (글씨 가림 방지) */
         @keyframes tut-pulse-anim { 
-            0% { box-shadow: 0 0 0 0 rgba(255, 20, 147, 0.9); } 
-            70% { box-shadow: 0 0 0 12px rgba(255, 20, 147, 0); } 
-            100% { box-shadow: 0 0 0 0 rgba(255, 20, 147, 0); } 
+            0% { box-shadow: 0 0 0 0 rgba(255, 105, 180, 0.9); } 
+            70% { box-shadow: 0 0 0 12px rgba(255, 105, 180, 0); } 
+            100% { box-shadow: 0 0 0 0 rgba(255, 105, 180, 0); } 
         }
         .tut-target-active { 
-            animation: tut-pulse-anim 0.8s infinite !important; 
-            border: 3px solid #ff1493 !important; 
+            animation: tut-pulse-anim 1.2s infinite !important; 
+            border: 3px solid #ff69b4 !important; 
             border-radius: inherit; 
             position: relative; 
             z-index: 10002 !important; 
         }
-
-        /* [신규] 말풍선 화살표 꼬리 디자인 */
-        #tutorial-tooltip.arrow-top::before { content: ''; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); border-width: 0 12px 12px 12px; border-style: solid; border-color: transparent transparent white transparent; }
-        #tutorial-tooltip.arrow-bottom::after { content: ''; position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); border-width: 12px 12px 0 12px; border-style: solid; border-color: white transparent transparent transparent; }
 
         .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
         .cal-day { padding: 12px 4px; border-radius: 12px; font-weight: bold; font-size: 14px; cursor: pointer; position: relative; transition: all 0.2s; }
@@ -82,17 +78,21 @@
 </head>
 <body class="max-w-md mx-auto p-4 relative" onload="checkAuth()">
     
-    <div id="tutorial-overlay" class="fixed inset-0 bg-black/25 z-[10000] hidden transition-opacity duration-500 ease-in-out pointer-events-auto">
-        <div id="tutorial-tooltip" class="absolute left-1/2 transform -translate-x-1/2 bg-white rounded-3xl p-5 shadow-2xl w-[85%] max-w-xs transition-all duration-500 ease-in-out opacity-0 border border-pink-100 pointer-events-auto flex flex-col">
-            <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-pink-500 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-md" id="tut-step-counter">1/24</div>
-            <div class="text-3xl mb-2" id="tut-icon">💡</div>
-            <h3 id="tut-title" class="text-lg font-black text-gray-800 mb-1.5">환영합니다!</h3>
+    <div id="tutorial-overlay" class="fixed inset-0 bg-black/20 z-[10000] hidden transition-opacity duration-300 ease-in-out pointer-events-auto">
+        <div id="tutorial-tooltip" class="fixed bg-white rounded-3xl p-5 shadow-2xl w-[85%] max-w-xs transition-all duration-300 ease-in-out opacity-0 border border-pink-100 pointer-events-auto flex flex-col z-[10005]">
+            <div id="tut-arrow" class="absolute w-0 h-0 transition-all duration-300 ease-in-out z-[10006]"></div>
+            
+            <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-pink-500 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-md" id="tut-step-counter">1/24</div>
+            <div class="flex items-center gap-2 mb-2 mt-1">
+                <div class="text-2xl" id="tut-icon">💡</div>
+                <h3 id="tut-title" class="text-base font-black text-gray-800">환영합니다!</h3>
+            </div>
             <p id="tut-desc" class="text-xs font-bold text-gray-600 mb-5 leading-relaxed"></p>
             <div class="flex justify-between items-center mt-auto w-full gap-2">
-                <button onclick="skipTutorial()" class="text-[11px] text-gray-400 font-black underline active:scale-95 px-1 whitespace-nowrap">튜토리얼 종료</button>
+                <button onclick="skipTutorial()" class="text-[10px] text-gray-400 font-black underline active:scale-95 px-1 whitespace-nowrap">튜토리얼 종료</button>
                 <div class="flex gap-2">
-                    <button id="tut-prev-btn" onclick="prevTutorial()" class="bg-gray-100 text-gray-500 px-4 py-2.5 rounded-2xl font-black text-xs active:scale-95 transition-transform hidden">이전</button>
-                    <button id="tut-next-btn" onclick="nextTutorial()" class="pink-gradient text-white px-5 py-2.5 rounded-2xl font-black text-xs active:scale-95 shadow-md transition-transform">다음 ➔</button>
+                    <button id="tut-prev-btn" onclick="prevTutorial()" class="bg-gray-100 text-gray-500 px-4 py-2 rounded-xl font-black text-[11px] active:scale-95 transition-transform hidden">이전</button>
+                    <button id="tut-next-btn" onclick="nextTutorial()" class="pink-gradient text-white px-5 py-2 rounded-xl font-black text-[11px] active:scale-95 shadow-md transition-transform">다음 ➔</button>
                 </div>
             </div>
         </div>
@@ -205,10 +205,10 @@
             <div id="dash-list-container" class="space-y-3 px-1 pb-10"></div>
 
             <div id="dash-task-container" class="hidden px-2 pb-10">
-                <div class="flex gap-2 justify-center overflow-x-auto hide-scrollbar mb-6 pb-2 rounded-full" id="dash-task-chips">
+                <div class="flex gap-2 justify-center overflow-x-auto hide-scrollbar mb-6 p-1 rounded-full border border-gray-100 bg-white" id="dash-task-chips">
                     <button onclick="setDashTask('walk')" id="task-walk" class="whitespace-nowrap px-5 py-2.5 rounded-full text-xs font-black bg-pink-500 text-white shadow-md transition-all">🐕 산책</button>
-                    <button onclick="setDashTask('meal')" id="task-meal" class="whitespace-nowrap px-5 py-2.5 rounded-full text-xs font-black bg-white text-gray-400 border border-gray-200 transition-all">🥣 급여</button>
-                    <button onclick="setDashTask('med')" id="task-med" class="whitespace-nowrap px-5 py-2.5 rounded-full text-xs font-black bg-white text-gray-400 border border-gray-200 transition-all">💊 투약</button>
+                    <button onclick="setDashTask('meal')" id="task-meal" class="whitespace-nowrap px-5 py-2.5 rounded-full text-xs font-black bg-white text-gray-400 transition-all">🥣 급여</button>
+                    <button onclick="setDashTask('med')" id="task-med" class="whitespace-nowrap px-5 py-2.5 rounded-full text-xs font-black bg-white text-gray-400 transition-all">💊 투약</button>
                 </div>
                 <div id="dash-task-grid-wrapper"></div>
             </div>
@@ -365,9 +365,9 @@
                 </div>
             </div>
             <div class="grid grid-cols-2 gap-3">
-                <button id="btn-prof-record" onclick="openRecordFromProfile()" class="bg-white border-2 border-pink-400 text-pink-500 py-4 rounded-2xl font-black shadow-sm active:scale-95 transition-all flex flex-col items-center gap-1"><span class="text-2xl">📝</span><span>일과 기록 작성</span></button>
-                <button id="btn-prof-history" onclick="openHistoryFromProfile()" class="bg-pink-500 text-white py-4 rounded-2xl font-black shadow-md active:scale-95 transition-all flex flex-col items-center gap-1"><span class="text-2xl">📅</span><span>과거 기록 열람</span></button>
-                <button id="btn-prof-behavior" onclick="openBehaviorFromProfile()" class="col-span-2 bg-indigo-50 border border-indigo-200 text-indigo-600 py-4 rounded-2xl font-black shadow-sm active:scale-95 transition-all flex flex-col items-center gap-1"><span class="text-2xl">🧠</span><span>행동 분석 및 훈련 기록 (DSCC)</span></button>
+                <button id="btn-prof-record" class="bg-white border-2 border-pink-400 text-pink-500 py-4 rounded-2xl font-black shadow-sm active:scale-95 transition-all flex flex-col items-center gap-1"><span class="text-2xl">📝</span><span>일과 기록 작성</span></button>
+                <button id="btn-prof-history" class="bg-pink-500 text-white py-4 rounded-2xl font-black shadow-md active:scale-95 transition-all flex flex-col items-center gap-1"><span class="text-2xl">📅</span><span>과거 기록 열람</span></button>
+                <button id="btn-prof-behavior" class="col-span-2 bg-indigo-50 border border-indigo-200 text-indigo-600 py-4 rounded-2xl font-black shadow-sm active:scale-95 transition-all flex flex-col items-center gap-1"><span class="text-2xl">🧠</span><span>행동 분석 및 훈련 기록</span></button>
             </div>
             <button onclick="askDeleteAnimal()" class="w-full py-3 mt-4 text-xs text-red-400 font-bold underline active:scale-95">이 동물의 프로필 영구 삭제하기</button>
         </div>
@@ -580,6 +580,7 @@
         let isAdmin = false;
         let deviceId = localStorage.getItem('naepumae_device_id');
         let isTutorialActive = false;
+        let tutClickHandler = null; // 튜토리얼 클릭 제어용
         
         let editingLogId = null; let editingLogOriginalData = null; let editingAnimalProfileId = null; let editingEventId = null; let editingBehaviorLogId = null;
         let currentSearchQuery = ''; let currentDashTab = 'animal'; let currentDashTask = 'walk';
@@ -592,7 +593,7 @@
         firebase.initializeApp(firebaseConfig); const database = firebase.database();
         let isAppStarted = false; 
 
-        // === [개선된 기능] 튜토리얼 (이전 버튼 추가 & 화면 이동 엔진 개선) ===
+        // === [완벽 개선] 튜토리얼 엔진 ===
         const tutorialSteps = [
             { view: 'list', panel: '', icon: '👋', title: '환영합니다!', desc: '우측 상단의 <b>[👤 로그인 이름]</b> 버튼을 누르면 내 정보를 수정하거나 튜토리얼을 다시 볼 수 있습니다.<br><br>자, 이제부터 앱의 핵심 기능들을 빠르게 살펴볼까요?', target: 'header-profile-btn' },
             { view: 'list', panel: '', icon: '📋', title: '개체 관리', desc: '현재 보호 중인 아이들을 관리하는 메인 화면입니다. 하단 메뉴의 <b>[개체 관리]</b> 탭을 통해 언제든 돌아올 수 있습니다.', target: 'nav-list' },
@@ -607,7 +608,7 @@
             
             { view: 'list', panel: 'profile', icon: '👆', title: '과거 기록 열람', desc: '과거에 기록한 내용을 다시 볼 수 있습니다.<br><br>두 번째 <b>[📅 과거 기록 열람]</b> 버튼을 <b>직접 터치</b>해보세요.', target: 'btn-prof-history', requireClick: true },
             
-            { view: 'list', panel: 'history', icon: '📅', title: '과거 기록 열람', desc: '과거에 작성했던 모든 일과 기록들이 날짜별로 정리되어 있습니다. 잘못 적은 기록은 언제든 수정/삭제가 가능합니다.', target: 'hp-logs-container' },
+            { view: 'list', panel: 'history', icon: '📅', title: '과거 기록 열람', desc: '과거에 작성했던 모든 일과 기록들이 날짜별로 정리되어 있습니다. 잘못 적은 기록은 언제든 수정/삭제가 가능합니다.', target: 'tut-history-mock' },
             
             { view: 'list', panel: 'profile', icon: '👆', title: '행동 분석 및 훈련', desc: '아이의 문제 행동을 분석하고 트래킹하는 곳입니다.<br><br>마지막 <b>[🧠 행동 분석 및 훈련 기록]</b> 버튼을 <b>터치</b>해보세요.', target: 'btn-prof-behavior', requireClick: true },
             
@@ -615,7 +616,7 @@
 
             { view: 'dashboard', panel: '', icon: '✨', title: '투데이 현황', desc: '자, 이제 하단 메뉴에서 <b>[✨ 투데이]</b> 탭을 <b>직접 터치</b>해보세요!', target: 'nav-dashboard', requireClick: true },
             { view: 'dashboard', panel: '', icon: '📊', title: '보기 방식 선택', desc: '대시보드에서는 <b>[아이별 모아보기]</b>와 <b>[업무별 진척도]</b> 두 가지 방식으로 오늘의 현황을 파악할 수 있습니다.', target: 'dash-tabs-container' },
-            { view: 'dashboard', panel: '', tab: 'task', icon: '✨', title: '주요 업무 카테고리', desc: '업무별 진척도에서는 <b>[산책], [급여], [투약]</b> 버튼을 눌러 각 업무의 진행 상황만 따로 볼 수 있습니다.', target: 'dash-task-chips' },
+            { view: 'dashboard', panel: '', tab: 'task', icon: '✅', title: '주요 업무 카테고리', desc: '업무별 진척도에서는 <b>[산책], [급여], [투약]</b> 버튼을 눌러 각 업무의 진행 상황만 따로 볼 수 있습니다.', target: 'dash-task-chips' },
             { view: 'dashboard', panel: '', tab: 'task', icon: '📈', title: '업무 달성률', desc: '오늘 해야 할 전체 업무 중 얼만큼 완료되었는지 <b>실시간 퍼센트</b>로 보여줍니다.', target: 'dash-progress-area' },
             { view: 'dashboard', panel: '', tab: 'task', icon: '⏳', title: '대기 중 & 완료', desc: '아직 처리하지 않은 아이들은 <b>대기 중</b>에, 완료된 아이들은 <b>완료</b>로 이동합니다. 얼굴을 누르면 바로 일과 기록이 가능합니다!', target: null, scroll: true },
             
@@ -623,7 +624,7 @@
             { view: 'schedule', panel: '', icon: '📅', title: '근무표 관리', desc: '달력에서 날짜를 선택하여 훈련사들의 <b>오전/오후 근무 및 휴무 현황</b>을 열람하고 수정할 수 있습니다.', target: 'cal-card' },
             
             { view: 'events', panel: '', icon: '📢', title: '행사/일정', desc: '하단 메뉴에서 <b>[📢 행사/일정]</b> 탭을 <b>직접 터치</b>해보세요!', target: 'nav-events', requireClick: true },
-            { view: 'events', panel: '', icon: '📢', title: '행사/일정', desc: '센터의 주요 행사나 자원봉사 방문, 회의 일정 등을 <b>추가하고 관리하는 공간</b>입니다.', target: 'view-events' },
+            { view: 'events', panel: '', icon: '📢', title: '행사/일정', desc: '센터의 주요 행사나 자원봉사 방문, 회의 일정 등을 <b>추가하고 관리하는 공간</b>입니다.', target: 'tut-event-mock' },
             
             { view: 'reg', panel: '', icon: '🐾', title: '아이 등록', desc: '하단 메뉴에서 마지막 <b>[🐾 아이 등록]</b> 탭을 <b>직접 터치</b>해보세요!', target: 'nav-reg', requireClick: true },
             { view: 'reg', panel: '', icon: '📸', title: '신규 동물 등록', desc: '새로 입소한 아이의 사진, 품종, 배식/투약 정보를 꼼꼼하게 입력하는 화면입니다. 내용이 많으니 <b>아래로 스크롤</b> 해보세요.', target: null, scroll: true },
@@ -638,7 +639,8 @@
         function startTutorial() {
             isTutorialActive = true;
             document.getElementById('tutorial-overlay').classList.remove('hidden');
-            document.getElementById('tutorial-overlay').classList.add('flex');
+            // 부드러운 시작
+            setTimeout(() => { document.getElementById('tutorial-overlay').classList.remove('opacity-0'); }, 50);
             currentTutStep = 0;
             applyTutorialState(tutorialSteps[0]);
         }
@@ -657,24 +659,23 @@
             });
         }
 
-        // [핵심] 튜토리얼 상태를 시스템적으로 완벽하게 제어하는 함수
+        // [핵심] 튜토리얼 상태 동기화 및 렌더링
         function applyTutorialState(step) {
-            // 1. 모든 서브 패널 닫기 (초기화)
+            // 1. 모든 패널 닫기 (초기화)
             closeProfilePanel(); closeRecordPanel(); closeHistoryPanel(); closeBehaviorPanel();
             
-            // 2. 뷰(탭) 화면 강제 이동
+            // 2. 화면 이동
             showView(step.view);
             
-            // 3. 대시보드 내부 탭 제어
+            // 3. 대시보드 탭 제어
             if (step.view === 'dashboard' && step.tab) { setDashTab(step.tab); } 
             else if (step.view === 'dashboard') { setDashTab('animal'); }
 
             // 4. 패널(모달) 오픈 로직
             if (step.panel && animals.length > 0) {
-                const animalId = animals[0].id; // 튜토리얼용으로 항상 첫 번째 아이 선택
+                const animalId = animals[0].id;
                 document.getElementById('pp-animal-id').value = animalId;
                 populateProfilePanel(animals[0]);
-                
                 document.getElementById('profile-panel').classList.remove('translate-x-full');
                 
                 if (step.panel === 'record') {
@@ -691,31 +692,29 @@
                 }
             }
             
-            // 5. 스크롤 로직 & 툴팁 띄우기
-            setTimeout(() => {
-                if(step.scroll) {
-                    // 패널 내부 또는 메인 컨텐츠에서 바닥으로 스크롤
-                    if(step.panel === 'record') document.getElementById('record-panel-content').scrollTo({top: 1000, behavior: 'smooth'});
-                    else if(step.panel === 'behavior') document.getElementById('behavior-panel-content').scrollTo({top: 1000, behavior: 'smooth'});
-                    else window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});
-                } else {
-                    if(step.panel === 'record') document.getElementById('record-panel-content').scrollTo({top: 0, behavior: 'smooth'});
-                    else if(step.panel === 'behavior') document.getElementById('behavior-panel-content').scrollTo({top: 0, behavior: 'smooth'});
-                    else window.scrollTo({top: 0, behavior: 'smooth'});
-                }
-                
-                setTimeout(() => renderTutorialStepUI(step), 300);
-            }, 50);
+            // 5. 스크롤 초기화 (항상 맨 위에서 시작)
+            window.scrollTo(0,0);
+            document.getElementById('record-panel-content').scrollTop = 0;
+            document.getElementById('behavior-panel-content').scrollTop = 0;
+
+            // 6. UI 렌더링 지연 실행 (화면 렌더링 후 좌표 계산을 위해)
+            setTimeout(() => { renderTutorialStepUI(step); }, 100);
         }
 
         function updateTooltipPosition(targetId, forceBottom = false) {
             const tooltip = document.getElementById('tutorial-tooltip');
+            const arrow = document.getElementById('tut-arrow');
+            
             tooltip.classList.remove('arrow-top', 'arrow-bottom');
+            arrow.style.cssText = 'position: absolute; width: 0; height: 0; transition: all 0.3s ease;';
 
+            // 타겟이 없거나 바닥 고정이면 기본 위치(중앙/하단)
             if(!targetId || forceBottom) {
                 tooltip.style.top = 'auto';
-                tooltip.style.bottom = '110px'; // 하단 메뉴 바로 위
-                tooltip.style.transform = 'translate(-50%, 0) scale(1)';
+                tooltip.style.bottom = forceBottom ? '120px' : '50%';
+                tooltip.style.left = '50%';
+                tooltip.style.transform = forceBottom ? 'translate(-50%, 0)' : 'translate(-50%, 50%)';
+                arrow.style.display = 'none';
                 return;
             }
 
@@ -723,19 +722,52 @@
             if(!target) return;
 
             const rect = target.getBoundingClientRect();
+            const targetCenterX = rect.left + rect.width / 2;
             const centerY = rect.top + rect.height / 2;
 
+            tooltip.style.left = '50%';
+            tooltip.style.transform = 'translateX(-50%)';
+            arrow.style.display = 'block';
+
+            // 화살표 꼬리가 툴팁 가로 길이 내에서 자유롭게 이동
+            let tooltipLeft = window.innerWidth / 2;
+            const tooltipWidth = Math.min(window.innerWidth * 0.85, 320); // max-w-xs
+            let arrowOffset = targetCenterX - tooltipLeft;
+            arrowOffset = Math.max(-tooltipWidth/2 + 20, Math.min(arrowOffset, tooltipWidth/2 - 20));
+
+            // 타겟이 위쪽이면 툴팁은 아래에, 화살표는 위로 뻗음
             if(centerY < window.innerHeight / 2) {
-                tooltip.style.top = (rect.bottom + 20) + 'px';
+                let topPos = rect.bottom + 15;
+                tooltip.style.top = topPos + 'px';
                 tooltip.style.bottom = 'auto';
-                tooltip.style.transform = 'translate(-50%, 0) scale(1)';
-                tooltip.classList.add('arrow-top');
-            } else {
+                
+                arrow.style.top = '-12px';
+                arrow.style.bottom = 'auto';
+                arrow.style.left = `calc(50% + ${arrowOffset}px)`;
+                arrow.style.transform = 'translateX(-50%)';
+                arrow.style.borderWidth = '0 12px 12px 12px';
+                arrow.style.borderColor = 'transparent transparent white transparent';
+            } 
+            // 타겟이 아래쪽이면 툴팁은 위에, 화살표는 아래로 뻗음
+            else {
+                let bottomPos = window.innerHeight - rect.top + 15;
                 tooltip.style.top = 'auto';
-                tooltip.style.bottom = (window.innerHeight - rect.top + 20) + 'px';
-                tooltip.style.transform = 'translate(-50%, 0) scale(1)';
-                tooltip.classList.add('arrow-bottom');
+                tooltip.style.bottom = bottomPos + 'px';
+                
+                arrow.style.top = 'auto';
+                arrow.style.bottom = '-12px';
+                arrow.style.left = `calc(50% + ${arrowOffset}px)`;
+                arrow.style.transform = 'translateX(-50%)';
+                arrow.style.borderWidth = '12px 12px 0 12px';
+                arrow.style.borderColor = 'white transparent transparent transparent';
             }
+
+            // 툴팁 화면 이탈 방지
+            setTimeout(() => {
+                const ttRect = tooltip.getBoundingClientRect();
+                if(ttRect.top < 10) { tooltip.style.top = '20px'; tooltip.style.bottom = 'auto'; }
+                if(ttRect.bottom > window.innerHeight - 10) { tooltip.style.bottom = '20px'; tooltip.style.top = 'auto'; }
+            }, 10);
         }
 
         function renderTutorialStepUI(step) {
@@ -761,19 +793,35 @@
             
             let descHtml = step.desc;
             if(step.scroll) {
-                descHtml += `<div class="animate-bounce text-pink-500 text-2xl mt-4 text-center">⬇️ 아래로 스크롤 해보세요</div>`;
+                descHtml += `<div class="animate-bounce text-pink-500 text-[10px] mt-4 font-black text-center bg-pink-50 p-2 rounded-xl">⬇️ 화면을 아래로 자유롭게 스크롤 해보세요 ⬇️</div>`;
             }
             document.getElementById('tut-desc').innerHTML = descHtml;
-
             nextBtn.innerText = step.btnText ? step.btnText : '다음 ➔';
 
             document.querySelectorAll('.tut-target-active').forEach(el => el.classList.remove('tut-target-active'));
             
             const overlay = document.getElementById('tutorial-overlay');
+            
+            // [중요] 기존에 등록했던 클릭 이벤트 리스너 제거 (이전/다음 버튼 꼬임 방지)
+            if (tutClickHandler) {
+                document.removeEventListener('click', tutClickHandler, true);
+                tutClickHandler = null;
+            }
+
             if(step.requireClick && step.target) {
                 const targetEl = document.getElementById(step.target);
-                if(targetEl) targetEl.classList.add('tut-target-active');
-                
+                if(targetEl) {
+                    targetEl.classList.add('tut-target-active');
+                    // 클릭 인터셉터 등록
+                    tutClickHandler = (e) => {
+                        if (targetEl.contains(e.target) || targetEl === e.target) {
+                            document.removeEventListener('click', tutClickHandler, true);
+                            tutClickHandler = null;
+                            setTimeout(nextTutorial, 150);
+                        }
+                    };
+                    document.addEventListener('click', tutClickHandler, true);
+                }
                 overlay.classList.remove('pointer-events-auto');
                 overlay.classList.add('pointer-events-none');
                 nextBtn.classList.add('hidden');
@@ -790,39 +838,40 @@
             updateTooltipPosition(step.target, step.forceBottom);
             
             const tooltip = document.getElementById('tutorial-tooltip');
-            tooltip.classList.remove('scale-95', 'opacity-0');
-            tooltip.classList.add('scale-100', 'opacity-100');
+            tooltip.classList.remove('opacity-0');
         }
 
         function prevTutorial() {
             if(currentTutStep > 0) {
                 const tooltip = document.getElementById('tutorial-tooltip');
-                tooltip.classList.remove('scale-100', 'opacity-100');
-                tooltip.classList.add('scale-95', 'opacity-0');
+                tooltip.classList.add('opacity-0');
                 setTimeout(() => { 
                     currentTutStep--; 
                     applyTutorialState(tutorialSteps[currentTutStep]); 
-                }, 200);
+                }, 300);
             }
         }
 
         function nextTutorial() {
             const tooltip = document.getElementById('tutorial-tooltip');
-            tooltip.classList.remove('scale-100', 'opacity-100');
-            tooltip.classList.add('scale-95', 'opacity-0');
-            
+            tooltip.classList.add('opacity-0');
             setTimeout(() => {
                 currentTutStep++;
                 if(currentTutStep >= tutorialSteps.length) { skipTutorial(); } 
                 else { applyTutorialState(tutorialSteps[currentTutStep]); }
-            }, 200);
+            }, 300);
         }
 
         function skipTutorial() {
             isTutorialActive = false;
             localStorage.setItem('naepumae_tutorial_done', 'true');
-            document.getElementById('tutorial-overlay').classList.add('hidden');
-            document.getElementById('tutorial-overlay').classList.remove('flex');
+            document.getElementById('tutorial-overlay').classList.add('opacity-0');
+            setTimeout(() => {
+                document.getElementById('tutorial-overlay').classList.add('hidden');
+                document.getElementById('tutorial-overlay').classList.remove('flex');
+            }, 300);
+            
+            if (tutClickHandler) { document.removeEventListener('click', tutClickHandler, true); tutClickHandler = null; }
             document.querySelectorAll('.tut-target-active').forEach(el => el.classList.remove('tut-target-active'));
             
             closeRecordPanel(); closeHistoryPanel(); closeBehaviorPanel(); closeProfilePanel(); closeProfileEditModal();
@@ -848,7 +897,7 @@
                             startAppSync(); 
                             isAppStarted = true; 
                             showView('list'); 
-                            setTimeout(checkTutorial, 800); 
+                            setTimeout(checkTutorial, 1000); 
                         }
                     }
                 });
@@ -937,13 +986,6 @@
             });
             
             if(view === 'list') renderTasks(); else if(view === 'dashboard') renderDashboard(); else if(view === 'schedule') renderCalendar(); else if(view === 'events') renderEvents(); else if(view === 'reg') resetRegForm();
-            
-            if(isTutorialActive) {
-                if(view === 'dashboard' && currentTutStep === 12) nextTutorial();
-                if(view === 'schedule' && currentTutStep === 17) nextTutorial();
-                if(view === 'events' && currentTutStep === 19) nextTutorial();
-                if(view === 'reg' && currentTutStep === 21) nextTutorial();
-            }
         }
 
         let currentPhotoBase64 = null; let currentEditPhotoBase64 = null;
@@ -1167,7 +1209,7 @@
         function setDashTask(task) {
             currentDashTask = task;
             const tasks = ['walk', 'meal', 'med'];
-            tasks.forEach(t => { const btn = document.getElementById(`task-${t}`); if(btn) { btn.className = t === task ? 'whitespace-nowrap px-5 py-2.5 rounded-full text-xs font-black bg-pink-500 text-white shadow-md transition-all' : 'whitespace-nowrap px-5 py-2.5 rounded-full text-xs font-black bg-white text-gray-400 border border-gray-200 transition-all'; } });
+            tasks.forEach(t => { const btn = document.getElementById(`task-${t}`); if(btn) { btn.className = t === task ? 'whitespace-nowrap px-5 py-2.5 rounded-full text-xs font-black bg-pink-500 text-white shadow-md transition-all' : 'whitespace-nowrap px-5 py-2.5 rounded-full text-xs font-black bg-white text-gray-400 transition-all'; } });
             renderDashboard();
         }
 
@@ -1378,10 +1420,9 @@
         function renderEvents() {
             const container = document.getElementById('event-container'); const today = new Date(); today.setHours(0,0,0,0);
             if(eventsList.length === 0) { 
-                // 튜토리얼 중인데 데이터가 없으면 가짜 데이터 삽입
                 if (isTutorialActive) {
                     container.innerHTML = `
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-pink-100 relative">
+                    <div id="tut-event-mock" class="bg-white p-4 rounded-2xl shadow-sm border border-pink-100 relative">
                         <div class="flex items-center gap-3 mb-2 mt-1">
                             <div class="bg-pink-50 text-pink-600 px-3 py-1.5 rounded-xl font-black text-sm text-center min-w-[70px]">04/15(수)</div>
                             <div class="text-xs font-bold text-gray-500 bg-gray-50 px-2 py-1 rounded-md">⏰ 14:00 ~ 16:00</div>
@@ -1417,8 +1458,6 @@
         function openProfilePanel(id) {
             const ani = animals.find(a => a.id === id); if(!ani) return; document.getElementById('pp-animal-id').value = id;
             populateProfilePanel(ani); document.getElementById('profile-panel').classList.remove('translate-x-full');
-            
-            if(isTutorialActive && currentTutStep === 4) nextTutorial(); 
         }
         function closeProfilePanel() { document.getElementById('profile-panel').classList.add('translate-x-full'); }
         function populateProfilePanel(ani) {
@@ -1434,7 +1473,7 @@
             document.getElementById('pp-name').innerText = ani.name; document.getElementById('pp-info').innerText = `${ani.type||'동물'} · ${ani.breed} · ${ani.gender} · ${ani.age}`;
             
             const sizeBadge = ani.size && ani.size !== '해당없음' && ani.size !== '미정' ? `<span class="px-2 py-1 rounded-md text-[10px] font-black bg-teal-50 text-teal-600 border border-teal-100">${ani.size}</span>` : '';
-            const groupBadge = ani.play_group && ani.play_group !== '미정' ? `<span class="px-2 py-1 rounded-md text-[10px] font-black ${ani.play_group === '단독 활동' ? 'bg-red-50 text-red-500 border border-red-100' : (ani.play_group === 'A그룹' ? 'bg-purple-50 text-purple-600 border border-purple-100' : (ani.play_group === 'B그룹' ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-cyan-50 text-cyan-600 border border-cyan-100'))}">${ani.play_group}</span>` : '';
+            const groupBadge = ani.play_group && ani.play_group !== '미정' ? `<span class="px-2 py-0.5 rounded-md text-[9px] font-black mr-1 ${a.play_group === '단독 활동' ? 'bg-red-50 text-red-500 border border-red-100' : (a.play_group === 'A그룹' ? 'bg-purple-50 text-purple-600 border border-purple-100' : (a.play_group === 'B그룹' ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-cyan-50 text-cyan-600 border border-cyan-100'))}">${a.play_group}</span>` : '';
             const mealBadge = ani.meal_type === '자율배식' ? `<span class="px-2 py-1 rounded-md text-[10px] font-black bg-yellow-50 text-yellow-600 border border-yellow-100">자율배식</span>` : '';
             document.getElementById('pp-classification').innerHTML = sizeBadge + groupBadge + mealBadge;
 
@@ -1462,7 +1501,6 @@
         // === 11. 행동 분석(DSCC) ===
         function openBehaviorFromProfile() { 
             const id = document.getElementById('pp-animal-id').value; openBehaviorPanel(Number(id)); 
-            if(isTutorialActive && currentTutStep === 10) nextTutorial(); 
         }
         function setGrade(level) { document.querySelectorAll('.grade-btn').forEach(b => b.classList.remove('grade-active')); document.querySelector(`.g${level}`).classList.add('grade-active'); document.getElementById('bh-grade').value = level; }
         function formatABC(a, b) {
@@ -1569,7 +1607,6 @@
         // === 12. 과거 기록 열람 ===
         function openHistoryFromProfile() { 
             const id = document.getElementById('pp-animal-id').value; openHistoryPanel(null, Number(id)); 
-            if(isTutorialActive && currentTutStep === 8) nextTutorial(); 
         }
         function openHistoryPanel(event, id) {
             if(event) event.stopPropagation(); const ani = animals.find(a => a.id === id); if(!ani) return;
@@ -1583,10 +1620,9 @@
         function renderHistory(ani) {
             const container = document.getElementById('hp-logs-container');
             if(!ani.daily_logs || Object.keys(ani.daily_logs).length === 0) { 
-                // 튜토리얼 중인데 데이터가 없으면 가짜 데이터 삽입
                 if (isTutorialActive) {
                     container.innerHTML = `
-                    <div class="mb-4">
+                    <div id="tut-history-mock" class="mb-4">
                         <button class="w-full flex justify-between items-center bg-pink-100 text-pink-600 px-4 py-3 rounded-2xl font-black shadow-sm"><span>📅 2026.04.15</span><span class="text-xs bg-white px-2 py-1 rounded-lg text-pink-400">1건 기록 ▼</span></button>
                         <div class="mt-3 pl-2 border-l-2 border-pink-100">
                             <div class="bg-white p-4 rounded-2xl shadow-sm border border-pink-50 mb-3 relative group">
@@ -1650,7 +1686,6 @@
 
         function openRecordFromProfile() { 
             const id = document.getElementById('pp-animal-id').value; openRecordPanel(Number(id)); 
-            if(isTutorialActive && currentTutStep === 6) nextTutorial(); 
         }
         function openRecordPanel(id) {
             const ani = animals.find(a => a.id === id); if(!ani) return; document.getElementById('rp-animal-id').value = id;
