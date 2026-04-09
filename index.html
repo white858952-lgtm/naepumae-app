@@ -47,7 +47,6 @@
         @keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(255, 105, 180, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(255, 105, 180, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 105, 180, 0); } }
         .pulse-anim { animation: pulse-ring 2s infinite; }
         
-        /* 튜토리얼 타겟 하이라이트 애니메이션 */
         @keyframes tut-pulse-anim { 0% { box-shadow: 0 0 0 0 rgba(255, 105, 180, 0.8); } 70% { box-shadow: 0 0 0 15px rgba(255, 105, 180, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 105, 180, 0); } }
         .tut-target-active { animation: tut-pulse-anim 1.5s infinite !important; border: 2px solid #ff69b4 !important; border-radius: inherit; position: relative; z-index: 10002 !important; }
 
@@ -74,9 +73,12 @@
             <div class="text-4xl mb-3" id="tut-icon">💡</div>
             <h3 id="tut-title" class="text-xl font-black text-gray-800 mb-2">환영합니다!</h3>
             <p id="tut-desc" class="text-sm font-bold text-gray-600 mb-6 leading-relaxed"></p>
-            <div class="flex justify-between items-center mt-2">
-                <button onclick="skipTutorial()" class="text-xs text-gray-400 font-black underline active:scale-95 px-2">튜토리얼 종료</button>
-                <button id="tut-next-btn" onclick="nextTutorial()" class="pink-gradient text-white px-6 py-3 rounded-2xl font-black text-sm active:scale-95 shadow-lg transition-transform">다음 ➔</button>
+            <div class="flex justify-between items-center mt-2 w-full gap-2">
+                <button onclick="skipTutorial()" class="text-[11px] text-gray-400 font-black underline active:scale-95 px-1 whitespace-nowrap">튜토리얼 종료</button>
+                <div class="flex gap-2">
+                    <button id="tut-prev-btn" onclick="prevTutorial()" class="bg-gray-100 text-gray-500 px-4 py-3 rounded-2xl font-black text-sm active:scale-95 transition-transform hidden">이전</button>
+                    <button id="tut-next-btn" onclick="nextTutorial()" class="pink-gradient text-white px-6 py-3 rounded-2xl font-black text-sm active:scale-95 shadow-lg transition-transform">다음 ➔</button>
+                </div>
             </div>
         </div>
     </div>
@@ -90,8 +92,8 @@
             <button onclick="requestAccess()" class="w-full py-4 pink-gradient text-white font-black text-lg rounded-2xl shadow-lg active:scale-95 transition-transform mb-6">접속 권한 요청하기</button>
             <button onclick="showAdminCodeInput()" class="text-[10px] text-gray-300 font-bold underline">🔑 관리자 코드로 접속</button>
             <div id="admin-code-area" class="hidden mt-3">
-                <input type="password" id="setup-admin-code" placeholder="초기비밀번호: 0000" class="w-2/3 p-2 border border-gray-200 rounded-xl outline-none bg-gray-50 text-center font-black text-sm mb-2">
-                <button onclick="loginAsAdmin()" class="w-2/3 py-2 bg-gray-800 text-white font-black text-sm rounded-xl shadow-md active:scale-95 transition-transform">관리자 즉시 승인</button>
+                <input type="password" id="setup-admin-code" placeholder="관리자 비밀번호를 입력하세요" class="w-full p-3 border border-gray-200 rounded-xl outline-none bg-gray-50 text-center font-black text-sm mb-2 focus:border-gray-400">
+                <button onclick="loginAsAdmin()" class="w-full py-3 bg-gray-800 text-white font-black text-sm rounded-xl shadow-md active:scale-95 transition-transform">관리자 즉시 승인</button>
             </div>
         </div>
     </div>
@@ -123,9 +125,14 @@
         <div class="bg-white w-[85%] max-w-xs rounded-[35px] p-8 text-center shadow-2xl relative">
             <button onclick="closeProfileEditModal()" class="absolute top-4 right-5 text-2xl text-gray-400 hover:text-gray-600">&times;</button>
             <div class="text-4xl mb-3">👤</div>
-            <h3 class="text-xl font-black mb-2 text-gray-800">내 정보 수정</h3>
-            <input type="text" id="edit-trainer-name" class="w-full p-3 border border-pink-100 rounded-xl outline-none bg-gray-50 text-center font-black text-sm focus:border-pink-400 mb-4">
-            <button onclick="updateTrainerProfile()" class="w-full py-3.5 pink-gradient text-white font-black rounded-xl shadow-md active:scale-95 transition-transform">저장하기</button>
+            <h3 class="text-xl font-black mb-2 text-gray-800">내 정보 관리</h3>
+            <input type="text" id="edit-trainer-name" class="w-full p-3 border border-pink-100 rounded-xl outline-none bg-gray-50 text-center font-black text-sm focus:border-pink-400 mb-3">
+            <button onclick="updateTrainerProfile()" class="w-full py-3.5 pink-gradient text-white font-black rounded-xl shadow-md active:scale-95 transition-transform mb-4">이름 수정 저장</button>
+            
+            <div class="grid grid-cols-2 gap-2 pt-4 border-t border-gray-100">
+                <button onclick="replayTutorial()" class="py-3 bg-indigo-50 text-indigo-600 font-bold text-[11px] rounded-xl active:scale-95 border border-indigo-100">💡 튜토리얼 다시보기</button>
+                <button onclick="logoutApp()" class="py-3 bg-red-50 text-red-500 font-bold text-[11px] rounded-xl active:scale-95 border border-red-100">🔒 로그아웃</button>
+            </div>
         </div>
     </div>
 
@@ -133,7 +140,7 @@
         <div class="bg-white w-[85%] max-w-xs rounded-[35px] p-8 text-center shadow-2xl">
             <div id="modal-icon" class="text-5xl mb-4"></div>
             <h3 id="modal-title" class="text-xl font-black mb-2 text-gray-800"></h3>
-            <p id="modal-desc" class="text-gray-400 text-sm mb-6 font-bold"></p>
+            <p id="modal-desc" class="text-gray-400 text-sm mb-6 font-bold whitespace-pre-wrap"></p>
             <div id="modal-btns" class="flex gap-2"></div>
         </div>
     </div>
@@ -545,6 +552,11 @@
     </div>
 
     <script>
+        // =========================================================================
+        // ★ 1. 관리자 모드 초기 접속 비밀번호 (원하시는 비밀번호로 변경하세요!) ★
+        const ADMIN_PASSWORD = '0000';
+        // =========================================================================
+
         // 전역 상태 변수
         let currentTrainerName = localStorage.getItem('naepumae_trainer_name');
         let currentTrainerId = localStorage.getItem('naepumae_trainer_id');
@@ -563,9 +575,9 @@
         firebase.initializeApp(firebaseConfig); const database = firebase.database();
         let isAppStarted = false; 
 
-        // === [신규] 튜토리얼 기능 ===
+        // === [개선된 기능] 튜토리얼 (이전 버튼 추가) ===
         const tutorialSteps = [
-            { icon: '👋', title: '환영합니다!', desc: '우측 상단의 <b>[👤 로그인 이름]</b> 버튼을 누르면 내 정보를 수정할 수 있습니다.<br><br>자, 이제부터 앱의 핵심 기능들을 빠르게 살펴볼까요?', target: 'header-profile-btn' },
+            { icon: '👋', title: '환영합니다!', desc: '우측 상단의 <b>[👤 로그인 이름]</b> 버튼을 누르면 내 정보를 수정하거나 튜토리얼을 다시 볼 수 있습니다.<br><br>자, 앱의 핵심 기능들을 살펴볼까요?', target: 'header-profile-btn' },
             { icon: '📋', title: '개체 관리', desc: '현재 보호 중인 아이들을 관리하는 메인 화면입니다. 하단 메뉴의 <b>[개체 관리]</b> 탭을 통해 언제든 돌아올 수 있습니다.', target: 'nav-list' },
             { icon: '🔍', title: '빠른 검색', desc: '화면 상단에서 <b>이름, 그룹, 성격</b> 등을 입력해 원하는 아이를 빠르게 검색할 수 있습니다.', target: 'search-input-area' },
             { icon: '🏷️', title: '카테고리 및 목록', desc: '<b>강아지, 고양이, 보호 상태 등</b> 버튼을 눌러 필터링하고 아래 목록에서 아이들을 확인할 수 있습니다.', target: 'filter-container' },
@@ -590,10 +602,9 @@
             { icon: '📸', title: '신규 동물 등록', desc: '새로 입소한 아이의 사진, 품종, 배식/투약 정보를 입력하는 화면입니다. 내용이 많으니 <b>아래로 스크롤하여</b> 꼼꼼히 채워주세요!', target: 'reg-form-card', onEnter: () => setTimeout(() => window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'}), 300) },
             { icon: '🎉', title: '튜토리얼 완료!', desc: '모든 기능을 살펴보셨습니다.<br>완벽한 센터 관리를 시작해 보세요!', target: null, onEnter: () => window.scrollTo({top: 0, behavior: 'smooth'}) }
         ];
+        let currentTutStep = 0;
 
-        function checkTutorial() {
-            if(!localStorage.getItem('naepumae_tutorial_done')) { startTutorial(); }
-        }
+        function checkTutorial() { if(!localStorage.getItem('naepumae_tutorial_done')) { startTutorial(); } }
 
         function startTutorial() {
             isTutorialActive = true;
@@ -603,17 +614,52 @@
             renderTutorialStep();
         }
 
+        // [신규] 다시보기 & 로그아웃 & 이전 기능
+        function replayTutorial() {
+            closeProfileEditModal();
+            startTutorial();
+        }
+        
+        function logoutApp() {
+            openModal('confirm', '로그아웃', '정말 로그아웃 하시겠습니까?\n다시 권한을 요청하셔야 할 수 있습니다.', () => {
+                localStorage.removeItem('naepumae_device_id');
+                localStorage.removeItem('naepumae_trainer_name');
+                localStorage.removeItem('naepumae_trainer_id');
+                location.reload(); // 새로고침으로 완벽 초기화
+            });
+        }
+
+        function prevTutorial() {
+            if(currentTutStep > 0) {
+                const tooltip = document.getElementById('tutorial-tooltip');
+                tooltip.classList.remove('scale-100', 'opacity-100');
+                tooltip.classList.add('scale-95', 'opacity-0');
+                
+                // 이전 스텝에서 열어뒀던 패널들이 있다면 닫아주기 (안전장치)
+                closeRecordPanel(); closeHistoryPanel(); closeBehaviorPanel(); 
+                if(currentTutStep <= 5) closeProfilePanel();
+
+                setTimeout(() => {
+                    currentTutStep--;
+                    renderTutorialStep();
+                }, 200);
+            }
+        }
+
         function renderTutorialStep() {
             const step = tutorialSteps[currentTutStep];
             
+            // 첫 번째 스텝이면 이전 버튼 숨기기
+            const prevBtn = document.getElementById('tut-prev-btn');
+            if(currentTutStep === 0) prevBtn.classList.add('hidden');
+            else prevBtn.classList.remove('hidden');
+
             // [예외 처리] 등록된 동물이 없을 경우 개체 클릭 튜토리얼 스킵 로직
             if (currentTutStep === 4 && animals.length === 0) {
-                step.icon = '💡';
-                step.title = '개체 상세 관리';
+                step.icon = '💡'; step.title = '개체 상세 관리';
                 step.desc = '아직 등록된 아이가 없네요!<br>나중에 동물을 등록하면 <b>카드를 클릭해 상세 프로필과 일과</b>를 기록할 수 있습니다. 다음을 눌러 대시보드로 이동할게요.';
-                step.requireClick = false;
-                step.target = null;
-                step.onNext = () => { currentTutStep = 11; }; // 다음 단계로 12번(투데이)으로 점프
+                step.requireClick = false; step.target = null;
+                step.onNext = () => { currentTutStep = 11; }; // 12번(투데이)으로 점프
             }
 
             if(step.onEnter) step.onEnter();
@@ -627,18 +673,15 @@
             tooltip.classList.remove('scale-95', 'opacity-0');
             tooltip.classList.add('scale-100', 'opacity-100');
 
-            document.getElementById('tut-next-btn').innerText = (currentTutStep === tutorialSteps.length - 1) ? '시작하기 ✨' : '다음 ➔';
+            document.getElementById('tut-next-btn').innerText = (currentTutStep === tutorialSteps.length - 1) ? '완료 ✨' : '다음 ➔';
 
-            // 이전 하이라이트 초기화
             document.querySelectorAll('.tut-target-active').forEach(el => el.classList.remove('tut-target-active'));
-            
             const overlay = document.getElementById('tutorial-overlay');
             
             if(step.requireClick && step.target) {
                 const targetEl = document.getElementById(step.target);
                 if(targetEl) targetEl.classList.add('tut-target-active');
                 
-                // 클릭 유도일 때는 화면 클릭을 허용하고 '다음' 버튼 숨김
                 overlay.classList.remove('pointer-events-auto');
                 overlay.classList.add('pointer-events-none');
                 document.getElementById('tut-next-btn').classList.add('hidden');
@@ -647,7 +690,6 @@
                     const targetEl = document.getElementById(step.target);
                     if(targetEl) targetEl.classList.add('tut-target-active');
                 }
-                // 읽기 모드일 때는 화면 클릭을 막고 '다음' 버튼 보임
                 overlay.classList.remove('pointer-events-none');
                 overlay.classList.add('pointer-events-auto');
                 document.getElementById('tut-next-btn').classList.remove('hidden');
@@ -666,7 +708,7 @@
                 currentTutStep++;
                 if(currentTutStep >= tutorialSteps.length) { skipTutorial(); } 
                 else { renderTutorialStep(); }
-            }, 300);
+            }, 200);
         }
 
         function skipTutorial() {
@@ -676,12 +718,11 @@
             document.getElementById('tutorial-overlay').classList.remove('flex');
             document.querySelectorAll('.tut-target-active').forEach(el => el.classList.remove('tut-target-active'));
             
-            // 모든 열려있는 패널 닫기
-            closeRecordPanel(); closeHistoryPanel(); closeBehaviorPanel(); closeProfilePanel();
+            closeRecordPanel(); closeHistoryPanel(); closeBehaviorPanel(); closeProfilePanel(); closeProfileEditModal();
             showView('list'); window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
-        // === 1. 인증 및 권한 ===
+        // === 인증 및 권한 ===
         function checkAuth() {
             if(!deviceId) { deviceId = 'dev_' + Date.now() + Math.random().toString(36).substr(2); localStorage.setItem('naepumae_device_id', deviceId); document.getElementById('onboarding-panel').classList.remove('hidden'); } 
             else {
@@ -700,7 +741,7 @@
                             startAppSync(); 
                             isAppStarted = true; 
                             showView('list'); 
-                            setTimeout(checkTutorial, 800); // 앱 로딩 후 튜토리얼 체크
+                            setTimeout(checkTutorial, 800); 
                         }
                     }
                 });
@@ -711,13 +752,10 @@
         function loginAsAdmin() {
             const name = document.getElementById('setup-trainer-name').value.trim(); const code = document.getElementById('setup-admin-code').value.trim();
             if(!name) { alert('이름을 먼저 입력해주세요.'); return; }
-            if(code === '0000') { database.ref('users/' + deviceId).set({ name: name, status: 'approved', role: 'admin', timestamp: Date.now() }); } else { alert('관리자 코드가 일치하지 않습니다.'); }
+            if(code === ADMIN_PASSWORD) { database.ref('users/' + deviceId).set({ name: name, status: 'approved', role: 'admin', timestamp: Date.now() }); } else { alert('관리자 비밀번호가 일치하지 않습니다.'); }
         }
 
-        // === [신규] 관리자 멤버 관리 로직 ===
-        let adminCurrentTab = 'pending';
-        let allUsersData = null;
-
+        // === 관리자 멤버 관리 로직 ===
         function openAdminApproveModal() { document.getElementById('admin-approve-modal').classList.add('active'); document.getElementById('admin-req-badge').classList.add('hidden'); renderAdminList(); }
         function closeAdminApproveModal() { document.getElementById('admin-approve-modal').classList.remove('active'); }
         
@@ -754,7 +792,7 @@
         function closeProfileEditModal() { document.getElementById('profile-edit-modal').classList.remove('active'); }
         function updateTrainerProfile() { const newName = document.getElementById('edit-trainer-name').value.trim(); if(!newName) return; database.ref('users/' + deviceId).update({ name: newName }).then(() => { closeProfileEditModal(); }); }
 
-        // === 2. 메인 동기화 ===
+        // === 메인 동기화 ===
         function startAppSync() {
             if(isAdmin) {
                 database.ref('users').on('value', snap => {
@@ -783,7 +821,7 @@
             });
         }
 
-        // === 3. 네비게이션 제어 ===
+        // === 네비게이션 제어 ===
         function showView(view) {
             ['reg', 'list', 'schedule', 'events', 'dashboard'].forEach(v => {
                 document.getElementById('view-'+v).classList.toggle('hidden', view !== v);
@@ -793,7 +831,6 @@
             window.scrollTo(0,0);
             if(view === 'list') renderTasks(); else if(view === 'dashboard') renderDashboard(); else if(view === 'schedule') renderCalendar(); else if(view === 'events') renderEvents(); else if(view === 'reg') resetRegForm();
             
-            // 튜토리얼 네비게이션 훅
             if(isTutorialActive) {
                 if(view === 'dashboard' && currentTutStep === 12) nextTutorial();
                 if(view === 'schedule' && currentTutStep === 17) nextTutorial();
@@ -802,7 +839,6 @@
             }
         }
 
-        // === 4. 이미지 업로드 헬퍼 ===
         let currentPhotoBase64 = null; let currentEditPhotoBase64 = null;
         function handleFileSelect(event, mode='in') {
             const file = event.target.files[0]; if (!file) return; const reader = new FileReader();
@@ -823,7 +859,6 @@
             else { currentEditPhotoBase64 = null; document.getElementById('edit-photo-preview').style.backgroundImage = 'none'; document.getElementById('edit-photo-placeholder').classList.remove('hidden'); document.getElementById('edit-del-photo-btn').classList.add('hidden'); document.getElementById('edit-photo').value = ''; }
         }
 
-        // === 5. 등록 및 수정 ===
         function setSelectValue(id, validOptions, value) { const el = document.getElementById(id); el.value = validOptions.includes(value) ? value : ""; }
         function updateBreeds(mode='in') {
             const typeSelect = document.getElementById(`${mode}-type`); const breedSelect = document.getElementById(`${mode}-breed`); const breedCustom = document.getElementById(`${mode}-breed-custom`);
@@ -994,7 +1029,6 @@
                 const sizeBadge = a.size && a.size !== '해당없음' && a.size !== '미정' ? `<span class="px-2 py-0.5 rounded-md text-[9px] font-black bg-teal-50 text-teal-600 border border-teal-100 mr-1">${a.size}</span>` : '';
                 const groupBadge = a.play_group && a.play_group !== '미정' ? `<span class="px-2 py-0.5 rounded-md text-[9px] font-black mr-1 ${a.play_group === '단독 활동' ? 'bg-red-50 text-red-500 border border-red-100' : (a.play_group === 'A그룹' ? 'bg-purple-50 text-purple-600 border border-purple-100' : (a.play_group === 'B그룹' ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-cyan-50 text-cyan-600 border border-cyan-100'))}">${a.play_group}</span>` : '';
                 
-                // 튜토리얼용 ID 삽입
                 const tutId = index === 0 ? 'id="tut-first-animal"' : '';
 
                 container.innerHTML += `
@@ -1262,8 +1296,7 @@
             const ani = animals.find(a => a.id === id); if(!ani) return; document.getElementById('pp-animal-id').value = id;
             populateProfilePanel(ani); document.getElementById('profile-panel').classList.remove('translate-x-full');
             
-            // 튜토리얼 훅
-            if(isTutorialActive && currentTutStep === 4) nextTutorial();
+            if(isTutorialActive && currentTutStep === 4) nextTutorial(); 
         }
         function closeProfilePanel() { document.getElementById('profile-panel').classList.add('translate-x-full'); }
         function populateProfilePanel(ani) {
@@ -1307,7 +1340,7 @@
         // === 11. 행동 분석(DSCC) ===
         function openBehaviorFromProfile() { 
             const id = document.getElementById('pp-animal-id').value; openBehaviorPanel(Number(id)); 
-            if(isTutorialActive && currentTutStep === 10) nextTutorial(); // 튜토리얼 훅
+            if(isTutorialActive && currentTutStep === 10) nextTutorial(); 
         }
         function setGrade(level) { document.querySelectorAll('.grade-btn').forEach(b => b.classList.remove('grade-active')); document.querySelector(`.g${level}`).classList.add('grade-active'); document.getElementById('bh-grade').value = level; }
         function formatABC(a, b) {
@@ -1414,7 +1447,7 @@
         // === 12. 과거 기록 열람 ===
         function openHistoryFromProfile() { 
             const id = document.getElementById('pp-animal-id').value; openHistoryPanel(null, Number(id)); 
-            if(isTutorialActive && currentTutStep === 8) nextTutorial(); // 튜토리얼 훅
+            if(isTutorialActive && currentTutStep === 8) nextTutorial(); 
         }
         function openHistoryPanel(event, id) {
             if(event) event.stopPropagation(); const ani = animals.find(a => a.id === id); if(!ani) return;
@@ -1474,7 +1507,7 @@
 
         function openRecordFromProfile() { 
             const id = document.getElementById('pp-animal-id').value; openRecordPanel(Number(id)); 
-            if(isTutorialActive && currentTutStep === 6) nextTutorial(); // 튜토리얼 훅
+            if(isTutorialActive && currentTutStep === 6) nextTutorial(); 
         }
         function openRecordPanel(id) {
             const ani = animals.find(a => a.id === id); if(!ani) return; document.getElementById('rp-animal-id').value = id;
