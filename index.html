@@ -47,8 +47,9 @@
         @keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(255, 105, 180, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(255, 105, 180, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 105, 180, 0); } }
         .pulse-anim { animation: pulse-ring 2s infinite; }
         
-        @keyframes tut-pulse-anim { 0% { box-shadow: 0 0 0 0 rgba(255, 105, 180, 0.8); } 70% { box-shadow: 0 0 0 15px rgba(255, 105, 180, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 105, 180, 0); } }
-        .tut-target-active { animation: tut-pulse-anim 1.5s infinite !important; border: 2px solid #ff69b4 !important; border-radius: inherit; position: relative; z-index: 10002 !important; }
+        /* 튜토리얼 하이라이트 애니메이션 개선 (대상 영역을 밝게 올림) */
+        @keyframes tut-pulse-anim { 0% { box-shadow: 0 0 0 0 rgba(255, 105, 180, 0.6); } 70% { box-shadow: 0 0 0 15px rgba(255, 105, 180, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 105, 180, 0); } }
+        .tut-target-active { animation: tut-pulse-anim 1.5s infinite !important; border-radius: inherit; position: relative; z-index: 10002 !important; background-color: white !important; }
 
         .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
         .cal-day { padding: 12px 4px; border-radius: 12px; font-weight: bold; font-size: 14px; cursor: pointer; position: relative; transition: all 0.2s; }
@@ -67,17 +68,17 @@
 </head>
 <body class="max-w-md mx-auto p-4 relative" onload="checkAuth()">
     
-    <div id="tutorial-overlay" class="fixed inset-0 bg-black/60 z-[10000] hidden flex-col items-center justify-end pb-32 transition-opacity duration-300 pointer-events-auto">
-        <div id="tutorial-tooltip" class="bg-white rounded-[30px] p-6 shadow-2xl w-[90%] max-w-sm transition-all duration-300 transform scale-95 opacity-0 border border-pink-100 pointer-events-auto relative">
-            <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-pink-500 text-white text-xs font-black px-4 py-1.5 rounded-full shadow-md" id="tut-step-counter">1/23</div>
-            <div class="text-4xl mb-3" id="tut-icon">💡</div>
-            <h3 id="tut-title" class="text-xl font-black text-gray-800 mb-2">환영합니다!</h3>
-            <p id="tut-desc" class="text-sm font-bold text-gray-600 mb-6 leading-relaxed"></p>
-            <div class="flex justify-between items-center mt-2 w-full gap-2">
+    <div id="tutorial-overlay" class="fixed inset-0 bg-black/40 z-[10000] hidden transition-opacity duration-300 pointer-events-auto">
+        <div id="tutorial-tooltip" class="absolute left-1/2 transform -translate-x-1/2 bg-white rounded-[30px] p-6 shadow-2xl w-[90%] max-w-sm transition-all duration-300 opacity-0 border border-pink-100 pointer-events-auto flex flex-col">
+            <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-pink-500 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-md" id="tut-step-counter">1/20</div>
+            <div class="text-3xl mb-2" id="tut-icon">💡</div>
+            <h3 id="tut-title" class="text-lg font-black text-gray-800 mb-1.5">환영합니다!</h3>
+            <p id="tut-desc" class="text-xs font-bold text-gray-600 mb-5 leading-relaxed"></p>
+            <div class="flex justify-between items-center mt-auto w-full gap-2">
                 <button onclick="skipTutorial()" class="text-[11px] text-gray-400 font-black underline active:scale-95 px-1 whitespace-nowrap">튜토리얼 종료</button>
                 <div class="flex gap-2">
-                    <button id="tut-prev-btn" onclick="prevTutorial()" class="bg-gray-100 text-gray-500 px-4 py-3 rounded-2xl font-black text-sm active:scale-95 transition-transform hidden">이전</button>
-                    <button id="tut-next-btn" onclick="nextTutorial()" class="pink-gradient text-white px-6 py-3 rounded-2xl font-black text-sm active:scale-95 shadow-lg transition-transform">다음 ➔</button>
+                    <button id="tut-prev-btn" onclick="prevTutorial()" class="bg-gray-100 text-gray-500 px-4 py-2.5 rounded-2xl font-black text-xs active:scale-95 transition-transform hidden">이전</button>
+                    <button id="tut-next-btn" onclick="nextTutorial()" class="pink-gradient text-white px-5 py-2.5 rounded-2xl font-black text-xs active:scale-95 shadow-md transition-transform">다음 ➔</button>
                 </div>
             </div>
         </div>
@@ -330,7 +331,7 @@
             <span class="font-black text-gray-700">개체 관리 카드</span>
             <div class="w-6"></div>
         </div>
-        <div class="flex-1 overflow-y-auto p-5 pb-32 space-y-6">
+        <div id="profile-panel-content" class="flex-1 overflow-y-auto p-5 pb-32 space-y-6">
             <div class="bg-white rounded-3xl p-6 shadow-sm border border-pink-100 relative">
                 <div class="absolute top-4 right-4 flex gap-2"><button onclick="openEditPanel()" class="text-[11px] px-3 py-1.5 bg-pink-50 text-pink-600 rounded-lg font-bold shadow-sm active:scale-95">정보 수정</button></div>
                 <div class="flex flex-col items-center mt-2">
@@ -426,7 +427,7 @@
             <span class="font-black text-indigo-800">행동 분석 및 트래킹</span>
             <div class="w-6"></div>
         </div>
-        <div class="flex-1 overflow-y-auto p-5 pb-32 space-y-6" id="behavior-panel-content">
+        <div id="behavior-panel-content" class="flex-1 overflow-y-auto p-5 pb-32 space-y-6">
             <div class="bg-white rounded-3xl p-5 shadow-sm border border-indigo-100">
                 <h3 id="bh-panel-title" class="text-base font-black text-indigo-700 mb-4">새 훈련 기록 추가</h3>
                 <p class="text-[10px] font-black text-gray-400 mb-1">분석할 문제 행동 (예: 산책 시 짖음)</p>
@@ -476,7 +477,7 @@
             </div>
             <button onclick="resetRecordForm()" class="text-xs bg-gray-100 text-gray-500 px-3 py-1.5 rounded-lg font-bold">선택 해제</button>
         </div>
-        <div class="flex-1 overflow-y-auto p-5 space-y-8 pb-32">
+        <div id="record-panel-content" class="flex-1 overflow-y-auto p-5 space-y-8 pb-32">
             <div class="bg-pink-50 rounded-xl p-3 text-center"><p class="text-xs font-bold text-pink-500">현재 <span class="font-black text-pink-600 underline" id="current-trainer-display">로그인 정보 없음</span>님의 이름으로 <span id="record-action-text">기록</span>됩니다.</p></div>
 
             <section class="border border-green-100 p-4 rounded-2xl bg-green-50/30 shadow-sm" id="rp-med-section">
@@ -553,7 +554,8 @@
 
     <script>
         // =========================================================================
-        // ★ 1. 관리자 모드 초기 접속 비밀번호 (원하시는 비밀번호로 변경하세요!) ★
+        // ★ 1. 관리자 모드 초기 접속 비밀번호 (아래 0000을 원하는 숫자로 바꾸세요!) ★
+        // 예시: const ADMIN_PASSWORD = '1234';
         const ADMIN_PASSWORD = '0000';
         // =========================================================================
 
@@ -575,33 +577,43 @@
         firebase.initializeApp(firebaseConfig); const database = firebase.database();
         let isAppStarted = false; 
 
-        // === [개선된 기능] 튜토리얼 (이전 버튼 추가) ===
+        // === [개선된 기능] 튜토리얼 (이전 버튼 추가 & 화면 이동 엔진 개선) ===
         const tutorialSteps = [
-            { icon: '👋', title: '환영합니다!', desc: '우측 상단의 <b>[👤 로그인 이름]</b> 버튼을 누르면 내 정보를 수정하거나 튜토리얼을 다시 볼 수 있습니다.<br><br>자, 앱의 핵심 기능들을 살펴볼까요?', target: 'header-profile-btn' },
-            { icon: '📋', title: '개체 관리', desc: '현재 보호 중인 아이들을 관리하는 메인 화면입니다. 하단 메뉴의 <b>[개체 관리]</b> 탭을 통해 언제든 돌아올 수 있습니다.', target: 'nav-list' },
-            { icon: '🔍', title: '빠른 검색', desc: '화면 상단에서 <b>이름, 그룹, 성격</b> 등을 입력해 원하는 아이를 빠르게 검색할 수 있습니다.', target: 'search-input-area' },
-            { icon: '🏷️', title: '카테고리 및 목록', desc: '<b>강아지, 고양이, 보호 상태 등</b> 버튼을 눌러 필터링하고 아래 목록에서 아이들을 확인할 수 있습니다.', target: 'filter-container' },
-            { icon: '👆', title: '상세 정보 보기', desc: '목록에 있는 <b>첫 번째 아이의 카드</b>를 클릭해보세요!<br><br><span class="text-pink-500 font-black">※ 반짝이는 타겟을 직접 터치해야 넘어갑니다.</span>', target: 'tut-first-animal', requireClick: true },
-            { icon: '🐾', title: '개체 관리 카드', desc: '아이의 상세 프로필입니다. 우측 상단에서 <b>[정보 수정]</b>이 가능하며, 하단 3개의 버튼으로 업무를 처리합니다.', target: null },
-            { icon: '👆', title: '일과 기록 작성', desc: '첫 번째 <b>[📝 일과 기록 작성]</b> 버튼을 클릭해보세요!', target: 'btn-prof-record', requireClick: true },
-            { icon: '📝', title: '일과 기록 작성', desc: '이곳에서 해당 아이의 산책, 급여, 투약, 배변 등을 기록합니다. 다 보셨다면 다음을 눌러주세요.', target: null, onNext: closeRecordPanel },
-            { icon: '👆', title: '과거 기록 열람', desc: '두 번째 <b>[📅 과거 기록 열람]</b> 버튼을 클릭해보세요!', target: 'btn-prof-history', requireClick: true },
-            { icon: '📅', title: '과거 기록 열람', desc: '과거에 작성했던 모든 일과 기록들이 날짜별로 정리되어 있습니다. 수정과 삭제도 가능합니다.', target: null, onNext: closeHistoryPanel },
-            { icon: '👆', title: '행동 분석 및 훈련', desc: '세 번째 <b>[🧠 행동 분석 및 훈련 기록]</b> 버튼을 클릭해보세요!', target: 'btn-prof-behavior', requireClick: true },
-            { icon: '🧠', title: '행동 분석 및 훈련', desc: 'ABC 모델 기반의 문제 행동 분석과 훈련 트래킹 타임라인을 제공합니다.', target: null, onNext: () => { closeBehaviorPanel(); closeProfilePanel(); } },
-            { icon: '👆', title: '투데이 현황', desc: '자, 이제 하단 메뉴에서 <b>[✨ 투데이]</b> 탭을 클릭해보세요!', target: 'nav-dashboard', requireClick: true },
-            { icon: '📊', title: '보기 방식 선택', desc: '대시보드에서는 <b>[아이별 모아보기]</b>와 <b>[업무별 진척도]</b> 두 가지 방식으로 오늘의 현황을 파악할 수 있습니다.', target: 'dash-tabs-container' },
-            { icon: '✅', title: '주요 업무 카테고리', desc: '업무별 진척도에서는 <b>[산책], [급여], [투약]</b> 버튼을 눌러 각 업무의 진행 상황만 따로 볼 수 있습니다.', target: 'dash-task-chips', onEnter: () => setDashTab('task') },
-            { icon: '📈', title: '업무 달성률', desc: '오늘 해야 할 전체 업무 중 얼만큼 완료되었는지 <b>실시간 퍼센트</b>로 보여줍니다.', target: 'dash-progress-area' },
-            { icon: '⏳', title: '대기 중 & 완료', desc: '아직 처리하지 않은 아이들은 <b>대기 중</b>에, 완료된 아이들은 <b>완료</b>로 이동합니다. 얼굴을 누르면 바로 일과를 기록할 수 있습니다!', target: 'dash-task-grid-wrapper' },
-            { icon: '👆', title: '근무표 확인', desc: '하단 메뉴에서 <b>[📅 근무표]</b>를 클릭해보세요!', target: 'nav-schedule', requireClick: true },
-            { icon: '📅', title: '근무표 관리', desc: '달력에서 날짜를 선택하여 훈련사들의 <b>오전/오후 근무 및 휴무 현황</b>을 관리할 수 있습니다.', target: 'cal-card' },
-            { icon: '👆', title: '행사/일정 관리', desc: '하단 메뉴에서 <b>[📢 행사/일정]</b>을 클릭해보세요!', target: 'nav-events', requireClick: true },
-            { icon: '📢', title: '행사/일정', desc: '센터의 주요 행사나 자원봉사 방문, 회의 일정 등을 <b>추가하고 관리하는 공간</b>입니다.', target: 'view-events' },
-            { icon: '👆', title: '아이 등록', desc: '마지막으로 하단 메뉴의 <b>[🐾 아이 등록]</b>을 클릭해보세요!', target: 'nav-reg', requireClick: true },
-            { icon: '📸', title: '신규 동물 등록', desc: '새로 입소한 아이의 사진, 품종, 배식/투약 정보를 입력하는 화면입니다. 내용이 많으니 <b>아래로 스크롤하여</b> 꼼꼼히 채워주세요!', target: 'reg-form-card', onEnter: () => setTimeout(() => window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'}), 300) },
-            { icon: '🎉', title: '튜토리얼 완료!', desc: '모든 기능을 살펴보셨습니다.<br>완벽한 센터 관리를 시작해 보세요!', target: null, onEnter: () => window.scrollTo({top: 0, behavior: 'smooth'}) }
+            { view: 'list', panel: '', icon: '👋', title: '환영합니다!', desc: '우측 상단의 <b>[👤 로그인 이름]</b> 버튼을 누르면 내 정보를 수정하거나 튜토리얼을 다시 볼 수 있습니다.<br><br>자, 이제부터 앱의 핵심 기능들을 빠르게 살펴볼까요?', target: 'header-profile-btn' },
+            { view: 'list', panel: '', icon: '📋', title: '개체 관리', desc: '현재 보호 중인 아이들을 관리하는 메인 화면입니다. 하단 메뉴의 <b>[개체 관리]</b> 탭을 통해 언제든 돌아올 수 있습니다.', target: 'nav-list' },
+            { view: 'list', panel: '', icon: '🔍', title: '빠른 검색', desc: '화면 상단에서 <b>이름, 그룹, 성격</b> 등을 입력해 원하는 아이를 빠르게 검색할 수 있습니다.', target: 'search-input-area' },
+            { view: 'list', panel: '', icon: '🏷️', title: '카테고리 및 목록', desc: '<b>강아지, 고양이, 보호 상태 등</b> 카테고리 버튼을 눌러 필터링하고 아래 목록에서 아이들을 확인할 수 있습니다.', target: 'filter-container' },
+            { view: 'list', panel: '', icon: '👆', title: '상세 정보 보기', desc: '목록에 있는 개체 카드를 누르면 상세 프로필이 열립니다.<br><br><b>[프로필 열기 ➔]</b> 버튼을 눌러 첫 번째 아이의 프로필로 들어가 볼까요?', target: 'tut-first-animal', btnText: '프로필 열기 ➔' },
+            
+            { view: 'list', panel: 'profile', icon: '🐾', title: '개체 관리 카드', desc: '아이의 상세 프로필입니다. 우측 상단에서 <b>[정보 수정]</b>이 가능하며, 하단 3개의 버튼으로 업무를 처리합니다.', target: 'profile-panel-content' },
+            { view: 'list', panel: 'profile', icon: '👆', title: '일과 기록 작성', desc: '아이들의 매일매일의 상태를 기록하는 곳입니다.<br><br><b>[기록창 열기 ➔]</b> 버튼을 눌러서 확인해 볼까요?', target: 'btn-prof-record', btnText: '기록창 열기 ➔' },
+            
+            { view: 'list', panel: 'record', icon: '📝', title: '일과 기록 작성', desc: '이곳에서 해당 아이의 산책, 급여, 투약, 배변 등을 기록합니다. 어두운 배경 없이 <b>입력창을 편하게 스크롤</b>하며 볼 수 있어요!', target: 'record-panel-content' },
+            
+            { view: 'list', panel: 'profile', icon: '👆', title: '과거 기록 열람', desc: '과거에 기록한 내용을 다시 볼 수 있습니다.<br><br><b>[과거 기록 열기 ➔]</b> 버튼을 눌러보세요.', target: 'btn-prof-history', btnText: '과거 기록 열기 ➔' },
+            
+            { view: 'list', panel: 'history', icon: '📅', title: '과거 기록 열람', desc: '과거에 작성했던 모든 일과 기록들이 날짜별로 정리되어 있습니다. 잘못 적은 기록은 언제든 수정/삭제가 가능합니다.', target: 'hp-logs-container' },
+            
+            { view: 'list', panel: 'profile', icon: '👆', title: '행동 분석 및 훈련', desc: '아이의 문제 행동을 분석하고 트래킹하는 곳입니다.<br><br><b>[행동 분석 열기 ➔]</b> 버튼을 눌러보세요.', target: 'btn-prof-behavior', btnText: '행동 분석 열기 ➔' },
+            
+            { view: 'list', panel: 'behavior', icon: '🧠', title: '행동 분석 및 훈련', desc: 'ABC 모델 기반의 문제 행동 분석과 훈련 트래킹 타임라인을 제공합니다. 훈련 성과를 1~5단계로 평가해 보세요.', target: 'behavior-panel-content' },
+
+            { view: 'dashboard', panel: '', icon: '✨', title: '투데이 현황', desc: '자, 이제 메인 화면으로 돌아왔습니다!<br>하단 메뉴의 <b>[투데이]</b> 탭에서는 오늘 센터의 전체적인 현황을 파악할 수 있습니다.', target: 'nav-dashboard', btnText: '투데이로 이동 ➔' },
+            { view: 'dashboard', panel: '', icon: '📊', title: '보기 방식 선택', desc: '대시보드에서는 <b>[아이별 모아보기]</b>와 <b>[업무별 진척도]</b> 두 가지 방식으로 오늘의 현황을 파악할 수 있습니다.', target: 'dash-tabs-container' },
+            { view: 'dashboard', panel: '', tab: 'task', icon: '✅', title: '주요 업무 카테고리', desc: '업무별 진척도에서는 <b>[산책], [급여], [투약]</b> 버튼을 눌러 각 업무의 진행 상황만 따로 볼 수 있습니다.', target: 'dash-task-chips' },
+            { view: 'dashboard', panel: '', tab: 'task', icon: '📈', title: '업무 달성률', desc: '오늘 해야 할 전체 업무 중 얼만큼 완료되었는지 <b>실시간 퍼센트</b>로 보여줍니다.', target: 'dash-progress-area' },
+            { view: 'dashboard', panel: '', tab: 'task', icon: '⏳', title: '대기 중 & 완료', desc: '아직 처리하지 않은 아이들은 <b>대기 중</b>에, 완료된 아이들은 <b>완료</b>로 이동합니다. 얼굴을 누르면 바로 일과 기록이 가능합니다!', target: 'dash-task-grid-wrapper' },
+            
+            { view: 'schedule', panel: '', icon: '📅', title: '근무표 관리', desc: '하단 메뉴의 <b>[근무표]</b> 탭입니다.<br>달력에서 날짜를 선택하여 훈련사들의 <b>오전/오후 근무 및 휴무 현황</b>을 관리할 수 있습니다.', target: 'cal-card', btnText: '근무표로 이동 ➔' },
+            
+            { view: 'events', panel: '', icon: '📢', title: '행사/일정', desc: '하단 메뉴의 <b>[행사/일정]</b> 탭입니다.<br>센터의 주요 행사나 자원봉사 방문, 회의 일정 등을 <b>추가하고 관리하는 공간</b>입니다.', target: 'view-events', btnText: '행사 탭으로 이동 ➔' },
+            
+            { view: 'reg', panel: '', icon: '📸', title: '신규 동물 등록', desc: '마지막 <b>[아이 등록]</b> 탭입니다.<br>새로 입소한 아이의 사진, 품종, 배식/투약 정보를 입력하는 화면입니다.', target: 'reg-form-card', btnText: '아이 등록 ➔' },
+            { view: 'reg', panel: '', scroll: 'bottom', icon: '🔽', title: '꼼꼼한 기록', desc: '등록 창은 내용이 많으므로 <b>아래로 스크롤하여</b> 건강 특이사항이나 자율배식 여부 등을 꼼꼼히 체크해 주세요!', target: 'reg-form-card' },
+            
+            { view: 'list', panel: '', icon: '🎉', title: '튜토리얼 완료!', desc: '모든 기능을 살펴보셨습니다.<br>완벽한 센터 관리를 시작해 보세요!', target: null, btnText: '튜토리얼 완료 ✨' }
         ];
+        
         let currentTutStep = 0;
 
         function checkTutorial() { if(!localStorage.getItem('naepumae_tutorial_done')) { startTutorial(); } }
@@ -611,58 +623,107 @@
             document.getElementById('tutorial-overlay').classList.remove('hidden');
             document.getElementById('tutorial-overlay').classList.add('flex');
             currentTutStep = 0;
-            renderTutorialStep();
+            applyTutorialState(tutorialSteps[0]);
         }
 
-        // [신규] 다시보기 & 로그아웃 & 이전 기능
         function replayTutorial() {
             closeProfileEditModal();
             startTutorial();
         }
         
         function logoutApp() {
-            openModal('confirm', '로그아웃', '정말 로그아웃 하시겠습니까?\n다시 권한을 요청하셔야 할 수 있습니다.', () => {
+            openModal('confirm', '로그아웃', '정말 로그아웃 하시겠습니까?\n다시 접속 권한을 얻으셔야 할 수도 있습니다.', () => {
                 localStorage.removeItem('naepumae_device_id');
                 localStorage.removeItem('naepumae_trainer_name');
                 localStorage.removeItem('naepumae_trainer_id');
-                location.reload(); // 새로고침으로 완벽 초기화
+                location.reload(); 
             });
         }
 
-        function prevTutorial() {
-            if(currentTutStep > 0) {
-                const tooltip = document.getElementById('tutorial-tooltip');
-                tooltip.classList.remove('scale-100', 'opacity-100');
-                tooltip.classList.add('scale-95', 'opacity-0');
-                
-                // 이전 스텝에서 열어뒀던 패널들이 있다면 닫아주기 (안전장치)
-                closeRecordPanel(); closeHistoryPanel(); closeBehaviorPanel(); 
-                if(currentTutStep <= 5) closeProfilePanel();
+        // [핵심] 튜토리얼 상태를 시스템적으로 완벽하게 제어하는 함수
+        function applyTutorialState(step) {
+            // 1. 모든 패널 닫기 (초기화)
+            closeProfilePanel(); closeRecordPanel(); closeHistoryPanel(); closeBehaviorPanel();
+            
+            // 2. 화면 이동
+            showView(step.view);
+            
+            // 3. 대시보드 탭 제어
+            if (step.view === 'dashboard' && step.tab) { setDashTab(step.tab); } 
+            else if (step.view === 'dashboard') { setDashTab('animal'); }
 
-                setTimeout(() => {
-                    currentTutStep--;
-                    renderTutorialStep();
-                }, 200);
+            // 4. 패널(모달) 오픈 로직
+            if (step.panel && animals.length > 0) {
+                const animalId = animals[0].id; // 튜토리얼용으로 항상 첫 번째 아이 선택
+                document.getElementById('pp-animal-id').value = animalId;
+                populateProfilePanel(animals[0]);
+                document.getElementById('profile-panel').classList.remove('translate-x-full');
+                
+                if (step.panel === 'record') {
+                    document.getElementById('rp-animal-id').value = animalId;
+                    resetRecordForm();
+                    document.getElementById('record-panel').classList.remove('translate-x-full');
+                } else if (step.panel === 'history') {
+                    document.getElementById('hp-animal-id').value = animalId;
+                    renderHistory(animals[0]);
+                    document.getElementById('history-panel').classList.remove('translate-x-full');
+                } else if (step.panel === 'behavior') {
+                    renderBehaviorHistory(animals[0]);
+                    document.getElementById('behavior-panel').classList.remove('translate-x-full');
+                }
+            }
+            
+            // 5. 스크롤 로직
+            if (step.scroll === 'bottom') {
+                setTimeout(() => window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'}), 100);
+            } else {
+                window.scrollTo({top: 0, behavior: 'auto'});
+            }
+
+            renderTutorialStepUI();
+        }
+
+        function updateTooltipPosition(targetId) {
+            const tooltip = document.getElementById('tutorial-tooltip');
+            tooltip.style.top = ''; tooltip.style.bottom = '';
+            
+            if(!targetId) {
+                tooltip.style.top = '50%'; tooltip.style.transform = 'translate(-50%, -50%) scale(1)';
+                return;
+            }
+            
+            const target = document.getElementById(targetId);
+            if(!target) return;
+            
+            const rect = target.getBoundingClientRect();
+            const centerY = rect.top + rect.height / 2;
+            
+            // 타겟이 위쪽이면 툴팁은 아래쪽으로, 타겟이 아래쪽이면 툴팁은 위쪽으로 유동적 이동
+            if(centerY < window.innerHeight / 2) {
+                tooltip.style.bottom = '40px'; tooltip.style.transform = 'translateX(-50%) scale(1)';
+            } else {
+                tooltip.style.top = '80px'; tooltip.style.transform = 'translateX(-50%) scale(1)';
             }
         }
 
-        function renderTutorialStep() {
+        function renderTutorialStepUI() {
             const step = tutorialSteps[currentTutStep];
-            
-            // 첫 번째 스텝이면 이전 버튼 숨기기
             const prevBtn = document.getElementById('tut-prev-btn');
-            if(currentTutStep === 0) prevBtn.classList.add('hidden');
-            else prevBtn.classList.remove('hidden');
+            const nextBtn = document.getElementById('tut-next-btn');
 
-            // [예외 처리] 등록된 동물이 없을 경우 개체 클릭 튜토리얼 스킵 로직
+            // [예외 처리] 동물이 없을 경우 개체 클릭 스킵 (오류 방지)
             if (currentTutStep === 4 && animals.length === 0) {
                 step.icon = '💡'; step.title = '개체 상세 관리';
-                step.desc = '아직 등록된 아이가 없네요!<br>나중에 동물을 등록하면 <b>카드를 클릭해 상세 프로필과 일과</b>를 기록할 수 있습니다. 다음을 눌러 대시보드로 이동할게요.';
-                step.requireClick = false; step.target = null;
-                step.onNext = () => { currentTutStep = 11; }; // 12번(투데이)으로 점프
+                step.desc = '아직 등록된 아이가 없네요!<br>동물을 먼저 등록하고 나면 상세 관리가 가능합니다. 투데이로 넘어갈게요!';
+                step.btnText = '투데이로 이동 ➔';
+                // 원래라면 11번(투데이)으로 점프하게끔 버튼 기능 우회
+                nextBtn.onclick = () => { currentTutStep = 11; nextTutorial(); };
+            } else {
+                nextBtn.onclick = nextTutorial; // 기본 이벤트 복구
             }
 
-            if(step.onEnter) step.onEnter();
+            if(currentTutStep === 0) prevBtn.classList.add('hidden');
+            else prevBtn.classList.remove('hidden');
 
             document.getElementById('tut-step-counter').innerText = `${currentTutStep + 1}/${tutorialSteps.length}`;
             document.getElementById('tut-icon').innerText = step.icon;
@@ -673,33 +734,28 @@
             tooltip.classList.remove('scale-95', 'opacity-0');
             tooltip.classList.add('scale-100', 'opacity-100');
 
-            document.getElementById('tut-next-btn').innerText = (currentTutStep === tutorialSteps.length - 1) ? '완료 ✨' : '다음 ➔';
+            nextBtn.innerText = step.btnText ? step.btnText : '다음 ➔';
 
             document.querySelectorAll('.tut-target-active').forEach(el => el.classList.remove('tut-target-active'));
-            const overlay = document.getElementById('tutorial-overlay');
             
-            if(step.requireClick && step.target) {
+            if(step.target) {
                 const targetEl = document.getElementById(step.target);
                 if(targetEl) targetEl.classList.add('tut-target-active');
-                
-                overlay.classList.remove('pointer-events-auto');
-                overlay.classList.add('pointer-events-none');
-                document.getElementById('tut-next-btn').classList.add('hidden');
-            } else {
-                if(step.target) {
-                    const targetEl = document.getElementById(step.target);
-                    if(targetEl) targetEl.classList.add('tut-target-active');
-                }
-                overlay.classList.remove('pointer-events-none');
-                overlay.classList.add('pointer-events-auto');
-                document.getElementById('tut-next-btn').classList.remove('hidden');
+            }
+            
+            setTimeout(() => { updateTooltipPosition(step.target); }, 50);
+        }
+
+        function prevTutorial() {
+            if(currentTutStep > 0) {
+                const tooltip = document.getElementById('tutorial-tooltip');
+                tooltip.classList.remove('scale-100', 'opacity-100');
+                tooltip.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => { currentTutStep--; applyTutorialState(tutorialSteps[currentTutStep]); }, 200);
             }
         }
 
         function nextTutorial() {
-            const step = tutorialSteps[currentTutStep];
-            if(step.onNext) step.onNext();
-
             const tooltip = document.getElementById('tutorial-tooltip');
             tooltip.classList.remove('scale-100', 'opacity-100');
             tooltip.classList.add('scale-95', 'opacity-0');
@@ -707,7 +763,7 @@
             setTimeout(() => {
                 currentTutStep++;
                 if(currentTutStep >= tutorialSteps.length) { skipTutorial(); } 
-                else { renderTutorialStep(); }
+                else { applyTutorialState(tutorialSteps[currentTutStep]); }
             }, 200);
         }
 
@@ -806,12 +862,12 @@
                 const data = snapshot.val(); animals = [];
                 if (data) { Object.keys(data).forEach(key => animals.push(data[key])); animals.sort((a, b) => b.id - a.id); }
                 renderFilters();
-                if (!document.getElementById('view-list').classList.contains('hidden')) renderTasks();
-                if (!document.getElementById('view-dashboard').classList.contains('hidden')) renderDashboard();
+                if (!document.getElementById('view-list').classList.contains('hidden') && !isTutorialActive) renderTasks();
+                if (!document.getElementById('view-dashboard').classList.contains('hidden') && !isTutorialActive) renderDashboard();
 
-                if(!document.getElementById('profile-panel').classList.contains('translate-x-full')) { const activeId = document.getElementById('pp-animal-id').value; const activeAni = animals.find(a => a.id == activeId); if(activeAni) populateProfilePanel(activeAni); }
-                if(!document.getElementById('behavior-panel').classList.contains('translate-x-full')) { const activeId = document.getElementById('pp-animal-id').value; const activeAni = animals.find(a => a.id == activeId); if(activeAni) renderBehaviorHistory(activeAni); }
-                if(!document.getElementById('history-panel').classList.contains('translate-x-full')) { const activeId = document.getElementById('hp-animal-id').value; const activeAni = animals.find(a => a.id == activeId); if(activeAni) renderHistory(activeAni); }
+                if(!document.getElementById('profile-panel').classList.contains('translate-x-full') && !isTutorialActive) { const activeId = document.getElementById('pp-animal-id').value; const activeAni = animals.find(a => a.id == activeId); if(activeAni) populateProfilePanel(activeAni); }
+                if(!document.getElementById('behavior-panel').classList.contains('translate-x-full') && !isTutorialActive) { const activeId = document.getElementById('pp-animal-id').value; const activeAni = animals.find(a => a.id == activeId); if(activeAni) renderBehaviorHistory(activeAni); }
+                if(!document.getElementById('history-panel').classList.contains('translate-x-full') && !isTutorialActive) { const activeId = document.getElementById('hp-animal-id').value; const activeAni = animals.find(a => a.id == activeId); if(activeAni) renderHistory(activeAni); }
             });
             database.ref('schedules').on('value', (snapshot) => { schedules = snapshot.val() || {}; if (!document.getElementById('view-schedule').classList.contains('hidden')) renderCalendar(); });
             database.ref('events').on('value', (snapshot) => { 
@@ -828,15 +884,8 @@
                 const navBtn = document.getElementById('nav-'+v);
                 if(navBtn) { navBtn.classList.toggle('opacity-40', view !== v); navBtn.classList.toggle('opacity-100', view === v); }
             });
-            window.scrollTo(0,0);
-            if(view === 'list') renderTasks(); else if(view === 'dashboard') renderDashboard(); else if(view === 'schedule') renderCalendar(); else if(view === 'events') renderEvents(); else if(view === 'reg') resetRegForm();
             
-            if(isTutorialActive) {
-                if(view === 'dashboard' && currentTutStep === 12) nextTutorial();
-                if(view === 'schedule' && currentTutStep === 17) nextTutorial();
-                if(view === 'events' && currentTutStep === 19) nextTutorial();
-                if(view === 'reg' && currentTutStep === 21) nextTutorial();
-            }
+            if(view === 'list') renderTasks(); else if(view === 'dashboard') renderDashboard(); else if(view === 'schedule') renderCalendar(); else if(view === 'events') renderEvents(); else if(view === 'reg') resetRegForm();
         }
 
         let currentPhotoBase64 = null; let currentEditPhotoBase64 = null;
@@ -1295,8 +1344,6 @@
         function openProfilePanel(id) {
             const ani = animals.find(a => a.id === id); if(!ani) return; document.getElementById('pp-animal-id').value = id;
             populateProfilePanel(ani); document.getElementById('profile-panel').classList.remove('translate-x-full');
-            
-            if(isTutorialActive && currentTutStep === 4) nextTutorial(); 
         }
         function closeProfilePanel() { document.getElementById('profile-panel').classList.add('translate-x-full'); }
         function populateProfilePanel(ani) {
@@ -1340,7 +1387,6 @@
         // === 11. 행동 분석(DSCC) ===
         function openBehaviorFromProfile() { 
             const id = document.getElementById('pp-animal-id').value; openBehaviorPanel(Number(id)); 
-            if(isTutorialActive && currentTutStep === 10) nextTutorial(); 
         }
         function setGrade(level) { document.querySelectorAll('.grade-btn').forEach(b => b.classList.remove('grade-active')); document.querySelector(`.g${level}`).classList.add('grade-active'); document.getElementById('bh-grade').value = level; }
         function formatABC(a, b) {
@@ -1447,7 +1493,6 @@
         // === 12. 과거 기록 열람 ===
         function openHistoryFromProfile() { 
             const id = document.getElementById('pp-animal-id').value; openHistoryPanel(null, Number(id)); 
-            if(isTutorialActive && currentTutStep === 8) nextTutorial(); 
         }
         function openHistoryPanel(event, id) {
             if(event) event.stopPropagation(); const ani = animals.find(a => a.id === id); if(!ani) return;
@@ -1507,7 +1552,6 @@
 
         function openRecordFromProfile() { 
             const id = document.getElementById('pp-animal-id').value; openRecordPanel(Number(id)); 
-            if(isTutorialActive && currentTutStep === 6) nextTutorial(); 
         }
         function openRecordPanel(id) {
             const ani = animals.find(a => a.id === id); if(!ani) return; document.getElementById('rp-animal-id').value = id;
