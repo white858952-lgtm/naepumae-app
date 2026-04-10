@@ -45,7 +45,6 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
         
-        /* [개선] 더 밝고, 대상을 가리지 않는 세련된 깜빡임 애니메이션 (Outline 방식) */
         @keyframes tut-pulse-anim { 
             0% { box-shadow: 0 0 0 0 rgba(255, 20, 147, 0.9); } 
             70% { box-shadow: 0 0 0 14px rgba(255, 20, 147, 0); } 
@@ -79,9 +78,7 @@
 <body class="max-w-md mx-auto p-4 relative" onload="checkAuth()">
     
     <div id="tutorial-overlay" class="fixed inset-0 bg-black/25 z-[10000] hidden transition-opacity duration-300 ease-in-out pointer-events-none">
-        
         <div id="tut-pointer" class="fixed z-[10003] hidden text-5xl animate-bounce drop-shadow-lg transition-all duration-300">👇</div>
-
         <div id="tutorial-tooltip" class="fixed left-1/2 transform -translate-x-1/2 bg-white rounded-3xl p-5 shadow-2xl w-[85%] max-w-[300px] transition-all duration-500 ease-in-out opacity-0 border border-pink-100 pointer-events-auto flex flex-col z-[10005]">
             <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-pink-500 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-md whitespace-nowrap" id="tut-step-counter">1/24</div>
             <div class="flex items-center gap-2 mb-2 mt-1">
@@ -144,7 +141,6 @@
             <h3 class="text-xl font-black mb-2 text-gray-800">내 정보 관리</h3>
             <input type="text" id="edit-trainer-name" class="w-full p-3 border border-pink-100 rounded-xl outline-none bg-gray-50 text-center font-black text-sm focus:border-pink-400 mb-3">
             <button onclick="updateTrainerProfile()" class="w-full py-3.5 pink-gradient text-white font-black rounded-xl shadow-md active:scale-95 transition-transform mb-4">이름 수정 저장</button>
-            
             <div class="grid grid-cols-2 gap-2 pt-4 border-t border-gray-100">
                 <button onclick="replayTutorial()" class="py-3 bg-indigo-50 text-indigo-600 font-bold text-[11px] rounded-xl active:scale-95 border border-indigo-100">💡 튜토리얼 다시보기</button>
                 <button onclick="logoutApp()" class="py-3 bg-red-50 text-red-500 font-bold text-[11px] rounded-xl active:scale-95 border border-red-100">🔒 로그아웃</button>
@@ -329,250 +325,283 @@
                     <button type="button" onclick="saveNewAnimal(); return false;" class="save-btn col-span-2 py-5 pink-gradient text-white font-black rounded-2xl shadow-lg mt-2 transition-transform text-lg">새로운 동물 등록하기</button>
                 </div>
             </div>
-        </div>
-    </div> 
-    
-    <nav class="flex justify-around py-2 shadow-[0_-10px_20px_rgba(0,0,0,0.05)] rounded-t-[28px] items-center z-[100] bg-white fixed bottom-0 left-0 right-0 pb-[max(env(safe-area-inset-bottom),12px)] transition-all" id="main-nav">
-        <button id="nav-list" onclick="showView('list')" class="flex flex-col items-center gap-1 w-1/5 opacity-100 transition-all pt-2 py-2"><span class="text-2xl">📋</span><span class="text-[9px] font-black text-pink-500">개체 관리</span></button>
-        <button id="nav-dashboard" onclick="showView('dashboard')" class="flex flex-col items-center gap-1 w-1/5 opacity-40 hover:opacity-100 transition-all pt-2 py-2"><span class="text-2xl">✨</span><span class="text-[9px] font-black text-pink-500">투데이</span></button>
-        <button id="nav-schedule" onclick="showView('schedule')" class="flex flex-col items-center gap-1 w-1/5 opacity-40 hover:opacity-100 transition-all pt-2 py-2"><span class="text-2xl">📅</span><span class="text-[9px] font-black text-pink-500">근무표</span></button>
-        <button id="nav-events" onclick="showView('events')" class="flex flex-col items-center gap-1 w-1/5 opacity-40 hover:opacity-100 transition-all pt-2 py-2"><span class="text-2xl">📢</span><span class="text-[9px] font-black text-pink-500">행사/일정</span></button>
-        <button id="nav-reg" onclick="showView('reg')" class="flex flex-col items-center gap-1 w-1/5 opacity-40 hover:opacity-100 transition-all pt-2 py-2"><span class="text-2xl">🐾</span><span class="text-[9px] font-black text-pink-500">아이 등록</span></button>
-    </nav>
+        </div> 
+        
+        <nav class="flex justify-around py-2 shadow-[0_-10px_20px_rgba(0,0,0,0.05)] rounded-t-[28px] items-center z-[100] bg-white fixed bottom-0 left-0 right-0 pb-[max(env(safe-area-inset-bottom),12px)] transition-all" id="main-nav">
+            <button id="nav-list" onclick="showView('list')" class="flex flex-col items-center gap-1 w-1/5 opacity-100 transition-all pt-2 py-2"><span class="text-2xl">📋</span><span class="text-[9px] font-black text-pink-500">개체 관리</span></button>
+            <button id="nav-dashboard" onclick="showView('dashboard')" class="flex flex-col items-center gap-1 w-1/5 opacity-40 hover:opacity-100 transition-all pt-2 py-2"><span class="text-2xl">✨</span><span class="text-[9px] font-black text-pink-500">투데이</span></button>
+            <button id="nav-schedule" onclick="showView('schedule')" class="flex flex-col items-center gap-1 w-1/5 opacity-40 hover:opacity-100 transition-all pt-2 py-2"><span class="text-2xl">📅</span><span class="text-[9px] font-black text-pink-500">근무표</span></button>
+            <button id="nav-events" onclick="showView('events')" class="flex flex-col items-center gap-1 w-1/5 opacity-40 hover:opacity-100 transition-all pt-2 py-2"><span class="text-2xl">📢</span><span class="text-[9px] font-black text-pink-500">행사/일정</span></button>
+            <button id="nav-reg" onclick="showView('reg')" class="flex flex-col items-center gap-1 w-1/5 opacity-40 hover:opacity-100 transition-all pt-2 py-2"><span class="text-2xl">🐾</span><span class="text-[9px] font-black text-pink-500">아이 등록</span></button>
+        </nav>
 
-    <div id="profile-panel" class="slide-panel fixed inset-0 bg-gray-50 z-[120] transform translate-x-full flex flex-col h-full overflow-hidden">
-        <div class="px-5 py-4 bg-white border-b border-pink-100 flex justify-between items-center shadow-sm sticky top-0 z-10 pt-[max(env(safe-area-inset-top),16px)]">
-            <button onclick="closeProfilePanel()" class="text-gray-400 text-3xl font-black active:scale-90 transition-transform">&lsaquo;</button>
-            <span class="font-black text-gray-700">개체 관리 카드</span>
-            <div class="w-6"></div>
-        </div>
-        <div id="profile-panel-content" class="flex-1 overflow-y-auto p-5 pb-32 space-y-6">
-            <div class="bg-white rounded-3xl p-6 shadow-sm border border-pink-100 relative">
-                <div class="absolute top-4 right-4 flex gap-2"><button id="btn-edit-profile" onclick="openEditPanel()" class="text-[11px] px-3 py-1.5 bg-pink-50 text-pink-600 rounded-lg font-bold shadow-sm active:scale-95">정보 수정</button></div>
-                <div class="flex flex-col items-center mt-2">
-                    <div id="pp-photo" class="w-28 h-28 rounded-full bg-cover bg-center shadow-md border-4 border-pink-50 mb-4 flex items-center justify-center bg-pink-100 text-4xl">🐾</div>
-                    <span id="pp-status" class="px-3 py-1 rounded-full text-[10px] font-black shadow-sm mb-2">보호 중</span>
-                    <h2 id="pp-name" class="text-3xl font-black text-gray-800 mb-1">이름</h2>
-                    <p id="pp-info" class="text-xs text-gray-500 font-bold mb-3">견종 · 성별 · 나이</p>
-                    <div id="pp-classification" class="flex gap-1 mb-4 flex-wrap justify-center"></div>
-                    <div id="pp-tags" class="flex flex-wrap gap-1 justify-center mb-4"></div>
-                </div>
-                <div id="pp-health-container" class="hidden bg-green-50 p-4 rounded-2xl border border-green-100 mb-4">
-                    <div class="flex items-start gap-2 mb-2"><span class="text-base">🏥</span> <p class="text-sm font-black text-green-700" id="pp-health-memo"></p></div>
-                    <div class="flex items-start gap-2"><span class="text-base">💊</span> <p class="text-xs font-bold text-gray-600" id="pp-med-info"></p></div>
-                </div>
-                <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                    <p class="text-[10px] text-gray-400 font-black mb-1">구조 경위 및 메모</p><p id="pp-memo" class="text-sm font-bold text-gray-700 leading-relaxed min-h-[20px]"></p>
-                </div>
+        <div id="profile-panel" class="slide-panel fixed inset-0 bg-gray-50 z-[120] transform translate-x-full flex flex-col h-full overflow-hidden">
+            <div class="px-5 py-4 bg-white border-b border-pink-100 flex justify-between items-center shadow-sm sticky top-0 z-10 pt-[max(env(safe-area-inset-top),16px)]">
+                <button onclick="closeProfilePanel()" class="text-gray-400 text-3xl font-black active:scale-90 transition-transform">&lsaquo;</button>
+                <span class="font-black text-gray-700">개체 관리 카드</span>
+                <div class="w-6"></div>
             </div>
-            <div class="grid grid-cols-2 gap-3">
-                <button id="btn-prof-record" onclick="openRecordFromProfile()" class="bg-white border-2 border-pink-400 text-pink-500 py-4 rounded-2xl font-black shadow-sm active:scale-95 transition-all flex flex-col items-center gap-1"><span class="text-2xl">📝</span><span>일과 기록 작성</span></button>
-                <button id="btn-prof-history" onclick="openHistoryFromProfile()" class="bg-pink-500 text-white py-4 rounded-2xl font-black shadow-md active:scale-95 transition-all flex flex-col items-center gap-1"><span class="text-2xl">📅</span><span>과거 기록 열람</span></button>
-                <button id="btn-prof-behavior" onclick="openBehaviorFromProfile()" class="col-span-2 bg-indigo-50 border border-indigo-200 text-indigo-600 py-4 rounded-2xl font-black shadow-sm active:scale-95 transition-all flex flex-col items-center gap-1"><span class="text-2xl">🧠</span><span>행동 분석 및 훈련 기록</span></button>
-            </div>
-            <button onclick="askDeleteAnimal()" class="w-full py-3 mt-4 text-xs text-red-400 font-bold underline active:scale-95">이 동물의 프로필 영구 삭제하기</button>
-        </div>
-        <input type="hidden" id="pp-animal-id" value="">
-    </div>
-
-    <div id="edit-panel" class="slide-panel fixed inset-0 bg-gray-50 z-[130] transform translate-x-full flex flex-col h-full overflow-hidden">
-        <div class="px-5 py-4 bg-white border-b border-pink-100 flex justify-between items-center shadow-sm sticky top-0 z-10 pt-[max(env(safe-area-inset-top),16px)]">
-            <button onclick="closeEditPanel()" class="text-gray-400 text-3xl font-black active:scale-90 transition-transform">&lsaquo;</button>
-            <span class="font-black text-gray-700">📝 정보 수정</span>
-            <div class="w-6"></div>
-        </div>
-        <div class="flex-1 overflow-y-auto p-5 pb-32 space-y-6">
-            <div class="card space-y-4">
-                <div id="edit-photo-preview" onclick="document.getElementById('edit-photo').click()" class="w-full h-52 rounded-3xl bg-pink-50 flex items-center justify-center border-2 border-dashed border-pink-200 relative overflow-hidden cursor-pointer">
-                    <div id="edit-photo-placeholder" class="text-center text-pink-300"><span class="text-5xl">📸</span><p class="text-xs font-bold mt-2">사진 선택</p></div>
-                    <input type="file" id="edit-photo" accept="image/*" class="hidden" onchange="handleFileSelect(event, 'edit')">
-                    <button id="edit-del-photo-btn" onclick="removePhoto(event, 'edit')" class="hidden absolute top-3 right-3 bg-white text-pink-500 px-3 py-1 rounded-full text-[10px] font-black shadow-md z-20">사진 삭제</button>
-                </div>
-                <div class="grid grid-cols-2 gap-3 pt-2">
-                    <input type="text" id="edit-name" placeholder="이름 (필수)" class="col-span-2 p-4 border border-pink-100 rounded-2xl outline-none bg-pink-50/20 font-bold focus:bg-white focus:border-pink-300 transition-colors">
-                    <select id="edit-type" onchange="updateBreeds('edit')" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-500 text-sm font-bold"><option value="" disabled selected>동물 종류</option><option value="개">개 🐶</option><option value="고양이">고양이 🐱</option></select>
-                    <select id="edit-breed" onchange="checkCustomBreed('edit')" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-500 text-sm font-bold"><option value="" disabled selected>품종 선택</option></select>
-                    <input type="text" id="edit-breed-custom" placeholder="품종 직접 입력" class="hidden col-span-2 p-4 border border-pink-100 rounded-2xl outline-none bg-pink-50 text-sm font-bold focus:border-pink-300">
-                    <select id="edit-size" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-500 text-sm font-bold"><option value="" disabled selected>체급 (크기)</option><option value="소형견">소형견</option><option value="중형견">중형견</option><option value="대형견">대형견</option><option value="해당없음">해당없음</option></select>
-                    <select id="edit-group" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-500 text-sm font-bold"><option value="" disabled selected>야외 활동 그룹</option><option value="A그룹">A그룹 (합사)</option><option value="B그룹">B그룹 (합사)</option><option value="C그룹">C그룹 (합사)</option><option value="단독 활동">단독 활동 (격리)</option></select>
-                    <select id="edit-gender" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-500 text-sm font-bold"><option value="" disabled selected>성별 (중성화)</option><option value="남아">남아</option><option value="여아">여아</option><option value="중성화된 남아">중성화된 남아</option><option value="중성화된 여아">중성화된 여아</option></select>
-                    <input type="text" id="edit-age" placeholder="추정 나이" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-pink-50/20 text-sm font-bold">
-                    
-                    <select id="edit-meal-type" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-500 text-sm font-bold"><option value="제한급여" selected>제한급여 (아침/저녁)</option><option value="자율배식">자율배식 (항상 완료)</option></select>
-                    <select id="edit-status" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-600 text-sm font-bold shadow-sm"><option value="" disabled selected>보호 상태</option><option value="보호 중 🏡">보호 중 (입양 대기 전)</option><option value="임시보호 🏨">임시보호 (호텔링/위탁)</option><option value="입양 대기 💝">입양 대기 (확정 완료)</option></select>
-                    
-                    <div class="col-span-2 mt-2">
-                        <p class="text-xs font-bold text-gray-400 mb-2 px-1">기본 성격 (여러 개 선택 가능)</p>
-                        <div class="flex flex-wrap gap-2">
-                            <button type="button" onclick="toggleMulti(this)" class="edit-per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">활발함</button><button type="button" onclick="toggleMulti(this)" class="edit-per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">소심함</button><button type="button" onclick="toggleMulti(this)" class="edit-per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">사람 좋아함</button><button type="button" onclick="toggleMulti(this)" class="edit-per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">경계심/겁</button><button type="button" onclick="toggleMulti(this)" class="edit-per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">공격성 주의</button><button type="button" onclick="toggleMulti(this)" class="edit-per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">분리불안</button><button type="button" onclick="toggleMulti(this)" class="edit-per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">입질 있음</button><button type="button" onclick="toggleMulti(this)" class="edit-per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">조용함</button>
-                        </div>
+            <div id="profile-panel-content" class="flex-1 overflow-y-auto p-5 pb-32 space-y-6">
+                <div class="bg-white rounded-3xl p-6 shadow-sm border border-pink-100 relative">
+                    <div class="absolute top-4 right-4 flex gap-2"><button id="btn-edit-profile" onclick="openEditPanel()" class="text-[11px] px-3 py-1.5 bg-pink-50 text-pink-600 rounded-lg font-bold shadow-sm active:scale-95">정보 수정</button></div>
+                    <div class="flex flex-col items-center mt-2">
+                        <div id="pp-photo" class="w-28 h-28 rounded-full bg-cover bg-center shadow-md border-4 border-pink-50 mb-4 flex items-center justify-center bg-pink-100 text-4xl">🐾</div>
+                        <span id="pp-status" class="px-3 py-1 rounded-full text-[10px] font-black shadow-sm mb-2">보호 중</span>
+                        <h2 id="pp-name" class="text-3xl font-black text-gray-800 mb-1">이름</h2>
+                        <p id="pp-info" class="text-xs text-gray-500 font-bold mb-3">견종 · 성별 · 나이</p>
+                        <div id="pp-classification" class="flex gap-1 mb-4 flex-wrap justify-center"></div>
+                        <div id="pp-tags" class="flex flex-wrap gap-1 justify-center mb-4"></div>
                     </div>
-                    <div class="col-span-2 mt-2 bg-green-50/50 p-4 rounded-2xl border border-green-100">
-                        <p class="text-xs font-black text-green-600 mb-2">🏥 건강 및 복약 정보</p>
-                        <input type="text" id="edit-health-memo" placeholder="건강 특이사항 (예: 슬개골 탈구 2기)" class="w-full p-3 border border-green-100 rounded-xl outline-none bg-white text-sm font-bold focus:border-green-300 mb-3">
+                    <div id="pp-health-container" class="hidden bg-green-50 p-4 rounded-2xl border border-green-100 mb-4">
+                        <div class="flex items-start gap-2 mb-2"><span class="text-base">🏥</span> <p class="text-sm font-black text-green-700" id="pp-health-memo"></p></div>
+                        <div class="flex items-start gap-2"><span class="text-base">💊</span> <p class="text-xs font-bold text-gray-600" id="pp-med-info"></p></div>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                        <p class="text-[10px] text-gray-400 font-black mb-1">구조 경위 및 메모</p><p id="pp-memo" class="text-sm font-bold text-gray-700 leading-relaxed min-h-[20px]"></p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <button id="btn-prof-record" onclick="openRecordFromProfile()" class="bg-white border-2 border-pink-400 text-pink-500 py-4 rounded-2xl font-black shadow-sm active:scale-95 transition-all flex flex-col items-center gap-1"><span class="text-2xl">📝</span><span>일과 기록 작성</span></button>
+                    <button id="btn-prof-history" onclick="openHistoryFromProfile()" class="bg-pink-500 text-white py-4 rounded-2xl font-black shadow-md active:scale-95 transition-all flex flex-col items-center gap-1"><span class="text-2xl">📅</span><span>과거 기록 열람</span></button>
+                    <button id="btn-prof-behavior" onclick="openBehaviorFromProfile()" class="col-span-2 bg-indigo-50 border border-indigo-200 text-indigo-600 py-4 rounded-2xl font-black shadow-sm active:scale-95 transition-all flex flex-col items-center gap-1"><span class="text-2xl">🧠</span><span>행동 분석 및 훈련 기록</span></button>
+                </div>
+                <button onclick="askDeleteAnimal()" class="w-full py-3 mt-4 text-xs text-red-400 font-bold underline active:scale-95">이 동물의 프로필 영구 삭제하기</button>
+            </div>
+            <input type="hidden" id="pp-animal-id" value="">
+        </div>
+
+        <div id="edit-panel" class="slide-panel fixed inset-0 bg-gray-50 z-[130] transform translate-x-full flex flex-col h-full overflow-hidden">
+            <div class="px-5 py-4 bg-white border-b border-pink-100 flex justify-between items-center shadow-sm sticky top-0 z-10 pt-[max(env(safe-area-inset-top),16px)]">
+                <button onclick="closeEditPanel()" class="text-gray-400 text-3xl font-black active:scale-90 transition-transform">&lsaquo;</button>
+                <span class="font-black text-gray-700">📝 정보 수정</span>
+                <div class="w-6"></div>
+            </div>
+            <div class="flex-1 overflow-y-auto p-5 pb-32 space-y-6">
+                <div class="card space-y-4">
+                    <div id="edit-photo-preview" onclick="document.getElementById('edit-photo').click()" class="w-full h-52 rounded-3xl bg-pink-50 flex items-center justify-center border-2 border-dashed border-pink-200 relative overflow-hidden cursor-pointer">
+                        <div id="edit-photo-placeholder" class="text-center text-pink-300"><span class="text-5xl">📸</span><p class="text-xs font-bold mt-2">사진 선택</p></div>
+                        <input type="file" id="edit-photo" accept="image/*" class="hidden" onchange="handleFileSelect(event, 'edit')">
+                        <button id="edit-del-photo-btn" onclick="removePhoto(event, 'edit')" class="hidden absolute top-3 right-3 bg-white text-pink-500 px-3 py-1 rounded-full text-[10px] font-black shadow-md z-20">사진 삭제</button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 pt-2">
+                        <input type="text" id="edit-name" placeholder="이름 (필수)" class="col-span-2 p-4 border border-pink-100 rounded-2xl outline-none bg-pink-50/20 font-bold focus:bg-white focus:border-pink-300 transition-colors">
+                        <select id="edit-type" onchange="updateBreeds('edit')" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-500 text-sm font-bold"><option value="" disabled selected>동물 종류</option><option value="개">개 🐶</option><option value="고양이">고양이 🐱</option></select>
+                        <select id="edit-breed" onchange="checkCustomBreed('edit')" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-500 text-sm font-bold"><option value="" disabled selected>품종 선택</option></select>
+                        <input type="text" id="edit-breed-custom" placeholder="품종 직접 입력" class="hidden col-span-2 p-4 border border-pink-100 rounded-2xl outline-none bg-pink-50 text-sm font-bold focus:border-pink-300">
+                        <select id="edit-size" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-500 text-sm font-bold"><option value="" disabled selected>체급 (크기)</option><option value="소형견">소형견</option><option value="중형견">중형견</option><option value="대형견">대형견</option><option value="해당없음">해당없음</option></select>
+                        <select id="edit-group" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-500 text-sm font-bold"><option value="" disabled selected>야외 활동 그룹</option><option value="A그룹">A그룹 (합사)</option><option value="B그룹">B그룹 (합사)</option><option value="C그룹">C그룹 (합사)</option><option value="단독 활동">단독 활동 (격리)</option></select>
+                        <select id="edit-gender" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-500 text-sm font-bold"><option value="" disabled selected>성별 (중성화)</option><option value="남아">남아</option><option value="여아">여아</option><option value="중성화된 남아">중성화된 남아</option><option value="중성화된 여아">중성화된 여아</option></select>
+                        <input type="text" id="edit-age" placeholder="추정 나이" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-pink-50/20 text-sm font-bold">
                         
-                        <p class="text-[10px] font-bold text-green-700 mb-1">📅 투약 요일 선택 (선택된 요일만 투데이 탭에 표시됩니다)</p>
-                        <div class="flex gap-1 mb-3 justify-center">
-                            <button type="button" onclick="toggleMedDay(this)" class="edit-med-day-btn flex-1 py-1.5 rounded-lg border border-green-300 bg-green-100 text-green-700 text-xs font-bold active:scale-95 med-day-active">월</button>
-                            <button type="button" onclick="toggleMedDay(this)" class="edit-med-day-btn flex-1 py-1.5 rounded-lg border border-green-300 bg-green-100 text-green-700 text-xs font-bold active:scale-95 med-day-active">화</button>
-                            <button type="button" onclick="toggleMedDay(this)" class="edit-med-day-btn flex-1 py-1.5 rounded-lg border border-green-300 bg-green-100 text-green-700 text-xs font-bold active:scale-95 med-day-active">수</button>
-                            <button type="button" onclick="toggleMedDay(this)" class="edit-med-day-btn flex-1 py-1.5 rounded-lg border border-green-300 bg-green-100 text-green-700 text-xs font-bold active:scale-95 med-day-active">목</button>
-                            <button type="button" onclick="toggleMedDay(this)" class="edit-med-day-btn flex-1 py-1.5 rounded-lg border border-green-300 bg-green-100 text-green-700 text-xs font-bold active:scale-95 med-day-active">금</button>
-                            <button type="button" onclick="toggleMedDay(this)" class="edit-med-day-btn flex-1 py-1.5 rounded-lg border border-green-300 bg-green-100 text-green-700 text-xs font-bold active:scale-95 med-day-active">토</button>
-                            <button type="button" onclick="toggleMedDay(this)" class="edit-med-day-btn flex-1 py-1.5 rounded-lg border border-green-300 bg-green-100 text-green-700 text-xs font-bold active:scale-95 med-day-active">일</button>
+                        <select id="edit-meal-type" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-500 text-sm font-bold"><option value="제한급여" selected>제한급여 (아침/저녁)</option><option value="자율배식">자율배식 (항상 완료)</option></select>
+                        <select id="edit-status" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-600 text-sm font-bold shadow-sm"><option value="" disabled selected>보호 상태</option><option value="보호 중 🏡">보호 중 (입양 대기 전)</option><option value="임시보호 🏨">임시보호 (호텔링/위탁)</option><option value="입양 대기 💝">입양 대기 (확정 완료)</option></select>
+                        
+                        <div class="col-span-2 mt-2">
+                            <p class="text-xs font-bold text-gray-400 mb-2 px-1">기본 성격 (여러 개 선택 가능)</p>
+                            <div class="flex flex-wrap gap-2">
+                                <button type="button" onclick="toggleMulti(this)" class="edit-per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">활발함</button><button type="button" onclick="toggleMulti(this)" class="edit-per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">소심함</button><button type="button" onclick="toggleMulti(this)" class="edit-per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">사람 좋아함</button><button type="button" onclick="toggleMulti(this)" class="edit-per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">경계심/겁</button><button type="button" onclick="toggleMulti(this)" class="edit-per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">공격성 주의</button><button type="button" onclick="toggleMulti(this)" class="edit-per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">분리불안</button><button type="button" onclick="toggleMulti(this)" class="edit-per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">입질 있음</button><button type="button" onclick="toggleMulti(this)" class="edit-per-btn px-3 py-2 rounded-xl border border-gray-200 text-gray-500 bg-white text-xs font-bold active:scale-95">조용함</button>
+                            </div>
                         </div>
+                        <div class="col-span-2 mt-2 bg-green-50/50 p-4 rounded-2xl border border-green-100">
+                            <p class="text-xs font-black text-green-600 mb-2">🏥 건강 및 복약 정보</p>
+                            <input type="text" id="edit-health-memo" placeholder="건강 특이사항 (예: 슬개골 탈구 2기)" class="w-full p-3 border border-green-100 rounded-xl outline-none bg-white text-sm font-bold focus:border-green-300 mb-3">
+                            
+                            <p class="text-[10px] font-bold text-green-700 mb-1">📅 투약 요일 선택 (선택된 요일만 투데이 탭에 표시됩니다)</p>
+                            <div class="flex gap-1 mb-3 justify-center">
+                                <button type="button" onclick="toggleMedDay(this)" class="edit-med-day-btn flex-1 py-1.5 rounded-lg border border-green-300 bg-green-100 text-green-700 text-xs font-bold active:scale-95 med-day-active">월</button>
+                                <button type="button" onclick="toggleMedDay(this)" class="edit-med-day-btn flex-1 py-1.5 rounded-lg border border-green-300 bg-green-100 text-green-700 text-xs font-bold active:scale-95 med-day-active">화</button>
+                                <button type="button" onclick="toggleMedDay(this)" class="edit-med-day-btn flex-1 py-1.5 rounded-lg border border-green-300 bg-green-100 text-green-700 text-xs font-bold active:scale-95 med-day-active">수</button>
+                                <button type="button" onclick="toggleMedDay(this)" class="edit-med-day-btn flex-1 py-1.5 rounded-lg border border-green-300 bg-green-100 text-green-700 text-xs font-bold active:scale-95 med-day-active">목</button>
+                                <button type="button" onclick="toggleMedDay(this)" class="edit-med-day-btn flex-1 py-1.5 rounded-lg border border-green-300 bg-green-100 text-green-700 text-xs font-bold active:scale-95 med-day-active">금</button>
+                                <button type="button" onclick="toggleMedDay(this)" class="edit-med-day-btn flex-1 py-1.5 rounded-lg border border-green-300 bg-green-100 text-green-700 text-xs font-bold active:scale-95 med-day-active">토</button>
+                                <button type="button" onclick="toggleMedDay(this)" class="edit-med-day-btn flex-1 py-1.5 rounded-lg border border-green-300 bg-green-100 text-green-700 text-xs font-bold active:scale-95 med-day-active">일</button>
+                            </div>
 
-                        <p class="text-[10px] font-bold text-green-700 mb-1">💊 필요 약물 선택</p>
-                        <div class="flex gap-3 mb-2">
-                            <label class="flex items-center gap-1.5 text-xs font-bold text-gray-700 bg-white px-3 py-2 rounded-lg border border-green-100 w-1/2 justify-center"><input type="checkbox" id="edit-med-am" class="w-4 h-4 accent-green-500"> 아침 약 필요</label>
-                            <label class="flex items-center gap-1.5 text-xs font-bold text-gray-700 bg-white px-3 py-2 rounded-lg border border-green-100 w-1/2 justify-center"><input type="checkbox" id="edit-med-pm" class="w-4 h-4 accent-green-500"> 저녁 약 필요</label>
+                            <p class="text-[10px] font-bold text-green-700 mb-1">💊 필요 약물 선택</p>
+                            <div class="flex gap-3 mb-2">
+                                <label class="flex items-center gap-1.5 text-xs font-bold text-gray-700 bg-white px-3 py-2 rounded-lg border border-green-100 w-1/2 justify-center"><input type="checkbox" id="edit-med-am" class="w-4 h-4 accent-green-500"> 아침 약 필요</label>
+                                <label class="flex items-center gap-1.5 text-xs font-bold text-gray-700 bg-white px-3 py-2 rounded-lg border border-green-100 w-1/2 justify-center"><input type="checkbox" id="edit-med-pm" class="w-4 h-4 accent-green-500"> 저녁 약 필요</label>
+                            </div>
+                            <input type="text" id="edit-med-info" placeholder="복약 상세 내용 (예: 사료에 섞어서)" class="w-full p-3 border border-green-100 rounded-xl outline-none bg-white text-sm font-bold focus:border-green-300">
                         </div>
-                        <input type="text" id="edit-med-info" placeholder="복약 상세 내용 (예: 사료에 섞어서)" class="w-full p-3 border border-green-100 rounded-xl outline-none bg-white text-sm font-bold focus:border-green-300">
+                        <textarea id="edit-memo" placeholder="구조 경위 및 기본 메모" class="col-span-2 p-4 border border-pink-100 rounded-2xl outline-none h-20 bg-pink-50/20 text-sm font-bold mt-2"></textarea>
+                        <button type="button" onclick="saveEditedAnimal(); return false;" class="save-btn col-span-2 py-5 pink-gradient text-white font-black rounded-2xl shadow-lg mt-2 transition-transform text-lg">수정 내용 저장하기</button>
                     </div>
-                    <textarea id="edit-memo" placeholder="구조 경위 및 기본 메모" class="col-span-2 p-4 border border-pink-100 rounded-2xl outline-none h-20 bg-pink-50/20 text-sm font-bold mt-2"></textarea>
-                    <button type="button" onclick="saveEditedAnimal(); return false;" class="save-btn col-span-2 py-5 pink-gradient text-white font-black rounded-2xl shadow-lg mt-2 transition-transform text-lg">수정 내용 저장하기</button>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div id="behavior-panel" class="slide-panel fixed inset-0 bg-gray-50 z-[160] transform translate-x-full flex flex-col h-full overflow-hidden">
-        <div class="px-5 py-4 bg-indigo-50 border-b border-indigo-100 flex justify-between items-center shadow-sm sticky top-0 z-10 pt-[max(env(safe-area-inset-top),16px)]">
-            <button onclick="closeBehaviorPanel()" class="text-indigo-400 text-3xl font-black active:scale-90 transition-transform">&lsaquo;</button>
-            <span class="font-black text-indigo-800">행동 분석 및 트래킹</span>
-            <div class="w-6"></div>
-        </div>
-        <div id="behavior-panel-content" class="flex-1 overflow-y-auto p-5 pb-32 space-y-6">
-            <div class="bg-white rounded-3xl p-5 shadow-sm border border-indigo-100">
-                <h3 id="bh-panel-title" class="text-base font-black text-indigo-700 mb-4">새 훈련 기록 추가</h3>
-                <p class="text-[10px] font-black text-gray-400 mb-1">분석할 문제 행동 (예: 산책 시 짖음)</p>
-                <input type="text" id="bh-target" class="w-full p-3 border border-indigo-50 rounded-xl outline-none bg-gray-50 text-sm font-bold focus:border-indigo-300 mb-4">
-                <p class="text-[10px] font-black text-gray-400 mb-2">ABC 모델 분석 (문장 자동완성)</p>
-                <div class="space-y-2 mb-4">
-                    <div class="flex gap-2 items-center"><span class="w-6 h-6 rounded bg-indigo-100 text-indigo-600 font-black text-xs flex items-center justify-center shrink-0">A</span><input type="text" id="bh-a" placeholder="상황 (예: 낯선 개가 다가온다)" class="w-full p-2 border border-indigo-50 rounded-lg text-sm font-bold bg-white focus:border-indigo-300"></div>
-                    <div class="flex gap-2 items-center"><span class="w-6 h-6 rounded bg-indigo-100 text-indigo-600 font-black text-xs flex items-center justify-center shrink-0">B</span><input type="text" id="bh-b" placeholder="행동 (예: 으르렁거리며 짖는다)" class="w-full p-2 border border-indigo-50 rounded-lg text-sm font-bold bg-white focus:border-indigo-300"></div>
-                    <div class="flex gap-2 items-center"><span class="w-6 h-6 rounded bg-indigo-100 text-indigo-600 font-black text-xs flex items-center justify-center shrink-0">C</span><input type="text" id="bh-c" placeholder="결과 (예: 상대 개가 피한다)" class="w-full p-2 border border-indigo-50 rounded-lg text-sm font-bold bg-white focus:border-indigo-300"></div>
-                </div>
-                <p class="text-[10px] font-black text-gray-400 mb-2">현재 행동 강도 (1단계~5단계)</p>
-                <div class="flex justify-between gap-1 mb-4" id="grade-container">
-                    <button onclick="setGrade(1)" class="grade-btn g1 flex-1 py-2 rounded-xl border border-gray-200 bg-gray-50 text-gray-400 text-xs font-bold active:scale-95 flex flex-col items-center"><span class="text-base mb-1">🟢</span>1단계<br>(안정)</button>
-                    <button onclick="setGrade(2)" class="grade-btn g2 flex-1 py-2 rounded-xl border border-gray-200 bg-gray-50 text-gray-400 text-xs font-bold active:scale-95 flex flex-col items-center"><span class="text-base mb-1">🔵</span>2단계</button>
-                    <button onclick="setGrade(3)" class="grade-btn g3 flex-1 py-2 rounded-xl border border-gray-200 bg-gray-50 text-gray-400 text-xs font-bold active:scale-95 flex flex-col items-center"><span class="text-base mb-1">🟡</span>3단계</button>
-                    <button onclick="setGrade(4)" class="grade-btn g4 flex-1 py-2 rounded-xl border border-gray-200 bg-gray-50 text-gray-400 text-xs font-bold active:scale-95 flex flex-col items-center"><span class="text-base mb-1">🟠</span>4단계</button>
-                    <button onclick="setGrade(5)" class="grade-btn g5 flex-1 py-2 rounded-xl border border-gray-200 bg-gray-50 text-gray-400 text-xs font-bold active:scale-95 flex flex-col items-center"><span class="text-base mb-1">🔴</span>5단계<br>(심각)</button>
-                </div>
-                <input type="hidden" id="bh-grade" value="0">
-                <p class="text-[10px] font-black text-gray-400 mb-1">DSCC 훈련 및 소거 과정 메모</p>
-                <textarea id="bh-memo" placeholder="어떤 방식으로 훈련을 진행했고, 어떤 반응을 보였는지 기록해주세요." class="w-full p-3 border border-indigo-50 rounded-xl outline-none bg-gray-50 text-sm font-bold h-24 focus:border-indigo-300"></textarea>
-                <button id="bh-save-btn" onclick="saveBehaviorLog()" class="w-full py-3 bg-indigo-500 text-white font-black rounded-xl shadow-md mt-3 active:scale-95 transition-transform">훈련 기록 추가하기</button>
+        <div id="schedule-panel" class="slide-panel fixed inset-0 bg-gray-50 z-[140] transform translate-x-full flex flex-col h-full overflow-hidden">
+            <div class="px-5 py-4 bg-white border-b border-pink-100 flex justify-between items-center shadow-sm sticky top-0 z-10 pt-[max(env(safe-area-inset-top),16px)]">
+                <button onclick="closeSchedulePanel()" class="text-gray-400 text-3xl font-black active:scale-90 transition-transform">&lsaquo;</button>
+                <span id="sp-date-title" class="font-black text-gray-700">근무표</span>
+                <div class="w-6"></div>
             </div>
-            <div>
-                <h3 class="text-sm font-black text-gray-600 mb-3 ml-1">📈 훈련 진행 타임라인</h3>
-                <div id="behavior-history-container" class="space-y-4 relative"><div class="absolute left-[15px] top-4 bottom-0 w-0.5 bg-indigo-100 z-0"></div></div>
+            <div class="flex-1 overflow-y-auto p-5 space-y-6 pb-32">
+                <input type="hidden" id="sp-date-key">
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-pink-100 space-y-4">
+                    <div><label class="text-xs font-black text-gray-500 mb-1 block">오전 근무</label><input type="text" id="sch-am" placeholder="예: 김현우, 이지은" class="w-full p-3 border border-pink-50 rounded-xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300"></div>
+                    <div><label class="text-xs font-black text-gray-500 mb-1 block">오후 근무</label><input type="text" id="sch-pm" placeholder="예: 박동진" class="w-full p-3 border border-pink-50 rounded-xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300"></div>
+                    <div><label class="text-xs font-black text-gray-500 mb-1 block">휴무 (연차/반차)</label><input type="text" id="sch-off" placeholder="예: 최수진(연차)" class="w-full p-3 border border-pink-50 rounded-xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300"></div>
+                    <div><label class="text-xs font-black text-gray-500 mb-1 block">기타/메모</label><input type="text" id="sch-half" placeholder="행사 지원 등" class="w-full p-3 border border-pink-50 rounded-xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300"></div>
+                </div>
+                <button onclick="saveSchedule()" class="w-full py-4 pink-gradient text-white font-black text-lg rounded-2xl shadow-lg active:scale-95 transition-transform">근무표 저장하기</button>
             </div>
         </div>
-    </div>
 
-    <div id="history-panel" class="slide-panel fixed inset-0 bg-gray-50 z-[150] transform translate-x-full flex flex-col h-full overflow-hidden">
-        <div class="px-5 py-4 bg-white border-b border-pink-100 flex justify-between items-center shadow-sm sticky top-0 z-10 pt-[max(env(safe-area-inset-top),16px)]">
-            <div class="flex items-center gap-3">
-                <button onclick="closeHistoryPanel()" class="text-gray-400 text-3xl font-black active:scale-90 transition-transform">&lsaquo;</button>
-                <div id="hp-header-info" class="flex items-center gap-2"></div>
+        <div id="event-panel" class="slide-panel fixed inset-0 bg-gray-50 z-[140] transform translate-x-full flex flex-col h-full overflow-hidden">
+            <div class="px-5 py-4 bg-white border-b border-pink-100 flex justify-between items-center shadow-sm sticky top-0 z-10 pt-[max(env(safe-area-inset-top),16px)]">
+                <button onclick="closeEventPanel()" class="text-gray-400 text-3xl font-black active:scale-90 transition-transform">&lsaquo;</button>
+                <span id="event-panel-title" class="font-black text-gray-700">새 일정 등록</span>
+                <div class="w-6"></div>
+            </div>
+            <div class="flex-1 overflow-y-auto p-5 space-y-6 pb-32">
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-pink-100 space-y-4">
+                    <div><label class="text-xs font-black text-gray-500 mb-1 block">일자 (필수)</label><input type="date" id="ev-date" class="w-full p-3 border border-pink-50 rounded-xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300"></div>
+                    <div><label class="text-xs font-black text-gray-500 mb-1 block">시간</label><input type="text" id="ev-time" placeholder="예: 14:00 ~ 16:00" class="w-full p-3 border border-pink-50 rounded-xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300"></div>
+                    <div><label class="text-xs font-black text-gray-500 mb-1 block">일정명 (필수)</label><input type="text" id="ev-title" placeholder="예: 서대문구 자원봉사자 방문" class="w-full p-3 border border-pink-50 rounded-xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300"></div>
+                    <div><label class="text-xs font-black text-gray-500 mb-1 block">상세 내용 (선택)</label><textarea id="ev-desc" placeholder="행사 세부 일정이나 준비물을 적어주세요." class="w-full p-3 border border-pink-50 rounded-xl outline-none bg-gray-50 text-sm font-bold h-24 focus:border-pink-300"></textarea></div>
+                </div>
+                <button id="event-save-btn" onclick="saveEvent()" class="w-full py-4 pink-gradient text-white font-black text-lg rounded-2xl shadow-lg active:scale-95 transition-transform">일정 저장하기</button>
             </div>
         </div>
-        <div id="hp-logs-container" class="flex-1 overflow-y-auto p-5 pb-10"></div>
-        <input type="hidden" id="hp-animal-id" value="">
-    </div>
 
-    <div id="record-panel" class="slide-panel fixed inset-0 bg-white z-[200] transform translate-x-full flex flex-col h-full overflow-hidden">
-        <div class="px-5 py-4 bg-white border-b border-pink-100 flex justify-between items-center shadow-sm sticky top-0 z-10 pt-[max(env(safe-area-inset-top),16px)]">
-            <div class="flex items-center gap-3">
-                <button onclick="closeRecordPanel()" class="text-gray-400 text-3xl font-black active:scale-90 transition-transform">&lsaquo;</button>
-                <div id="rp-header-info" class="flex items-center gap-2"></div>
+        <div id="behavior-panel" class="slide-panel fixed inset-0 bg-gray-50 z-[160] transform translate-x-full flex flex-col h-full overflow-hidden">
+            <div class="px-5 py-4 bg-indigo-50 border-b border-indigo-100 flex justify-between items-center shadow-sm sticky top-0 z-10 pt-[max(env(safe-area-inset-top),16px)]">
+                <button onclick="closeBehaviorPanel()" class="text-indigo-400 text-3xl font-black active:scale-90 transition-transform">&lsaquo;</button>
+                <span class="font-black text-indigo-800">행동 분석 및 트래킹</span>
+                <div class="w-6"></div>
             </div>
-            <button onclick="resetRecordForm()" class="text-xs bg-gray-100 text-gray-500 px-3 py-1.5 rounded-lg font-bold">선택 해제</button>
+            <div id="behavior-panel-content" class="flex-1 overflow-y-auto p-5 pb-32 space-y-6">
+                <div class="bg-white rounded-3xl p-5 shadow-sm border border-indigo-100">
+                    <h3 id="bh-panel-title" class="text-base font-black text-indigo-700 mb-4">새 훈련 기록 추가</h3>
+                    <p class="text-[10px] font-black text-gray-400 mb-1">분석할 문제 행동 (예: 산책 시 짖음)</p>
+                    <input type="text" id="bh-target" class="w-full p-3 border border-indigo-50 rounded-xl outline-none bg-gray-50 text-sm font-bold focus:border-indigo-300 mb-4">
+                    <p class="text-[10px] font-black text-gray-400 mb-2">ABC 모델 분석 (문장 자동완성)</p>
+                    <div class="space-y-2 mb-4">
+                        <div class="flex gap-2 items-center"><span class="w-6 h-6 rounded bg-indigo-100 text-indigo-600 font-black text-xs flex items-center justify-center shrink-0">A</span><input type="text" id="bh-a" placeholder="상황 (예: 낯선 개가 다가온다)" class="w-full p-2 border border-indigo-50 rounded-lg text-sm font-bold bg-white focus:border-indigo-300"></div>
+                        <div class="flex gap-2 items-center"><span class="w-6 h-6 rounded bg-indigo-100 text-indigo-600 font-black text-xs flex items-center justify-center shrink-0">B</span><input type="text" id="bh-b" placeholder="행동 (예: 으르렁거리며 짖는다)" class="w-full p-2 border border-indigo-50 rounded-lg text-sm font-bold bg-white focus:border-indigo-300"></div>
+                        <div class="flex gap-2 items-center"><span class="w-6 h-6 rounded bg-indigo-100 text-indigo-600 font-black text-xs flex items-center justify-center shrink-0">C</span><input type="text" id="bh-c" placeholder="결과 (예: 상대 개가 피한다)" class="w-full p-2 border border-indigo-50 rounded-lg text-sm font-bold bg-white focus:border-indigo-300"></div>
+                    </div>
+                    <p class="text-[10px] font-black text-gray-400 mb-2">현재 행동 강도 (1단계~5단계)</p>
+                    <div class="flex justify-between gap-1 mb-4" id="grade-container">
+                        <button onclick="setGrade(1)" class="grade-btn g1 flex-1 py-2 rounded-xl border border-gray-200 bg-gray-50 text-gray-400 text-xs font-bold active:scale-95 flex flex-col items-center"><span class="text-base mb-1">🟢</span>1단계<br>(안정)</button>
+                        <button onclick="setGrade(2)" class="grade-btn g2 flex-1 py-2 rounded-xl border border-gray-200 bg-gray-50 text-gray-400 text-xs font-bold active:scale-95 flex flex-col items-center"><span class="text-base mb-1">🔵</span>2단계</button>
+                        <button onclick="setGrade(3)" class="grade-btn g3 flex-1 py-2 rounded-xl border border-gray-200 bg-gray-50 text-gray-400 text-xs font-bold active:scale-95 flex flex-col items-center"><span class="text-base mb-1">🟡</span>3단계</button>
+                        <button onclick="setGrade(4)" class="grade-btn g4 flex-1 py-2 rounded-xl border border-gray-200 bg-gray-50 text-gray-400 text-xs font-bold active:scale-95 flex flex-col items-center"><span class="text-base mb-1">🟠</span>4단계</button>
+                        <button onclick="setGrade(5)" class="grade-btn g5 flex-1 py-2 rounded-xl border border-gray-200 bg-gray-50 text-gray-400 text-xs font-bold active:scale-95 flex flex-col items-center"><span class="text-base mb-1">🔴</span>5단계<br>(심각)</button>
+                    </div>
+                    <input type="hidden" id="bh-grade" value="0">
+                    <p class="text-[10px] font-black text-gray-400 mb-1">DSCC 훈련 및 소거 과정 메모</p>
+                    <textarea id="bh-memo" placeholder="어떤 방식으로 훈련을 진행했고, 어떤 반응을 보였는지 기록해주세요." class="w-full p-3 border border-indigo-50 rounded-xl outline-none bg-gray-50 text-sm font-bold h-24 focus:border-indigo-300"></textarea>
+                    <button id="bh-save-btn" onclick="saveBehaviorLog()" class="w-full py-3 bg-indigo-500 text-white font-black rounded-xl shadow-md mt-3 active:scale-95 transition-transform">훈련 기록 추가하기</button>
+                </div>
+                <div>
+                    <h3 class="text-sm font-black text-gray-600 mb-3 ml-1">📈 훈련 진행 타임라인</h3>
+                    <div id="behavior-history-container" class="space-y-4 relative"><div class="absolute left-[15px] top-4 bottom-0 w-0.5 bg-indigo-100 z-0"></div></div>
+                </div>
+            </div>
         </div>
-        <div id="record-panel-content" class="flex-1 overflow-y-auto p-5 space-y-8 pb-32">
-            <div class="bg-pink-50 rounded-xl p-3 text-center"><p class="text-xs font-bold text-pink-500">현재 <span class="font-black text-pink-600 underline" id="current-trainer-display">로그인 정보 없음</span>님의 이름으로 <span id="record-action-text">기록</span>됩니다.</p></div>
 
-            <section class="border border-green-100 p-4 rounded-2xl bg-green-50/30 shadow-sm" id="rp-med-section">
-                <h3 class="text-lg font-black text-green-700 mb-3">💊 복약 체크</h3>
-                <div class="flex gap-2" id="rp-med-buttons">
-                    <button type="button" id="btn-med-am" onclick="toggleSelect(this, 'med-time')" class="med-time-btn hidden flex-1 py-3 rounded-xl border border-gray-200 bg-white text-gray-500 text-sm font-bold active:scale-95">아침 약 완료</button>
-                    <button type="button" id="btn-med-pm" onclick="toggleSelect(this, 'med-time')" class="med-time-btn hidden flex-1 py-3 rounded-xl border border-gray-200 bg-white text-gray-500 text-sm font-bold active:scale-95">저녁 약 완료</button>
+        <div id="history-panel" class="slide-panel fixed inset-0 bg-gray-50 z-[150] transform translate-x-full flex flex-col h-full overflow-hidden">
+            <div class="px-5 py-4 bg-white border-b border-pink-100 flex justify-between items-center shadow-sm sticky top-0 z-10 pt-[max(env(safe-area-inset-top),16px)]">
+                <div class="flex items-center gap-3">
+                    <button onclick="closeHistoryPanel()" class="text-gray-400 text-3xl font-black active:scale-90 transition-transform">&lsaquo;</button>
+                    <div id="hp-header-info" class="flex items-center gap-2"></div>
                 </div>
-            </section>
+            </div>
+            <div id="hp-logs-container" class="flex-1 overflow-y-auto p-5 pb-10"></div>
+            <input type="hidden" id="hp-animal-id" value="">
+        </div>
 
-            <section class="border border-pink-100 p-4 rounded-2xl bg-white shadow-sm">
-                <h3 class="text-lg font-black text-gray-800 mb-3">🐕 산책 기록</h3>
-                <div class="flex gap-2 mb-3">
-                    <button type="button" onclick="toggleSelect(this, 'walk-time')" class="walk-time-btn flex-1 py-2 rounded-xl border btn-inactive">오전</button>
-                    <button type="button" onclick="toggleSelect(this, 'walk-time')" class="walk-time-btn flex-1 py-2 rounded-xl border btn-inactive">오후</button>
-                    <button type="button" onclick="toggleSelect(this, 'walk-time')" class="walk-time-btn flex-1 py-2 rounded-xl border btn-inactive">저녁</button>
+        <div id="record-panel" class="slide-panel fixed inset-0 bg-white z-[200] transform translate-x-full flex flex-col h-full overflow-hidden">
+            <div class="px-5 py-4 bg-white border-b border-pink-100 flex justify-between items-center shadow-sm sticky top-0 z-10 pt-[max(env(safe-area-inset-top),16px)]">
+                <div class="flex items-center gap-3">
+                    <button onclick="closeRecordPanel()" class="text-gray-400 text-3xl font-black active:scale-90 transition-transform">&lsaquo;</button>
+                    <div id="rp-header-info" class="flex items-center gap-2"></div>
                 </div>
-                <input type="text" id="walk-duration" placeholder="산책 시간 (예: 45분, 10:00~10:45)" class="w-full p-4 border border-pink-100 rounded-2xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300 mb-3">
-                <p class="text-xs font-bold text-gray-500 mb-2">산책 간 아이의 컨디션</p>
-                <div class="flex gap-2">
-                    <button type="button" onclick="toggleSelect(this, 'walk-cond')" class="walk-cond-btn flex-1 py-3 rounded-2xl border btn-inactive text-xl">🟢 좋음</button>
-                    <button type="button" onclick="toggleSelect(this, 'walk-cond')" class="walk-cond-btn flex-1 py-3 rounded-2xl border btn-inactive text-xl">🟡 평범</button>
-                    <button type="button" onclick="toggleSelect(this, 'walk-cond')" class="walk-cond-btn flex-1 py-3 rounded-2xl border btn-inactive text-xl">🔴 나쁨</button>
-                </div>
-            </section>
-            
-            <section class="border border-pink-100 p-4 rounded-2xl bg-white shadow-sm">
-                <div id="rp-meal-inputs">
-                    <h3 class="text-lg font-black text-gray-800 mb-3">🥣 밥 급여 기록</h3>
+                <button onclick="resetRecordForm()" class="text-xs bg-gray-100 text-gray-500 px-3 py-1.5 rounded-lg font-bold">선택 해제</button>
+            </div>
+            <div id="record-panel-content" class="flex-1 overflow-y-auto p-5 space-y-8 pb-32">
+                <div class="bg-pink-50 rounded-xl p-3 text-center"><p class="text-xs font-bold text-pink-500">현재 <span class="font-black text-pink-600 underline" id="current-trainer-display">로그인 정보 없음</span>님의 이름으로 <span id="record-action-text">기록</span>됩니다.</p></div>
+
+                <section class="border border-green-100 p-4 rounded-2xl bg-green-50/30 shadow-sm" id="rp-med-section">
+                    <h3 class="text-lg font-black text-green-700 mb-3">💊 복약 체크</h3>
+                    <div class="flex gap-2" id="rp-med-buttons">
+                        <button type="button" id="btn-med-am" onclick="toggleSelect(this, 'med-time')" class="med-time-btn hidden flex-1 py-3 rounded-xl border border-gray-200 bg-white text-gray-500 text-sm font-bold active:scale-95">아침 약 완료</button>
+                        <button type="button" id="btn-med-pm" onclick="toggleSelect(this, 'med-time')" class="med-time-btn hidden flex-1 py-3 rounded-xl border border-gray-200 bg-white text-gray-500 text-sm font-bold active:scale-95">저녁 약 완료</button>
+                    </div>
+                </section>
+
+                <section class="border border-pink-100 p-4 rounded-2xl bg-white shadow-sm">
+                    <h3 class="text-lg font-black text-gray-800 mb-3">🐕 산책 기록</h3>
                     <div class="flex gap-2 mb-3">
-                        <button type="button" onclick="toggleSelect(this, 'meal-time')" class="meal-time-btn flex-1 py-2 rounded-xl border btn-inactive">아침</button>
-                        <button type="button" onclick="toggleSelect(this, 'meal-time')" class="meal-time-btn flex-1 py-2 rounded-xl border btn-inactive">저녁</button>
+                        <button type="button" onclick="toggleSelect(this, 'walk-time')" class="walk-time-btn flex-1 py-2 rounded-xl border btn-inactive">오전</button>
+                        <button type="button" onclick="toggleSelect(this, 'walk-time')" class="walk-time-btn flex-1 py-2 rounded-xl border btn-inactive">오후</button>
+                        <button type="button" onclick="toggleSelect(this, 'walk-time')" class="walk-time-btn flex-1 py-2 rounded-xl border btn-inactive">저녁</button>
                     </div>
-                    <input type="text" id="meal-amount" placeholder="급여량 (예: 150g, 종이컵 1컵)" class="w-full p-4 border border-pink-100 rounded-2xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300 mb-3">
-                    <p class="text-xs font-bold text-gray-500 mb-2">밥 먹은 정도</p>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button type="button" onclick="toggleSelect(this, 'meal-status')" class="meal-status-btn py-2 rounded-xl border btn-inactive text-sm">완식</button>
-                        <button type="button" onclick="toggleSelect(this, 'meal-status')" class="meal-status-btn py-2 rounded-xl border btn-inactive text-sm">조금 남김</button>
-                        <button type="button" onclick="toggleSelect(this, 'meal-status')" class="meal-status-btn py-2 rounded-xl border btn-inactive text-sm">많이 남김</button>
-                        <button type="button" onclick="toggleSelect(this, 'meal-status')" class="meal-status-btn py-2 rounded-xl border btn-inactive text-sm">먹지 않음</button>
+                    <input type="text" id="walk-duration" placeholder="산책 시간 (예: 45분, 10:00~10:45)" class="w-full p-4 border border-pink-100 rounded-2xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300 mb-3">
+                    <p class="text-xs font-bold text-gray-500 mb-2">산책 간 아이의 컨디션</p>
+                    <div class="flex gap-2">
+                        <button type="button" onclick="toggleSelect(this, 'walk-cond')" class="walk-cond-btn flex-1 py-3 rounded-2xl border btn-inactive text-xl">🟢 좋음</button>
+                        <button type="button" onclick="toggleSelect(this, 'walk-cond')" class="walk-cond-btn flex-1 py-3 rounded-2xl border btn-inactive text-xl">🟡 평범</button>
+                        <button type="button" onclick="toggleSelect(this, 'walk-cond')" class="walk-cond-btn flex-1 py-3 rounded-2xl border btn-inactive text-xl">🔴 나쁨</button>
                     </div>
-                </div>
-                <div id="rp-meal-freemessage" class="hidden">
-                    <h3 class="text-lg font-black text-gray-800 mb-3">🥣 밥 급여 기록</h3>
-                    <p class="text-sm font-bold text-yellow-600 bg-yellow-50 p-4 rounded-xl text-center border border-yellow-100">이 아이는 자율배식 중입니다. 😋</p>
-                </div>
-            </section>
+                </section>
+                
+                <section class="border border-pink-100 p-4 rounded-2xl bg-white shadow-sm">
+                    <div id="rp-meal-inputs">
+                        <h3 class="text-lg font-black text-gray-800 mb-3">🥣 밥 급여 기록</h3>
+                        <div class="flex gap-2 mb-3">
+                            <button type="button" onclick="toggleSelect(this, 'meal-time')" class="meal-time-btn flex-1 py-2 rounded-xl border btn-inactive">아침</button>
+                            <button type="button" onclick="toggleSelect(this, 'meal-time')" class="meal-time-btn flex-1 py-2 rounded-xl border btn-inactive">저녁</button>
+                        </div>
+                        <input type="text" id="meal-amount" placeholder="급여량 (예: 150g, 종이컵 1컵)" class="w-full p-4 border border-pink-100 rounded-2xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300 mb-3">
+                        <p class="text-xs font-bold text-gray-500 mb-2">밥 먹은 정도</p>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button type="button" onclick="toggleSelect(this, 'meal-status')" class="meal-status-btn py-2 rounded-xl border btn-inactive text-sm">완식</button>
+                            <button type="button" onclick="toggleSelect(this, 'meal-status')" class="meal-status-btn py-2 rounded-xl border btn-inactive text-sm">조금 남김</button>
+                            <button type="button" onclick="toggleSelect(this, 'meal-status')" class="meal-status-btn py-2 rounded-xl border btn-inactive text-sm">많이 남김</button>
+                            <button type="button" onclick="toggleSelect(this, 'meal-status')" class="meal-status-btn py-2 rounded-xl border btn-inactive text-sm">먹지 않음</button>
+                        </div>
+                    </div>
+                    <div id="rp-meal-freemessage" class="hidden">
+                        <h3 class="text-lg font-black text-gray-800 mb-3">🥣 밥 급여 기록</h3>
+                        <p class="text-sm font-bold text-yellow-600 bg-yellow-50 p-4 rounded-xl text-center border border-yellow-100">이 아이는 자율배식 중입니다. 😋</p>
+                    </div>
+                </section>
 
-            <section class="border border-pink-100 p-4 rounded-2xl bg-white shadow-sm">
-                <h3 class="text-lg font-black text-gray-800 mb-3">💩 배변 기록</h3>
-                <div class="flex gap-2 mb-3">
-                    <button type="button" onclick="toggleMulti(this)" id="potty-type-feces" class="potty-type-btn flex-1 py-3 rounded-2xl border btn-inactive">대변</button>
-                    <button type="button" onclick="toggleMulti(this)" id="potty-type-urine" class="potty-type-btn flex-1 py-3 rounded-2xl border btn-inactive">소변</button>
-                </div>
-                <div class="flex gap-2 mb-2 overflow-x-auto hide-scrollbar">
-                    <button type="button" onclick="setPottyMemo('정상 (양호)')" class="whitespace-nowrap px-3 py-1.5 rounded-lg border border-pink-100 text-xs font-bold bg-pink-50 text-pink-500 active:scale-95">정상 (양호)</button>
-                    <button type="button" onclick="setPottyMemo('묽은 변')" class="whitespace-nowrap px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-bold bg-white text-gray-600 active:scale-95">묽은 변</button>
-                    <button type="button" onclick="setPottyMemo('설사')" class="whitespace-nowrap px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-bold bg-white text-gray-600 active:scale-95">설사</button>
-                    <button type="button" onclick="setPottyMemo('혈변/혈뇨')" class="whitespace-nowrap px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-bold bg-white text-red-500 active:scale-95">혈변/혈뇨</button>
-                </div>
-                <input type="text" id="potty-memo" placeholder="세부 상태 입력 (예: 소변만 봄, 특이사항 없음 등)" class="w-full p-4 border border-pink-100 rounded-2xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300">
-            </section>
+                <section class="border border-pink-100 p-4 rounded-2xl bg-white shadow-sm">
+                    <h3 class="text-lg font-black text-gray-800 mb-3">💩 배변 기록</h3>
+                    <div class="flex gap-2 mb-3">
+                        <button type="button" onclick="toggleMulti(this)" id="potty-type-feces" class="potty-type-btn flex-1 py-3 rounded-2xl border btn-inactive">대변</button>
+                        <button type="button" onclick="toggleMulti(this)" id="potty-type-urine" class="potty-type-btn flex-1 py-3 rounded-2xl border btn-inactive">소변</button>
+                    </div>
+                    <div class="flex gap-2 mb-2 overflow-x-auto hide-scrollbar">
+                        <button type="button" onclick="setPottyMemo('정상 (양호)')" class="whitespace-nowrap px-3 py-1.5 rounded-lg border border-pink-100 text-xs font-bold bg-pink-50 text-pink-500 active:scale-95">정상 (양호)</button>
+                        <button type="button" onclick="setPottyMemo('묽은 변')" class="whitespace-nowrap px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-bold bg-white text-gray-600 active:scale-95">묽은 변</button>
+                        <button type="button" onclick="setPottyMemo('설사')" class="whitespace-nowrap px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-bold bg-white text-gray-600 active:scale-95">설사</button>
+                        <button type="button" onclick="setPottyMemo('혈변/혈뇨')" class="whitespace-nowrap px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-bold bg-white text-red-500 active:scale-95">혈변/혈뇨</button>
+                    </div>
+                    <input type="text" id="potty-memo" placeholder="세부 상태 입력 (예: 소변만 봄, 특이사항 없음 등)" class="w-full p-4 border border-pink-100 rounded-2xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300">
+                </section>
 
-            <section class="border border-pink-100 p-4 rounded-2xl bg-white shadow-sm">
-                <h3 class="text-lg font-black text-gray-800 mb-3">📝 당일 특이사항</h3>
-                <textarea id="daily-memo" placeholder="오늘 하루 있었던 특이사항이나 전달할 내용을 자유롭게 적어주세요." class="w-full p-4 border border-pink-100 rounded-2xl outline-none bg-gray-50 text-sm font-bold h-24 focus:border-pink-300"></textarea>
-            </section>
+                <section class="border border-pink-100 p-4 rounded-2xl bg-white shadow-sm">
+                    <h3 class="text-lg font-black text-gray-800 mb-3">📝 당일 특이사항</h3>
+                    <textarea id="daily-memo" placeholder="오늘 하루 있었던 특이사항이나 전달할 내용을 자유롭게 적어주세요." class="w-full p-4 border border-pink-100 rounded-2xl outline-none bg-gray-50 text-sm font-bold h-24 focus:border-pink-300"></textarea>
+                </section>
+            </div>
+            <div class="absolute bottom-0 left-0 right-0 bg-white border-t border-pink-100 p-4 pb-[max(env(safe-area-inset-bottom),16px)] shadow-[0_-5px_15px_rgba(0,0,0,0.03)] z-20">
+                <button id="btn-save-record" onclick="saveDetailLog()" class="w-full py-4 pink-gradient text-white font-black text-lg rounded-2xl shadow-lg active:scale-95 transition-transform">작성한 항목만 저장하기</button>
+                <input type="hidden" id="rp-animal-id" value="">
+            </div>
         </div>
-        <div class="absolute bottom-0 left-0 right-0 bg-white border-t border-pink-100 p-4 pb-[max(env(safe-area-inset-bottom),16px)] shadow-[0_-5px_15px_rgba(0,0,0,0.03)] z-20">
-            <button id="btn-save-record" onclick="saveDetailLog()" class="w-full py-4 pink-gradient text-white font-black text-lg rounded-2xl shadow-lg active:scale-95 transition-transform">작성한 항목만 저장하기</button>
-            <input type="hidden" id="rp-animal-id" value="">
-        </div>
-    </div>
 
     <script>
         // =========================================================================
-        // ★ 1. 관리자 모드 비밀번호 변경 ★
-        // 아래 '0000' 이라고 적힌 숫자 부분을 원하시는 비밀번호로 자유롭게 변경하세요!
-        // (작은따옴표 '' 는 지우시면 안 됩니다.)
-        const ADMIN_PASSWORD = '0000';
+        // ★ 1. 관리자 모드 비밀번호 변경 ★ (요청하신 대로 7175로 변경 완료!)
+        // =========================================================================
+        const ADMIN_PASSWORD = '7175';
         // =========================================================================
 
         // 전역 상태 변수
@@ -594,7 +623,7 @@
         firebase.initializeApp(firebaseConfig); const database = firebase.database();
         let isAppStarted = false; 
 
-        // === [완벽 개선] 튜토리얼 엔진 ===
+        // === 튜토리얼 엔진 ===
         const tutorialSteps = [
             { view: 'list', panel: '', icon: '👋', title: '환영합니다!', desc: '우측 상단의 <b>[👤 로그인 이름]</b> 버튼을 누르면 내 정보를 수정하거나 튜토리얼을 다시 볼 수 있습니다.<br><br>자, 이제부터 앱의 핵심 기능들을 빠르게 살펴볼까요?', target: 'header-profile-btn' },
             { view: 'list', panel: '', icon: '📋', title: '개체 관리', desc: '현재 보호 중인 아이들을 관리하는 메인 화면입니다. 하단 메뉴의 <b>[개체 관리]</b> 탭을 통해 언제든 돌아올 수 있습니다.', target: 'nav-list' },
@@ -659,9 +688,8 @@
             });
         }
 
-        // [핵심] 튜토리얼 상태 동기화 및 렌더링
         function applyTutorialState(step) {
-            closeProfilePanel(); closeRecordPanel(); closeHistoryPanel(); closeBehaviorPanel();
+            closeProfilePanel(); closeRecordPanel(); closeHistoryPanel(); closeBehaviorPanel(); closeSchedulePanel(); closeEventPanel();
             
             showView(step.view);
             
@@ -822,6 +850,10 @@
             }
         }
 
+        function forceNextTutorial() {
+            nextTutorial();
+        }
+
         function nextTutorial() {
             const tooltip = document.getElementById('tutorial-tooltip');
             const pointer = document.getElementById('tut-pointer');
@@ -847,7 +879,7 @@
             if (tutClickHandler) { document.removeEventListener('click', tutClickHandler, true); tutClickHandler = null; }
             document.querySelectorAll('.tut-target-active').forEach(el => el.classList.remove('tut-target-active'));
             
-            closeRecordPanel(); closeHistoryPanel(); closeBehaviorPanel(); closeProfilePanel(); closeProfileEditModal();
+            closeRecordPanel(); closeHistoryPanel(); closeBehaviorPanel(); closeProfilePanel(); closeProfileEditModal(); closeSchedulePanel(); closeEventPanel();
             showView('list'); window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
@@ -885,6 +917,7 @@
         }
 
         // === 관리자 멤버 관리 로직 ===
+        let allUsersData = null; let adminCurrentTab = 'pending';
         function openAdminApproveModal() { document.getElementById('admin-approve-modal').classList.add('active'); document.getElementById('admin-req-badge').classList.add('hidden'); renderAdminList(); }
         function closeAdminApproveModal() { document.getElementById('admin-approve-modal').classList.remove('active'); }
         
@@ -938,9 +971,9 @@
                 if (!document.getElementById('view-list').classList.contains('hidden') && !isTutorialActive) renderTasks();
                 if (!document.getElementById('view-dashboard').classList.contains('hidden') && !isTutorialActive) renderDashboard();
 
-                if(!document.getElementById('profile-panel').classList.contains('translate-x-full') && !isTutorialActive) { const activeId = document.getElementById('pp-animal-id').value; const activeAni = animals.find(a => a.id == activeId); if(activeAni) populateProfilePanel(activeAni); }
-                if(!document.getElementById('behavior-panel').classList.contains('translate-x-full') && !isTutorialActive) { const activeId = document.getElementById('pp-animal-id').value; const activeAni = animals.find(a => a.id == activeId); if(activeAni) renderBehaviorHistory(activeAni); }
-                if(!document.getElementById('history-panel').classList.contains('translate-x-full') && !isTutorialActive) { const activeId = document.getElementById('hp-animal-id').value; const activeAni = animals.find(a => a.id == activeId); if(activeAni) renderHistory(activeAni); }
+                if(!document.getElementById('profile-panel').classList.contains('translate-x-full') && !isTutorialActive) { const activeId = document.getElementById('pp-animal-id').value; const activeAni = animals.find(a => String(a.id) === String(activeId)); if(activeAni) populateProfilePanel(activeAni); }
+                if(!document.getElementById('behavior-panel').classList.contains('translate-x-full') && !isTutorialActive) { const activeId = document.getElementById('pp-animal-id').value; const activeAni = animals.find(a => String(a.id) === String(activeId)); if(activeAni) renderBehaviorHistory(activeAni); }
+                if(!document.getElementById('history-panel').classList.contains('translate-x-full') && !isTutorialActive) { const activeId = document.getElementById('hp-animal-id').value; const activeAni = animals.find(a => String(a.id) === String(activeId)); if(activeAni) renderHistory(activeAni); }
             });
             database.ref('schedules').on('value', (snapshot) => { schedules = snapshot.val() || {}; if (!document.getElementById('view-schedule').classList.contains('hidden')) renderCalendar(); });
             database.ref('events').on('value', (snapshot) => { 
@@ -1061,7 +1094,7 @@
         }
 
         function openEditPanel() {
-            const id = document.getElementById('pp-animal-id').value; const ani = animals.find(a => a.id == id); if(!ani) return;
+            const id = document.getElementById('pp-animal-id').value; const ani = animals.find(a => String(a.id) === String(id)); if(!ani) return;
             editingAnimalProfileId = ani.id;
             document.getElementById('edit-name').value = ani.name; 
             setSelectValue('edit-type', ['개', '고양이'], ani.type); updateBreeds('edit');
@@ -1102,7 +1135,7 @@
             let breedVal = document.getElementById('edit-breed').value; if(breedVal === '직접 입력') breedVal = document.getElementById('edit-breed-custom').value.trim(); if(!breedVal) breedVal = '미상';
             const selectedPersonalities = Array.from(document.querySelectorAll('.edit-per-btn.btn-active')).map(b => b.innerText);
             const medDays = Array.from(document.querySelectorAll('#edit-panel .edit-med-day-btn.med-day-active')).map(b => b.innerText).join(',');
-            const targetId = editingAnimalProfileId; const existingAni = animals.find(a => a.id === targetId);
+            const targetId = editingAnimalProfileId; const existingAni = animals.find(a => String(a.id) === String(targetId));
             
             let saveObj = {
                 id: targetId, photo: currentEditPhotoBase64, name: name, type: document.getElementById('edit-type').value || '미상', breed: breedVal,
@@ -1117,7 +1150,7 @@
             database.ref('animals/' + targetId).set(saveObj).then(() => { closeEditPanel(); openModal('success', '수정 완료!', `${name}의 정보가 업데이트되었습니다.`); });
         }
 
-        // === 6. 필터 및 리스트 (VIEW 1) ===
+        // === 필터 및 리스트 (VIEW 1) ===
         function renderFilters() {
             const container = document.getElementById('filter-container');
             const filters = [ { id: 'all', label: '전체 보기' }, { id: 'dog', label: '개 🐶' }, { id: 'cat', label: '고양이 🐱' }, { id: 'protecting', label: '보호 중 🏡' }, { id: 'temp', label: '임시보호 🏨' }, { id: 'adopt', label: '입양 대기 💝' }, { id: 'grA', label: 'A그룹(합사)' }, { id: 'grB', label: 'B그룹(합사)' }, { id: 'grC', label: 'C그룹(합사)' }, { id: 'grAlone', label: '단독 활동 🔴' } ];
@@ -1153,8 +1186,9 @@
                 
                 const tutId = index === 0 ? 'id="tut-first-animal"' : '';
 
+                // [Fix] a.id를 반드시 작은따옴표로 감싸서 문자열 ID 오류를 방지합니다.
                 container.innerHTML += `
-                    <div ${tutId} class="card border-pink-50 mb-4 hover:shadow-lg transition-all cursor-pointer active:scale-[0.98]" onclick="openProfilePanel(${a.id})">
+                    <div ${tutId} class="card border-pink-50 mb-4 hover:shadow-lg transition-all cursor-pointer active:scale-[0.98]" onclick="openProfilePanel('${a.id}')">
                         <div class="flex items-center gap-4">
                             ${photoHtml}
                             <div class="flex-1 min-w-0">
@@ -1170,7 +1204,7 @@
             });
         }
 
-        // === 7. 대시보드 (VIEW 2) ===
+        // === 대시보드 (VIEW 2) ===
         function setDashTab(tab) {
             currentDashTab = tab;
             document.getElementById('btn-dash-animal').className = tab === 'animal' ? 'flex-1 py-2 text-xs font-black rounded-lg bg-white shadow-sm text-pink-600 transition-all' : 'flex-1 py-2 text-xs font-black rounded-lg text-pink-400 opacity-70 transition-all';
@@ -1205,20 +1239,20 @@
                 if(a.daily_logs) {
                     Object.values(a.daily_logs).forEach(log => {
                         if(log.date_str === todayStr) {
-                            if(log.walk) { if(log.walk.time !== '-') walks[log.walk.time] = true; if(log.walk.condition === '나쁨') { alertsHtml += `<div class="bg-red-50 border border-red-100 p-3 rounded-xl mb-2 flex items-start gap-2 cursor-pointer active:scale-[0.98]" onclick="openProfilePanel(${a.id})"><span class="text-lg">🚨</span><div><p class="text-xs font-black text-red-600">${a.name} <span class="font-bold text-gray-500">산책 컨디션 나쁨</span></p></div></div>`; alertCount++; } }
+                            if(log.walk) { if(log.walk.time !== '-') walks[log.walk.time] = true; if(log.walk.condition === '나쁨') { alertsHtml += `<div class="bg-red-50 border border-red-100 p-3 rounded-xl mb-2 flex items-start gap-2 cursor-pointer active:scale-[0.98]" onclick="openProfilePanel('${a.id}')"><span class="text-lg">🚨</span><div><p class="text-xs font-black text-red-600">${a.name} <span class="font-bold text-gray-500">산책 컨디션 나쁨</span></p></div></div>`; alertCount++; } }
                             if(log.meal && log.meal.time !== '-') meals[log.meal.time] = true;
                             if(log.med && log.med.time !== '-') meds[log.med.time] = true; 
                             if(log.potty) {
                                 if(log.potty.type.includes('대변')) hasFeces = true; if(log.potty.type.includes('소변')) hasUrine = true;
-                                if(log.potty.memo && log.potty.memo !== '특이사항 없음' && log.potty.memo !== '정상 (양호)') { alertsHtml += `<div class="bg-orange-50 border border-orange-100 p-3 rounded-xl mb-2 flex items-start gap-2 cursor-pointer active:scale-[0.98]" onclick="openProfilePanel(${a.id})"><span class="text-lg">💩</span><div><p class="text-xs font-black text-orange-600">${a.name} <span class="font-bold text-gray-500">${log.potty.memo}</span></p></div></div>`; alertCount++; }
+                                if(log.potty.memo && log.potty.memo !== '특이사항 없음' && log.potty.memo !== '정상 (양호)') { alertsHtml += `<div class="bg-orange-50 border border-orange-100 p-3 rounded-xl mb-2 flex items-start gap-2 cursor-pointer active:scale-[0.98]" onclick="openProfilePanel('${a.id}')"><span class="text-lg">💩</span><div><p class="text-xs font-black text-orange-600">${a.name} <span class="font-bold text-gray-500">${log.potty.memo}</span></p></div></div>`; alertCount++; }
                             }
-                            if(log.daily_memo) { alertsHtml += `<div class="bg-blue-50 border border-blue-100 p-3 rounded-xl mb-2 flex items-start gap-2 cursor-pointer active:scale-[0.98]" onclick="openProfilePanel(${a.id})"><span class="text-lg">📝</span><div><p class="text-xs font-black text-blue-600">${a.name} <span class="font-bold text-gray-500">특이사항 보고됨</span></p><p class="text-[10px] text-gray-600 truncate mt-1 line-clamp-2">${log.daily_memo}</p></div></div>`; alertCount++; }
+                            if(log.daily_memo) { alertsHtml += `<div class="bg-blue-50 border border-blue-100 p-3 rounded-xl mb-2 flex items-start gap-2 cursor-pointer active:scale-[0.98]" onclick="openProfilePanel('${a.id}')"><span class="text-lg">📝</span><div><p class="text-xs font-black text-blue-600">${a.name} <span class="font-bold text-gray-500">특이사항 보고됨</span></p><p class="text-[10px] text-gray-600 truncate mt-1 line-clamp-2">${log.daily_memo}</p></div></div>`; alertCount++; }
                         }
                     });
                 }
                 
                 if(a.med_am && !meds['아침 약 완료'] && now.getHours() >= 13 && medDays.includes(todayName)) { 
-                    alertsHtml += `<div class="bg-indigo-50 border border-indigo-100 p-3 rounded-xl mb-2 flex items-start gap-2 cursor-pointer active:scale-[0.98]" onclick="openProfilePanel(${a.id})"><span class="text-lg">💊</span><div><p class="text-xs font-black text-indigo-600">${a.name} <span class="font-bold text-gray-500">아침 약 투여 미확인</span></p></div></div>`; alertCount++; 
+                    alertsHtml += `<div class="bg-indigo-50 border border-indigo-100 p-3 rounded-xl mb-2 flex items-start gap-2 cursor-pointer active:scale-[0.98]" onclick="openProfilePanel('${a.id}')"><span class="text-lg">💊</span><div><p class="text-xs font-black text-indigo-600">${a.name} <span class="font-bold text-gray-500">아침 약 투여 미확인</span></p></div></div>`; alertCount++; 
                 }
 
                 let isTaskTarget = false; let isTaskDone = false;
@@ -1282,8 +1316,9 @@
                     medHtml += `</div>`;
                 }
 
+                // [Fix] a.id를 반드시 작은따옴표로 감싸서 문자열 ID 오류를 방지합니다.
                 listHtml += `
-                    <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center gap-3 cursor-pointer active:scale-[0.98]" onclick="openProfilePanel(${a.id})">
+                    <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center gap-3 cursor-pointer active:scale-[0.98]" onclick="openProfilePanel('${a.id}')">
                         ${photoHtml}
                         <div class="flex-1 min-w-0">
                             <h4 class="font-black text-gray-800 text-sm mb-1.5 truncate">${a.name} ${groupBadge}</h4>
@@ -1311,11 +1346,13 @@
                         <div class="w-full bg-pink-50 rounded-full h-3 mb-2"><div class="bg-pink-400 h-3 rounded-full transition-all duration-500" style="width: ${percent}%"></div></div>
                         <p class="text-[10px] text-gray-400 font-bold text-right">총 ${total}마리 중 ${taskDone.length}마리 완료</p>
                     </div>`;
+                
+                // [Fix] a.id를 반드시 작은따옴표로 감싸서 문자열 ID 오류를 방지합니다.
                 const renderGrid = (list, type) => {
                     if(list.length === 0) return `<p class="text-xs text-gray-400 my-4 text-center w-full">해당하는 아이가 없습니다.</p>`;
                     return `<div class="grid grid-cols-4 sm:grid-cols-5 gap-y-5 gap-x-2 mt-3 w-full">` + list.map(a => {
                         const photo = a.photo ? `<div class="w-14 h-14 rounded-full bg-cover bg-center border-2 border-white shadow-sm mx-auto" style="background-image: url(${a.photo})"></div>` : `<div class="w-14 h-14 rounded-full bg-pink-50 flex items-center justify-center text-xl border-2 border-white shadow-sm mx-auto">🐾</div>`;
-                        return `<div class="flex flex-col items-center cursor-pointer active:scale-95 transition-transform" onclick="${type === 'pending' ? `openRecordPanel(${a.id})` : `openProfilePanel(${a.id})`}">
+                        return `<div class="flex flex-col items-center cursor-pointer active:scale-95 transition-transform" onclick="${type === 'pending' ? `openRecordPanel('${a.id}')` : `openProfilePanel('${a.id}')`}">
                             ${photo}
                             <span class="text-[10px] font-black text-gray-700 mt-1.5 mb-0.5 w-full text-center truncate px-1">${a.name}</span>
                             <div class="w-full px-1">${a._subBadgeHtml || ''}</div>
@@ -1333,7 +1370,7 @@
             }
         }
 
-        // === 8. 캘린더 로직 (VIEW 3) ===
+        // === 캘린더 로직 (VIEW 3) ===
         function renderCalendar() {
             const year = currentDate.getFullYear(); const month = currentDate.getMonth(); document.getElementById('cal-month-title').innerText = `${year}년 ${month + 1}월`;
             const firstDay = new Date(year, month, 1).getDay(); const lastDate = new Date(year, month + 1, 0).getDate(); const calDays = document.getElementById('cal-days'); calDays.innerHTML = '';
@@ -1361,7 +1398,7 @@
             else { database.ref('schedules/' + dateKey).set(scheduleData).then(() => { closeSchedulePanel(); openModal('success', '저장 완료!', '근무표가 공유되었습니다.'); }); }
         }
 
-        // === 9. 행사 및 일정 로직 (VIEW 4) ===
+        // === 행사 및 일정 로직 (VIEW 4) ===
         function openEventPanel(eventId = null) { 
             if(eventId) {
                 const ev = eventsList.find(e => e.id === eventId);
@@ -1382,7 +1419,7 @@
             }
             document.getElementById('event-panel').classList.remove('translate-x-full'); 
         }
-        function closeEventPanel() { document.getElementById('event-panel').classList.add('translate-x-full'); }
+        function closeEventPanel() { document.getElementById('event-panel').classList.add('translate-x-full'); document.activeElement.blur(); }
         function saveEvent() {
             const date = document.getElementById('ev-date').value; const time = document.getElementById('ev-time').value.trim(); const title = document.getElementById('ev-title').value.trim(); const desc = document.getElementById('ev-desc').value.trim();
             if(!date || !title) { openModal('error', '입력 오류', '일자와 행사명은 필수 입력 항목입니다.'); return; }
@@ -1427,9 +1464,10 @@
         }
         function askDeleteEvent(event, eventId) { event.stopPropagation(); openModal('confirm', '일정 삭제', '이 일정을 삭제하시겠습니까?', () => { database.ref('events/' + eventId).remove(); }); }
 
-        // === 10. 프로필 뷰 ===
+        // === 프로필 뷰 ===
         function openProfilePanel(id) {
-            const ani = animals.find(a => a.id === id); if(!ani) return; document.getElementById('pp-animal-id').value = id;
+            // [Fix] id를 안전하게 비교하기 위해 String 변환 사용
+            const ani = animals.find(a => String(a.id) === String(id)); if(!ani) return; document.getElementById('pp-animal-id').value = id;
             populateProfilePanel(ani); document.getElementById('profile-panel').classList.remove('translate-x-full');
         }
         function closeProfilePanel() { document.getElementById('profile-panel').classList.add('translate-x-full'); }
@@ -1446,7 +1484,7 @@
             document.getElementById('pp-name').innerText = ani.name; document.getElementById('pp-info').innerText = `${ani.type||'동물'} · ${ani.breed} · ${ani.gender} · ${ani.age}`;
             
             const sizeBadge = ani.size && ani.size !== '해당없음' && ani.size !== '미정' ? `<span class="px-2 py-1 rounded-md text-[10px] font-black bg-teal-50 text-teal-600 border border-teal-100">${ani.size}</span>` : '';
-            const groupBadge = ani.play_group && ani.play_group !== '미정' ? `<span class="px-2 py-0.5 rounded-md text-[9px] font-black mr-1 ${a.play_group === '단독 활동' ? 'bg-red-50 text-red-500 border border-red-100' : (a.play_group === 'A그룹' ? 'bg-purple-50 text-purple-600 border border-purple-100' : (a.play_group === 'B그룹' ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-cyan-50 text-cyan-600 border border-cyan-100'))}">${a.play_group}</span>` : '';
+            const groupBadge = ani.play_group && ani.play_group !== '미정' ? `<span class="px-2 py-0.5 rounded-md text-[9px] font-black mr-1 ${ani.play_group === '단독 활동' ? 'bg-red-50 text-red-500 border border-red-100' : (ani.play_group === 'A그룹' ? 'bg-purple-50 text-purple-600 border border-purple-100' : (ani.play_group === 'B그룹' ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-cyan-50 text-cyan-600 border border-cyan-100'))}">${ani.play_group}</span>` : '';
             const mealBadge = ani.meal_type === '자율배식' ? `<span class="px-2 py-1 rounded-md text-[10px] font-black bg-yellow-50 text-yellow-600 border border-yellow-100">자율배식</span>` : '';
             document.getElementById('pp-classification').innerHTML = sizeBadge + groupBadge + mealBadge;
 
@@ -1471,9 +1509,9 @@
         }
         function askDeleteAnimal() { const id = document.getElementById('pp-animal-id').value; openModal('confirm', '아이 정보 영구 삭제', '이 동물의 프로필과 모든 기록이 완전히 삭제됩니다. 진행할까요?', () => { database.ref('animals/' + id).remove(); closeProfilePanel(); }); }
 
-        // === 11. 행동 분석(DSCC) ===
+        // === 행동 분석(DSCC) ===
         function openBehaviorFromProfile() { 
-            const id = document.getElementById('pp-animal-id').value; openBehaviorPanel(Number(id)); 
+            const id = document.getElementById('pp-animal-id').value; openBehaviorPanel(id); 
         }
         function setGrade(level) { document.querySelectorAll('.grade-btn').forEach(b => b.classList.remove('grade-active')); document.querySelector(`.g${level}`).classList.add('grade-active'); document.getElementById('bh-grade').value = level; }
         function formatABC(a, b) {
@@ -1483,7 +1521,8 @@
             return `<span class="text-indigo-500">${fa}</span> <span class="text-indigo-800">${fb}</span>`;
         }
         function openBehaviorPanel(id) {
-            const ani = animals.find(a => a.id === id); if(!ani) return;
+            // [Fix] id를 안전하게 비교하기 위해 String 변환 사용
+            const ani = animals.find(a => String(a.id) === String(id)); if(!ani) return;
             editingBehaviorLogId = null;
             document.getElementById('bh-panel-title').innerText = '새 훈련 기록 추가';
             document.getElementById('bh-save-btn').innerText = '훈련 기록 추가하기';
@@ -1519,6 +1558,7 @@
             if(!ani.behavior_logs || Object.keys(ani.behavior_logs).length === 0) { container.innerHTML = `<div class="text-center py-10 text-indigo-300 font-bold bg-white rounded-2xl border border-indigo-50 mt-4"><p>아직 작성된 훈련/행동 트래킹 기록이 없습니다.</p></div>`; return; }
             const logsArray = Object.entries(ani.behavior_logs).map(([k, v]) => ({...v, id: k})).sort((a, b) => b.timestamp - a.timestamp); 
             const gradeColors = { 1: { b: 'border-green-500', bg: 'bg-green-100', t: 'text-green-700', icon: '🟢' }, 2: { b: 'border-blue-500', bg: 'bg-blue-100', t: 'text-blue-700', icon: '🔵' }, 3: { b: 'border-yellow-500', bg: 'bg-yellow-100', t: 'text-yellow-700', icon: '🟡' }, 4: { b: 'border-orange-500', bg: 'bg-orange-100', t: 'text-orange-700', icon: '🟠' }, 5: { b: 'border-red-500', bg: 'bg-red-100', t: 'text-red-700', icon: '🔴' } };
+            // [Fix] ani.id와 log.id를 안전하게 처리
             container.innerHTML = logsArray.map((log, index) => {
                 const isLatest = index === 0; const gColor = gradeColors[log.grade] || gradeColors[3]; const sentence = formatABC(log.a, log.b);
                 return `
@@ -1526,8 +1566,8 @@
                     <div class="absolute left-[11px] top-1.5 w-2.5 h-2.5 rounded-full ${gColor.bg} border-2 ${gColor.b} z-10"></div>
                     <div class="bg-white p-4 rounded-2xl shadow-sm border border-indigo-50 hover:shadow-md transition-shadow relative">
                         <div class="absolute top-4 right-4 flex gap-1">
-                            <button onclick="editBehaviorLog(event, ${ani.id}, '${log.id}')" class="text-[10px] px-2 py-1 bg-gray-50 text-gray-500 rounded-md font-bold active:scale-95 hover:bg-gray-100 border border-gray-100">수정</button>
-                            <button onclick="askDeleteBehaviorLog(event, ${ani.id}, '${log.id}')" class="text-[10px] px-2 py-1 bg-red-50 text-red-500 rounded-md font-bold active:scale-95 hover:bg-red-100 border border-red-100">삭제</button>
+                            <button onclick="editBehaviorLog(event, '${ani.id}', '${log.id}')" class="text-[10px] px-2 py-1 bg-gray-50 text-gray-500 rounded-md font-bold active:scale-95 hover:bg-gray-100 border border-gray-100">수정</button>
+                            <button onclick="askDeleteBehaviorLog(event, '${ani.id}', '${log.id}')" class="text-[10px] px-2 py-1 bg-red-50 text-red-500 rounded-md font-bold active:scale-95 hover:bg-red-100 border border-red-100">삭제</button>
                         </div>
                         <div class="flex items-center gap-2 mb-2 pr-20">
                             <span class="px-2 py-1 rounded-md text-[10px] font-black ${gColor.bg} ${gColor.t}">${gColor.icon} ${log.grade}단계</span>
@@ -1549,7 +1589,8 @@
             }).join('');
         }
         function editBehaviorLog(event, animalId, logId) {
-            event.stopPropagation(); const ani = animals.find(a => a.id === animalId); if(!ani || !ani.behavior_logs || !ani.behavior_logs[logId]) return;
+            // [Fix] 안전하게 String으로 변환해서 비교
+            event.stopPropagation(); const ani = animals.find(a => String(a.id) === String(animalId)); if(!ani || !ani.behavior_logs || !ani.behavior_logs[logId]) return;
             const log = ani.behavior_logs[logId];
             editingBehaviorLogId = logId;
             document.getElementById('bh-panel-title').innerText = '훈련 기록 수정';
@@ -1577,12 +1618,13 @@
             }); 
         }
 
-        // === 12. 과거 기록 열람 ===
+        // === 과거 기록 열람 ===
         function openHistoryFromProfile() { 
-            const id = document.getElementById('pp-animal-id').value; openHistoryPanel(null, Number(id)); 
+            const id = document.getElementById('pp-animal-id').value; openHistoryPanel(null, id); 
         }
         function openHistoryPanel(event, id) {
-            if(event) event.stopPropagation(); const ani = animals.find(a => a.id === id); if(!ani) return;
+            // [Fix] 안전하게 String으로 변환해서 비교
+            if(event) event.stopPropagation(); const ani = animals.find(a => String(a.id) === String(id)); if(!ani) return;
             document.getElementById('hp-animal-id').value = id; 
             const photoHtml = ani.photo ? `<div class="w-10 h-10 rounded-full bg-cover bg-center border-2 border-pink-100" style="background-image: url(${ani.photo})"></div>` : `<div class="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center text-xl">🐾</div>`;
             document.getElementById('hp-header-info').innerHTML = `${photoHtml}<div class="flex flex-col"><span class="font-black text-gray-800 text-lg leading-tight">${ani.name}</span><span class="text-[10px] text-pink-400 font-bold">과거 일과 기록</span></div>`;
@@ -1616,6 +1658,7 @@
             const logsByDate = {};
             Object.entries(ani.daily_logs).forEach(([logKey, log]) => { log.id = logKey; const dateKey = log.date_str || "날짜 미상"; if(!logsByDate[dateKey]) logsByDate[dateKey] = []; logsByDate[dateKey].push(log); });
             const sortedDates = Object.keys(logsByDate).sort((a, b) => b.localeCompare(a));
+            // [Fix] ani.id와 log.id를 안전하게 처리
             container.innerHTML = sortedDates.map((date, index) => {
                 const logs = logsByDate[date].sort((a,b) => b.timestamp - a.timestamp); const accId = `acc-date-${index}`; const isOpen = index === 0; 
                 const logsHtml = logs.map(log => {
@@ -1630,8 +1673,8 @@
                         <div class="flex justify-between items-center mb-2 pb-2 border-b border-gray-50">
                             <div class="flex items-center gap-2"><span class="text-xs text-gray-500 font-bold">${log.time_str || ''}</span><span class="text-[10px] bg-pink-50 text-pink-500 px-2 py-1 rounded-md font-black">작성: ${log.trainer_name}</span></div>
                             <div class="flex gap-1">
-                                <button onclick="editLog(event, ${ani.id}, '${log.id}')" class="text-[10px] px-2 py-1 bg-gray-50 text-gray-500 rounded-md font-bold active:scale-95 hover:bg-gray-100">수정</button>
-                                <button onclick="askDeleteLog(event, ${ani.id}, '${log.id}')" class="text-[10px] px-2 py-1 bg-red-50 text-red-500 rounded-md font-bold active:scale-95 hover:bg-red-100">삭제</button>
+                                <button onclick="editLog(event, '${ani.id}', '${log.id}')" class="text-[10px] px-2 py-1 bg-gray-50 text-gray-500 rounded-md font-bold active:scale-95 hover:bg-gray-100">수정</button>
+                                <button onclick="askDeleteLog(event, '${ani.id}', '${log.id}')" class="text-[10px] px-2 py-1 bg-red-50 text-red-500 rounded-md font-bold active:scale-95 hover:bg-red-100">삭제</button>
                             </div>
                         </div>
                         <div class="text-sm text-gray-700">${content}</div>
@@ -1642,7 +1685,7 @@
         }
         function askDeleteLog(event, animalId, logId) { event.stopPropagation(); openModal('confirm', '기록을 삭제할까요?', '해당 시간의 일과 기록이 영구적으로 삭제됩니다.', () => { database.ref('animals/' + animalId + '/daily_logs/' + logId).remove(); }); }
 
-        // === 14. 일과 기록 작성/수정 ===
+        // === 일과 기록 작성/수정 ===
         function setToggleState(selector, text, isPartial = false) { document.querySelectorAll(selector).forEach(btn => { if(isPartial ? btn.innerText.includes(text) : btn.innerText === text) { btn.classList.remove('btn-inactive'); btn.classList.add('btn-active'); } }); }
         function forceMultiState(id, isActive) { const btn = document.getElementById(id); if(isActive) { btn.classList.remove('btn-inactive'); btn.classList.add('btn-active'); } }
         function toggleSelect(clickedBtn, groupClass) { const wasActive = clickedBtn.classList.contains('btn-active'); document.querySelectorAll(`.${groupClass}-btn`).forEach(btn => { btn.classList.remove('btn-active'); btn.classList.add('btn-inactive'); }); if (!wasActive) { clickedBtn.classList.remove('btn-inactive'); clickedBtn.classList.add('btn-active'); } }
@@ -1658,10 +1701,11 @@
         function resetRecordForm() { editingLogId = null; editingLogOriginalData = null; document.getElementById('record-action-text').innerText = '기록'; clearFormFields(); }
 
         function openRecordFromProfile() { 
-            const id = document.getElementById('pp-animal-id').value; openRecordPanel(Number(id)); 
+            const id = document.getElementById('pp-animal-id').value; openRecordPanel(id); 
         }
         function openRecordPanel(id) {
-            const ani = animals.find(a => a.id === id); if(!ani) return; document.getElementById('rp-animal-id').value = id;
+            // [Fix] 안전하게 String으로 변환해서 비교
+            const ani = animals.find(a => String(a.id) === String(id)); if(!ani) return; document.getElementById('rp-animal-id').value = id;
             const medSection = document.getElementById('rp-med-section'); const btnAm = document.getElementById('btn-med-am'); const btnPm = document.getElementById('btn-med-pm');
             
             if(ani.med_am || ani.med_pm) { medSection.classList.remove('hidden'); btnAm.classList.toggle('hidden', !ani.med_am); btnPm.classList.toggle('hidden', !ani.med_pm); } else { medSection.classList.add('hidden'); }
@@ -1682,7 +1726,7 @@
 
         function saveDetailLog() {
             const id = document.getElementById('rp-animal-id').value; if(!id) return;
-            const ani = animals.find(a => a.id == id); if(!ani) return;
+            const ani = animals.find(a => String(a.id) === String(id)); if(!ani) return;
 
             const medTimeBtn = document.querySelector('.med-time-btn.btn-active'); const medTime = medTimeBtn ? medTimeBtn.innerText : null;
             const walkTimeBtn = document.querySelector('.walk-time-btn.btn-active'); const walkTime = walkTimeBtn ? walkTimeBtn.innerText : null;
@@ -1715,7 +1759,8 @@
         }
 
         function editLog(event, animalId, logId) {
-            event.stopPropagation(); const ani = animals.find(a => a.id === animalId); if(!ani || !ani.daily_logs || !ani.daily_logs[logId]) return;
+            // [Fix] 안전하게 String으로 변환해서 비교
+            event.stopPropagation(); const ani = animals.find(a => String(a.id) === String(animalId)); if(!ani || !ani.daily_logs || !ani.daily_logs[logId]) return;
             const log = ani.daily_logs[logId]; editingLogId = logId; editingLogOriginalData = log; document.getElementById('rp-animal-id').value = animalId;
 
             const medSection = document.getElementById('rp-med-section'); const btnAm = document.getElementById('btn-med-am'); const btnPm = document.getElementById('btn-med-pm');
