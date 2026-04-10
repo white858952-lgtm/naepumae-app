@@ -43,7 +43,7 @@
         .g5.grade-active { border-color: #ef4444 !important; background-color: #fee2e2 !important; color: #991b1b !important; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
         
         @keyframes tut-pulse-anim { 
             0% { box-shadow: 0 0 0 0 rgba(255, 20, 147, 0.9); } 
@@ -181,7 +181,7 @@
                 <div class="absolute inset-y-0 left-5 flex items-center pointer-events-none"><span class="text-gray-400 text-lg">🔍</span></div>
                 <input type="text" id="search-input" oninput="handleSearch()" placeholder="이름, 그룹, 성격으로 빠르게 찾기" class="w-full pl-10 pr-4 py-3.5 bg-white border border-pink-100 rounded-2xl text-sm font-bold text-gray-700 shadow-sm outline-none focus:border-pink-300 transition-colors">
             </div>
-            <div id="filter-container" class="flex gap-2 px-2 overflow-x-auto hide-scrollbar mb-4 pb-1"></div>
+            <div id="filter-container" class="flex gap-2 px-2 overflow-visible hide-scrollbar mb-4 pb-1 relative z-30"></div>
             <div id="task-container" class="space-y-4 px-1 pb-10"></div>
         </div>
 
@@ -616,6 +616,13 @@
         </div>
 
     <script>
+        // 전역 이벤트 리스너 (커스텀 드롭다운 닫기 용도)
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.filter-dropdown-container')) {
+                document.querySelectorAll('.filter-dropdown-menu').forEach(el => el.classList.add('hidden'));
+            }
+        });
+
         const ADMIN_PASSWORD = '7175';
 
         let currentTrainerName = localStorage.getItem('naepumae_trainer_name');
@@ -984,7 +991,6 @@
             else { breedSelect.value = ani.breed === '미상' ? "" : ani.breed; checkCustomBreed('edit'); }
             
             setSelectValue('edit-size', ['소형견', '중형견', '대형견', '해당없음'], ani.size); 
-            // [개선] 레거시(예전) 데이터 로딩 시 호환되도록 배열 확장
             setSelectValue('edit-group', ['A그룹(중대형견)', 'B그룹(중대형견)', 'C그룹(중대형견)', 'A그룹(소형견)', 'B그룹(소형견)', 'C그룹(소형견)', '단독 활동(격리)', 'A그룹', 'B그룹', 'C그룹', '단독 활동'], ani.play_group);
             
             setSelectValue('edit-gender', ['남아', '여아', '중성화된 남아', '중성화된 여아'], ani.gender); document.getElementById('edit-age').value = ani.age;
@@ -1032,7 +1038,16 @@
             database.ref('animals/' + targetId).set(saveObj).then(() => { closeEditPanel(); openModal('success', '수정 완료!', `${name}의 정보가 업데이트되었습니다.`); });
         }
 
-        // === 필터 및 리스트 (VIEW 1 개선됨) ===
+        // === 필터 및 리스트 (커스텀 드롭다운 개선) ===
+        function toggleFilterDropdown(id) {
+            if(event) event.stopPropagation();
+            document.querySelectorAll('.filter-dropdown-menu').forEach(el => {
+                if(el.id !== id) el.classList.add('hidden');
+            });
+            const menu = document.getElementById(id);
+            if(menu) menu.classList.toggle('hidden');
+        }
+
         function renderFilters() {
             const container = document.getElementById('filter-container');
             
@@ -1043,37 +1058,61 @@
             const isStatusActive = ['protecting', 'temp', 'adopt'].includes(currentFilter);
             const isGroupActive = ['grA_L', 'grB_L', 'grC_L', 'grA_S', 'grB_S', 'grC_S', 'grAlone'].includes(currentFilter);
 
+            let statusLabel = '보호형태';
+            if (currentFilter === 'protecting') statusLabel = '보호 중 🏡';
+            else if (currentFilter === 'temp') statusLabel = '임시보호 🏨';
+            else if (currentFilter === 'adopt') statusLabel = '입양 대기 💝';
+
+            let groupLabel = '합사그룹';
+            if (currentFilter === 'grA_L') groupLabel = 'A(중대형)';
+            else if (currentFilter === 'grB_L') groupLabel = 'B(중대형)';
+            else if (currentFilter === 'grC_L') groupLabel = 'C(중대형)';
+            else if (currentFilter === 'grA_S') groupLabel = 'A(소형)';
+            else if (currentFilter === 'grB_S') groupLabel = 'B(소형)';
+            else if (currentFilter === 'grC_S') groupLabel = 'C(소형)';
+            else if (currentFilter === 'grAlone') groupLabel = '단독 활동';
+
             container.innerHTML = `
                 <button onclick="setFilter('all')" class="${btnBase} ${currentFilter === 'all' ? btnActive : btnInactive}">전체보기</button>
                 <button onclick="setFilter('dog')" class="${btnBase} ${currentFilter === 'dog' ? btnActive : btnInactive}">개 🐶</button>
                 <button onclick="setFilter('cat')" class="${btnBase} ${currentFilter === 'cat' ? btnActive : btnInactive}">고양이 🐱</button>
-                
-                <div class="relative shrink-0">
-                    <select onchange="setFilter(this.value)" class="appearance-none ${btnBase} ${isStatusActive ? btnActive : btnInactive} pr-6 cursor-pointer">
-                        <option value="status_none" ${!isStatusActive ? 'selected' : ''} disabled>보호형태 ▼</option>
-                        <option value="protecting" ${currentFilter==='protecting'?'selected':''}>보호 중 🏡</option>
-                        <option value="temp" ${currentFilter==='temp'?'selected':''}>임시보호 🏨</option>
-                        <option value="adopt" ${currentFilter==='adopt'?'selected':''}>입양 대기 💝</option>
-                    </select>
-                    <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center text-[8px] ${isStatusActive ? 'text-white' : 'text-pink-400'}">▼</div>
+
+                <div class="relative shrink-0 filter-dropdown-container">
+                    <button onclick="toggleFilterDropdown('drop-status')" class="${btnBase} ${isStatusActive ? btnActive : btnInactive} flex items-center gap-1.5">
+                        ${statusLabel} <span class="text-[8px] opacity-70">▼</span>
+                    </button>
+                    <div id="drop-status" class="filter-dropdown-menu hidden absolute z-[100] mt-2 w-32 bg-white rounded-2xl shadow-xl border border-pink-100 py-2 left-0 animate-fade-in origin-top-left">
+                        <button onclick="setFilter('all')" class="block w-full text-left px-4 py-2 text-[11px] font-black text-gray-400 hover:bg-pink-50 transition-colors">초기화</button>
+                        <div class="h-px bg-pink-50 my-1"></div>
+                        <button onclick="setFilter('protecting')" class="block w-full text-left px-4 py-2 text-[11px] font-black text-gray-700 hover:bg-pink-50 transition-colors">보호 중 🏡</button>
+                        <button onclick="setFilter('temp')" class="block w-full text-left px-4 py-2 text-[11px] font-black text-gray-700 hover:bg-pink-50 transition-colors">임시보호 🏨</button>
+                        <button onclick="setFilter('adopt')" class="block w-full text-left px-4 py-2 text-[11px] font-black text-gray-700 hover:bg-pink-50 transition-colors">입양 대기 💝</button>
+                    </div>
                 </div>
 
-                <div class="relative shrink-0">
-                    <select onchange="setFilter(this.value)" class="appearance-none ${btnBase} ${isGroupActive ? btnActive : btnInactive} pr-6 cursor-pointer">
-                        <option value="group_none" ${!isGroupActive ? 'selected' : ''} disabled>합사그룹 ▼</option>
-                        <option value="grA_L" ${currentFilter==='grA_L'?'selected':''}>A그룹 (중대형)</option>
-                        <option value="grB_L" ${currentFilter==='grB_L'?'selected':''}>B그룹 (중대형)</option>
-                        <option value="grC_L" ${currentFilter==='grC_L'?'selected':''}>C그룹 (중대형)</option>
-                        <option value="grA_S" ${currentFilter==='grA_S'?'selected':''}>A그룹 (소형)</option>
-                        <option value="grB_S" ${currentFilter==='grB_S'?'selected':''}>B그룹 (소형)</option>
-                        <option value="grC_S" ${currentFilter==='grC_S'?'selected':''}>C그룹 (소형)</option>
-                        <option value="grAlone" ${currentFilter==='grAlone'?'selected':''}>단독 활동 (격리)</option>
-                    </select>
-                    <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center text-[8px] ${isGroupActive ? 'text-white' : 'text-pink-400'}">▼</div>
+                <div class="relative shrink-0 filter-dropdown-container">
+                    <button onclick="toggleFilterDropdown('drop-group')" class="${btnBase} ${isGroupActive ? btnActive : btnInactive} flex items-center gap-1.5">
+                        ${groupLabel} <span class="text-[8px] opacity-70">▼</span>
+                    </button>
+                    <div id="drop-group" class="filter-dropdown-menu hidden absolute z-[100] mt-2 w-36 bg-white rounded-2xl shadow-xl border border-pink-100 py-2 left-0 animate-fade-in origin-top-left">
+                        <button onclick="setFilter('all')" class="block w-full text-left px-4 py-2 text-[11px] font-black text-gray-400 hover:bg-pink-50 transition-colors">초기화</button>
+                        <div class="h-px bg-pink-50 my-1"></div>
+                        <p class="px-4 py-1 text-[9px] font-black text-pink-300">중대형견</p>
+                        <button onclick="setFilter('grA_L')" class="block w-full text-left px-4 py-2 text-[11px] font-black text-gray-700 hover:bg-pink-50 transition-colors">A그룹</button>
+                        <button onclick="setFilter('grB_L')" class="block w-full text-left px-4 py-2 text-[11px] font-black text-gray-700 hover:bg-pink-50 transition-colors">B그룹</button>
+                        <button onclick="setFilter('grC_L')" class="block w-full text-left px-4 py-2 text-[11px] font-black text-gray-700 hover:bg-pink-50 transition-colors">C그룹</button>
+                        <div class="h-px bg-pink-50 my-1"></div>
+                        <p class="px-4 py-1 text-[9px] font-black text-pink-300">소형견</p>
+                        <button onclick="setFilter('grA_S')" class="block w-full text-left px-4 py-2 text-[11px] font-black text-gray-700 hover:bg-pink-50 transition-colors">A그룹</button>
+                        <button onclick="setFilter('grB_S')" class="block w-full text-left px-4 py-2 text-[11px] font-black text-gray-700 hover:bg-pink-50 transition-colors">B그룹</button>
+                        <button onclick="setFilter('grC_S')" class="block w-full text-left px-4 py-2 text-[11px] font-black text-gray-700 hover:bg-pink-50 transition-colors">C그룹</button>
+                        <div class="h-px bg-pink-50 my-1"></div>
+                        <button onclick="setFilter('grAlone')" class="block w-full text-left px-4 py-2 text-[11px] font-black text-red-500 hover:bg-red-50 transition-colors">단독 활동 (격리)</button>
+                    </div>
                 </div>
             `;
         }
-        function setFilter(filterType) { currentFilter = filterType; renderFilters(); renderTasks(); }
+        function setFilter(filterType) { currentFilter = filterType; document.querySelectorAll('.filter-dropdown-menu').forEach(el => el.classList.add('hidden')); renderFilters(); renderTasks(); }
         function handleSearch() { currentSearchQuery = document.getElementById('search-input').value.toLowerCase().trim(); renderTasks(); }
 
         function renderTasks() {
@@ -1082,14 +1121,12 @@
                 if (currentFilter === 'dog' && a.type !== '개') return false; if (currentFilter === 'cat' && a.type !== '고양이') return false;
                 if (currentFilter === 'protecting' && !(a.status && a.status.includes('보호 중'))) return false; if (currentFilter === 'temp' && !(a.status && a.status.includes('임시보호'))) return false; if (currentFilter === 'adopt' && !(a.status && a.status.includes('입양 대기'))) return false;
                 
-                // 그룹 필터링 로직 개선
                 if (currentFilter === 'grA_L' && a.play_group !== 'A그룹(중대형견)') return false;
                 if (currentFilter === 'grB_L' && a.play_group !== 'B그룹(중대형견)') return false;
                 if (currentFilter === 'grC_L' && a.play_group !== 'C그룹(중대형견)') return false;
                 if (currentFilter === 'grA_S' && a.play_group !== 'A그룹(소형견)') return false;
                 if (currentFilter === 'grB_S' && a.play_group !== 'B그룹(소형견)') return false;
                 if (currentFilter === 'grC_S' && a.play_group !== 'C그룹(소형견)') return false;
-                // 단독 활동은 이전 '단독 활동'과 '단독 활동(격리)' 모두 호환
                 if (currentFilter === 'grAlone' && !(a.play_group && a.play_group.includes('단독 활동'))) return false;
 
                 if (currentSearchQuery) {
@@ -1130,7 +1167,7 @@
             });
         }
 
-        // === 대시보드 (VIEW 2) ===
+        // === 대시보드 (업무 담당자 표시 추가) ===
         function setDashTab(tab) {
             currentDashTab = tab;
             document.getElementById('btn-dash-animal').className = tab === 'animal' ? 'flex-1 py-2 text-xs font-black rounded-lg bg-white shadow-sm text-pink-600 transition-all' : 'flex-1 py-2 text-xs font-black rounded-lg text-pink-400 opacity-70 transition-all';
@@ -1154,16 +1191,25 @@
             let taskPending = []; let taskDone = [];
 
             animals.forEach(a => {
-                let walks = { '오전': false, '오후': false, '저녁': false }; let meals = { '아침': false, '저녁': false }; let meds = { '아침 약 완료': false, '저녁 약 완료': false }; 
+                let walks = { '오전': false, '오후': false, '저녁': false }; 
+                let walkTrainers = { '오전': '', '오후': '', '저녁': '' };
+                let meals = { '아침': false, '저녁': false }; 
+                let mealTrainers = { '아침': '', '저녁': '' };
+                let meds = { '아침 약 완료': false, '저녁 약 완료': false }; 
+                let medTrainers = { '아침 약 완료': '', '저녁 약 완료': '' };
+                
                 let hasFeces = false; let hasUrine = false;
                 const medDays = a.med_days ? a.med_days : '월,화,수,목,금,토,일';
 
                 if(a.daily_logs) {
                     Object.values(a.daily_logs).forEach(log => {
                         if(log.date_str === todayStr) {
-                            if(log.walk) { if(log.walk.time !== '-') walks[log.walk.time] = true; if(log.walk.condition === '나쁨') { alertsHtml += `<div class="bg-red-50 border border-red-100 p-3 rounded-xl mb-2 flex items-start gap-2 cursor-pointer active:scale-[0.98]" onclick="openProfilePanel('${a.id}')"><span class="text-lg">🚨</span><div><p class="text-xs font-black text-red-600">${a.name} <span class="font-bold text-gray-500">산책 컨디션 나쁨</span></p></div></div>`; alertCount++; } }
-                            if(log.meal && log.meal.time !== '-') meals[log.meal.time] = true;
-                            if(log.med && log.med.time !== '-') meds[log.med.time] = true; 
+                            if(log.walk) { 
+                                if(log.walk.time !== '-') { walks[log.walk.time] = true; walkTrainers[log.walk.time] = log.trainer_name; }
+                                if(log.walk.condition === '나쁨') { alertsHtml += `<div class="bg-red-50 border border-red-100 p-3 rounded-xl mb-2 flex items-start gap-2 cursor-pointer active:scale-[0.98]" onclick="openProfilePanel('${a.id}')"><span class="text-lg">🚨</span><div><p class="text-xs font-black text-red-600">${a.name} <span class="font-bold text-gray-500">산책 컨디션 나쁨</span></p></div></div>`; alertCount++; } 
+                            }
+                            if(log.meal && log.meal.time !== '-') { meals[log.meal.time] = true; mealTrainers[log.meal.time] = log.trainer_name; }
+                            if(log.med && log.med.time !== '-') { meds[log.med.time] = true; medTrainers[log.med.time] = log.trainer_name; } 
                             if(log.potty) {
                                 if(log.potty.type.includes('대변')) hasFeces = true; if(log.potty.type.includes('소변')) hasUrine = true;
                                 if(log.potty.memo && log.potty.memo !== '특이사항 없음' && log.potty.memo !== '정상 (양호)') { alertsHtml += `<div class="bg-orange-50 border border-orange-100 p-3 rounded-xl mb-2 flex items-start gap-2 cursor-pointer active:scale-[0.98]" onclick="openProfilePanel('${a.id}')"><span class="text-lg">💩</span><div><p class="text-xs font-black text-orange-600">${a.name} <span class="font-bold text-gray-500">${log.potty.memo}</span></p></div></div>`; alertCount++; }
@@ -1183,20 +1229,46 @@
                 if(currentDashTask === 'walk') { 
                     if(isDog) { 
                         isTaskTarget = true; isTaskDone = walks['오전'] || walks['오후'] || walks['저녁'];
-                        let doneWalks = []; if(walks['오전']) doneWalks.push('오전'); if(walks['오후']) doneWalks.push('오후'); if(walks['저녁']) doneWalks.push('저녁');
-                        if(doneWalks.length > 0) subBadgeHtml = `<span class="px-1.5 py-0.5 bg-green-50 text-green-600 rounded text-[8px] font-black w-full text-center truncate">${doneWalks.join(', ')}</span>`; else subBadgeHtml = `<span class="px-1.5 py-0.5 bg-red-50 text-red-500 rounded text-[8px] font-black w-full text-center">미완료</span>`;
+                        let badgeParts = []; 
+                        if(walks['오전']) badgeParts.push(`<div class="bg-green-50 text-green-600 rounded px-1 py-0.5 w-full text-center"><span class="block text-[9px] font-black">오전</span><span class="block text-[8px] font-bold opacity-80 truncate" title="${walkTrainers['오전']}">${walkTrainers['오전']}</span></div>`);
+                        if(walks['오후']) badgeParts.push(`<div class="bg-green-50 text-green-600 rounded px-1 py-0.5 w-full text-center"><span class="block text-[9px] font-black">오후</span><span class="block text-[8px] font-bold opacity-80 truncate" title="${walkTrainers['오후']}">${walkTrainers['오후']}</span></div>`);
+                        if(walks['저녁']) badgeParts.push(`<div class="bg-green-50 text-green-600 rounded px-1 py-0.5 w-full text-center"><span class="block text-[9px] font-black">저녁</span><span class="block text-[8px] font-bold opacity-80 truncate" title="${walkTrainers['저녁']}">${walkTrainers['저녁']}</span></div>`);
+                        
+                        if(badgeParts.length > 0) subBadgeHtml = `<div class="flex flex-col gap-1 w-full">${badgeParts.join('')}</div>`; 
+                        else subBadgeHtml = `<span class="px-1.5 py-0.5 bg-red-50 text-red-500 rounded text-[8px] font-black w-full text-center inline-block">미완료</span>`;
                     } 
                 }
                 else if(currentDashTask === 'meal') { 
                     isTaskTarget = true; 
-                    if (a.meal_type === '자율배식') { isTaskDone = true; subBadgeHtml = `<span class="px-1.5 py-0.5 bg-yellow-50 text-yellow-600 border border-yellow-100 rounded text-[8px] font-black w-full text-center">자율배식</span>`; } 
-                    else { isTaskDone = meals['아침'] && meals['저녁']; subBadgeHtml = `<div class="flex gap-0.5 justify-center w-full"><span class="px-1 py-0.5 rounded text-[8px] font-black flex-1 text-center ${meals['아침'] ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-400'}">아침</span><span class="px-1 py-0.5 rounded text-[8px] font-black flex-1 text-center ${meals['저녁'] ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-400'}">저녁</span></div>`; }
+                    if (a.meal_type === '자율배식') { 
+                        isTaskDone = true; 
+                        subBadgeHtml = `<span class="px-1.5 py-0.5 bg-yellow-50 text-yellow-600 border border-yellow-100 rounded text-[8px] font-black w-full text-center inline-block">자율배식</span>`; 
+                    } 
+                    else { 
+                        isTaskDone = meals['아침'] && meals['저녁']; 
+                        let badgeParts = [];
+                        if(meals['아침']) badgeParts.push(`<div class="flex-1 bg-green-50 text-green-600 rounded px-1 py-0.5 text-center"><span class="block text-[9px] font-black">아침</span><span class="block text-[8px] font-bold opacity-80 truncate" title="${mealTrainers['아침']}">${mealTrainers['아침']}</span></div>`);
+                        else badgeParts.push(`<div class="flex-1 bg-gray-100 text-gray-400 rounded px-1 py-0.5 text-center"><span class="block text-[9px] font-black mt-1">아침</span></div>`);
+
+                        if(meals['저녁']) badgeParts.push(`<div class="flex-1 bg-green-50 text-green-600 rounded px-1 py-0.5 text-center"><span class="block text-[9px] font-black">저녁</span><span class="block text-[8px] font-bold opacity-80 truncate" title="${mealTrainers['저녁']}">${mealTrainers['저녁']}</span></div>`);
+                        else badgeParts.push(`<div class="flex-1 bg-gray-100 text-gray-400 rounded px-1 py-0.5 text-center"><span class="block text-[9px] font-black mt-1">저녁</span></div>`);
+
+                        subBadgeHtml = `<div class="flex gap-1 w-full justify-center">${badgeParts.join('')}</div>`; 
+                    }
                 }
                 else if(currentDashTask === 'med') { 
                     if((a.med_am || a.med_pm) && medDays.includes(todayName)) { 
                         isTaskTarget = true; isTaskDone = (!a.med_am || meds['아침 약 완료']) && (!a.med_pm || meds['저녁 약 완료']);
-                        let medBadges = []; if(a.med_am) medBadges.push(`<span class="px-1 py-0.5 rounded text-[8px] font-black flex-1 text-center ${meds['아침 약 완료'] ? 'bg-indigo-50 text-indigo-600' : 'bg-gray-100 text-gray-400'}">아침</span>`); if(a.med_pm) medBadges.push(`<span class="px-1 py-0.5 rounded text-[8px] font-black flex-1 text-center ${meds['저녁 약 완료'] ? 'bg-indigo-50 text-indigo-600' : 'bg-gray-100 text-gray-400'}">저녁</span>`);
-                        subBadgeHtml = `<div class="flex gap-0.5 justify-center w-full">${medBadges.join('')}</div>`;
+                        let badgeParts = [];
+                        if(a.med_am) {
+                            if(meds['아침 약 완료']) badgeParts.push(`<div class="flex-1 bg-indigo-50 text-indigo-600 rounded px-1 py-0.5 text-center"><span class="block text-[9px] font-black">아침</span><span class="block text-[8px] font-bold opacity-80 truncate" title="${medTrainers['아침 약 완료']}">${medTrainers['아침 약 완료']}</span></div>`);
+                            else badgeParts.push(`<div class="flex-1 bg-gray-100 text-gray-400 rounded px-1 py-0.5 text-center"><span class="block text-[9px] font-black mt-1">아침</span></div>`);
+                        }
+                        if(a.med_pm) {
+                            if(meds['저녁 약 완료']) badgeParts.push(`<div class="flex-1 bg-indigo-50 text-indigo-600 rounded px-1 py-0.5 text-center"><span class="block text-[9px] font-black">저녁</span><span class="block text-[8px] font-bold opacity-80 truncate" title="${medTrainers['저녁 약 완료']}">${medTrainers['저녁 약 완료']}</span></div>`);
+                            else badgeParts.push(`<div class="flex-1 bg-gray-100 text-gray-400 rounded px-1 py-0.5 text-center"><span class="block text-[9px] font-black mt-1">저녁</span></div>`);
+                        }
+                        subBadgeHtml = `<div class="flex gap-1 w-full justify-center">${badgeParts.join('')}</div>`;
                     } 
                 }
 
@@ -1247,11 +1319,11 @@
                 
                 const renderGrid = (list, type) => {
                     if(list.length === 0) return `<p class="text-xs text-gray-400 my-4 text-center w-full">해당하는 아이가 없습니다.</p>`;
-                    return `<div class="grid grid-cols-4 sm:grid-cols-5 gap-y-5 gap-x-2 mt-3 w-full">` + list.map(a => {
-                        const photo = a.photo ? `<div class="w-14 h-14 rounded-full bg-cover bg-center border-2 border-white shadow-sm mx-auto" style="background-image: url(${a.photo})"></div>` : `<div class="w-14 h-14 rounded-full bg-pink-50 flex items-center justify-center text-xl border-2 border-white shadow-sm mx-auto">🐾</div>`;
-                        return `<div class="flex flex-col items-center cursor-pointer active:scale-95 transition-transform" onclick="${type === 'pending' ? `openRecordPanel('${a.id}')` : `openProfilePanel('${a.id}')`}">
+                    return `<div class="grid grid-cols-4 sm:grid-cols-5 gap-y-5 gap-x-2 mt-3 w-full items-start">` + list.map(a => {
+                        const photo = a.photo ? `<div class="w-14 h-14 rounded-full bg-cover bg-center border-2 border-white shadow-sm mx-auto shrink-0" style="background-image: url(${a.photo})"></div>` : `<div class="w-14 h-14 rounded-full bg-pink-50 flex items-center justify-center text-xl border-2 border-white shadow-sm mx-auto shrink-0">🐾</div>`;
+                        return `<div class="flex flex-col items-center cursor-pointer active:scale-95 transition-transform w-full" onclick="${type === 'pending' ? `openRecordPanel('${a.id}')` : `openProfilePanel('${a.id}')`}">
                             ${photo}
-                            <span class="text-[10px] font-black text-gray-700 mt-1.5 mb-0.5 w-full text-center truncate px-1">${a.name}</span>
+                            <span class="text-[10px] font-black text-gray-700 mt-1.5 mb-1 w-full text-center truncate px-1">${a.name}</span>
                             <div class="w-full px-1">${a._subBadgeHtml || ''}</div>
                         </div>`;
                     }).join('') + `</div>`;
@@ -1358,7 +1430,7 @@
         }
         function closeProfilePanel() { document.getElementById('profile-panel').classList.add('translate-x-full'); }
         function populateProfilePanel(ani) {
-                        if(ani.photo) { document.getElementById('pp-photo').style.backgroundImage = `url(${ani.photo})`; document.getElementById('pp-photo').innerText = ''; } 
+            if(ani.photo) { document.getElementById('pp-photo').style.backgroundImage = `url(${ani.photo})`; document.getElementById('pp-photo').innerText = ''; } 
             else { document.getElementById('pp-photo').style.backgroundImage = 'none'; document.getElementById('pp-photo').innerText = '🐾'; }
             
             const shortStatus = ani.status ? ani.status.split(' ')[0] + ' ' + ani.status.split(' ')[1] : '보호 중 🏡';
@@ -1680,4 +1752,3 @@
     </script>
 </body>
 </html>
-
