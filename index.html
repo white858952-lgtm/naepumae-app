@@ -8,7 +8,6 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="내품에센터">
-    
     <link rel="icon" type="image/png" sizes="192x192" href="https://cdn-icons-png.flaticon.com/512/616/616408.png">
     <link rel="icon" type="image/png" sizes="512x512" href="https://cdn-icons-png.flaticon.com/512/616/616408.png">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/616/616408.png">
@@ -19,7 +18,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
-        body { font-family: 'Noto Sans KR', sans-serif; background-color: #fff5f7; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; overflow-x: hidden; }
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: #fff5f7; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; overflow-x: hidden; transition: background-color 0.3s; }
         .pink-gradient { background: linear-gradient(135deg, #ff69b4 0%, #ff85c0 100%); }
         .card { background: white; border-radius: 28px; padding: 20px; border: 1px solid #ffe4e9; box-shadow: 0 10px 20px rgba(255, 105, 180, 0.03); }
         .modal-bg { background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(6px); z-index: 10000; position: fixed; inset: 0; display: none; align-items: center; justify-content: center; }
@@ -76,6 +75,23 @@
         .status-badge { display: inline-flex; align-items: center; justify-content: center; height: 20px; padding: 0 6px; border-radius: 6px; font-size: 10px; font-weight: 900; margin-right: 4px; }
         .status-done { background-color: #dcfce7; color: #059669; }
         .status-none { background-color: #f3f4f6; color: #9ca3af; }
+
+        /* 🌳 숲센터 전용 테마 CSS (코드 추가를 최소화하기 위한 마법!) 🌳 */
+        .forest-theme { background-color: #f0fdf4 !important; }
+        .forest-theme .pink-gradient { background: linear-gradient(135deg, #10b981 0%, #34d399 100%) !important; }
+        .forest-theme .text-\[\#ff69b4\] { color: #10b981 !important; }
+        .forest-theme .bg-pink-500 { background-color: #10b981 !important; }
+        .forest-theme .bg-pink-50 { background-color: #ecfdf5 !important; }
+        .forest-theme .text-pink-500 { color: #059669 !important; }
+        .forest-theme .text-pink-600 { color: #047857 !important; }
+        .forest-theme .text-pink-400 { color: #34d399 !important; }
+        .forest-theme .border-pink-100 { border-color: #d1fae5 !important; }
+        .forest-theme .border-pink-300 { border-color: #6ee7b7 !important; }
+        .forest-theme .border-pink-400 { border-color: #10b981 !important; }
+        .forest-theme #pp-photo, .forest-theme .cal-day.today { background-color: #10b981 !important; }
+        .forest-theme .cal-dot { background-color: #10b981 !important; }
+        .forest-theme .tut-target-active { outline-color: #10b981 !important; box-shadow: 0 0 0 14px rgba(16, 185, 129, 0) !important; }
+        .forest-theme .btn-active { background-color: #d1fae5 !important; color: #047857 !important; border-color: #10b981 !important; }
     </style>
 </head>
 <body class="max-w-md mx-auto p-4 relative" onload="checkAuth()">
@@ -103,6 +119,12 @@
         <div class="w-full max-w-sm animate-fade-in text-center">
             <div class="text-6xl mb-4">🐾</div>
             <h1 class="text-2xl font-black text-gray-800 mb-2">내품에 관리 시스템</h1>
+            
+            <div class="flex bg-gray-100 p-1.5 rounded-2xl mb-8 border border-gray-200">
+                <button onclick="selectCenterType('main')" id="type-btn-main" class="flex-1 py-3 rounded-xl font-black text-sm transition-all bg-white text-pink-500 shadow-sm">🏢 본점 센터</button>
+                <button onclick="selectCenterType('forest')" id="type-btn-forest" class="flex-1 py-3 rounded-xl font-black text-sm transition-all text-gray-400">🌳 숲센터(분소)</button>
+            </div>
+
             <p class="text-gray-500 font-bold mb-8 text-sm">외부 접근이 차단된 안전한 시스템입니다.<br>소속 훈련사님의 이름을 입력하고 권한을 요청하세요.</p>
             <input type="text" id="setup-trainer-name" placeholder="예: 김현우 훈련사" class="w-full p-4 border border-pink-100 rounded-2xl outline-none bg-gray-50 text-center font-black text-lg focus:border-pink-400 focus:bg-white transition-colors mb-4 shadow-sm">
             <button onclick="requestAccess()" class="w-full py-4 pink-gradient text-white font-black text-lg rounded-2xl shadow-lg active:scale-95 transition-transform mb-6">접속 권한 요청하기</button>
@@ -169,8 +191,8 @@
             <div id="header-spacer" class="w-10"></div> 
             
             <div class="text-center absolute left-1/2 transform -translate-x-1/2 w-full pointer-events-none mt-2">
-                <h1 class="text-3xl font-black text-[#ff69b4] mb-1">내품에 센터</h1>
-                <p class="text-gray-500 text-[10px] font-bold tracking-tight">반려동물과 행복한 서대문</p>
+                <h1 id="main-title-text" class="text-3xl font-black text-[#ff69b4] mb-1">내품에 센터</h1>
+                <p id="main-subtitle-text" class="text-gray-500 text-[10px] font-bold tracking-tight">반려동물과 행복한 서대문</p>
             </div>
 
             <button id="header-profile-btn" onclick="openProfileEditModal()" class="flex items-center gap-1.5 bg-pink-50 border border-pink-100 px-3 py-1.5 rounded-full text-pink-500 shadow-sm active:scale-95 transition-transform z-10 ml-auto">
@@ -295,6 +317,7 @@
                         <option value="제한급여" selected>제한급여 (아침/저녁)</option>
                         <option value="자율배식">자율배식 (항상 완료)</option>
                     </select>
+                    
                     <select id="in-status" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-600 text-sm font-bold shadow-sm">
                         <option value="" disabled selected>보호 상태</option><option value="보호 중 🏡">보호 중 (입양 대기)</option><option value="임시보호 🏨">임시보호 (위탁)</option><option value="입양 대기 💝">입양 대기 (확정)</option><option value="입양 완료 🎊">입양 완료 (종료)</option>
                     </select>
@@ -420,8 +443,8 @@
                         <input type="text" id="edit-age" placeholder="추정 나이" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-pink-50/20 text-sm font-bold">
                         
                         <select id="edit-meal-type" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-500 text-sm font-bold"><option value="제한급여" selected>제한급여 (아침/저녁)</option><option value="자율배식">자율배식 (항상 완료)</option></select>
-                        <select id="edit-status" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-600 text-sm font-bold shadow-sm"><option value="" disabled selected>보호 상태</option><option value="보호 중 🏡">보호 중 (입양 대기 전)</option><option value="임시보호 🏨">임시보호 (호텔링/위탁)</option><option value="입양 대기 💝">입양 대기 (확정 완료)</option><option value="입양 완료 🎊">입양 완료 (종료)</option></select>
                         
+                        <select id="edit-status" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-600 text-sm font-bold shadow-sm"><option value="" disabled selected>보호 상태</option><option value="보호 중 🏡">보호 중 (입양 대기 전)</option><option value="임시보호 🏨">임시보호 (호텔링/위탁)</option><option value="입양 대기 💝">입양 대기 (확정 완료)</option><option value="입양 완료 🎊">입양 완료 (종료)</option></select>
                         <div class="col-span-2 mt-2">
                             <p class="text-xs font-bold text-gray-400 mb-2 px-1">기본 성격 (여러 개 선택 가능)</p>
                             <div class="flex flex-wrap gap-2">
@@ -631,6 +654,31 @@
             }
         });
 
+        // 🌟 [추가됨] 센터 선택(채널 스위치) 상태 관리
+        let currentCenter = localStorage.getItem('naepumae_center_type') || 'main';
+
+        function selectCenterType(type) {
+            currentCenter = type;
+            localStorage.setItem('naepumae_center_type', type);
+            
+            const btnMain = document.getElementById('type-btn-main');
+            const btnForest = document.getElementById('type-btn-forest');
+            
+            if (type === 'forest') {
+                btnForest.className = 'flex-1 py-3 rounded-xl font-black text-sm transition-all bg-white text-green-500 shadow-sm';
+                btnMain.className = 'flex-1 py-3 rounded-xl font-black text-sm transition-all text-gray-400 bg-gray-100';
+                document.body.classList.add('forest-theme');
+                document.getElementById('main-title-text').innerText = '숲센터';
+                document.getElementById('main-subtitle-text').innerText = '자연과 함께하는 동물보호소';
+            } else {
+                btnMain.className = 'flex-1 py-3 rounded-xl font-black text-sm transition-all bg-white text-pink-500 shadow-sm';
+                btnForest.className = 'flex-1 py-3 rounded-xl font-black text-sm transition-all text-gray-400 bg-gray-100';
+                document.body.classList.remove('forest-theme');
+                document.getElementById('main-title-text').innerText = '내품에 센터';
+                document.getElementById('main-subtitle-text').innerText = '반려동물과 행복한 서대문';
+            }
+        }
+
         const ADMIN_PASSWORD = '7175';
 
         let currentTrainerName = localStorage.getItem('naepumae_trainer_name');
@@ -824,6 +872,8 @@
 
         // === 인증 및 권한 ===
         function checkAuth() {
+            selectCenterType(currentCenter); // 로딩 시 선택된 센터 UI/테마 동기화
+            
             if(!deviceId) { deviceId = 'dev_' + Date.now() + Math.random().toString(36).substr(2); localStorage.setItem('naepumae_device_id', deviceId); document.getElementById('onboarding-panel').classList.remove('hidden'); } 
             else {
                 database.ref('users/' + deviceId).on('value', snap => {
@@ -847,6 +897,12 @@
             const name = document.getElementById('setup-trainer-name').value.trim(); const code = document.getElementById('setup-admin-code').value.trim();
             if(!name) { alert('이름을 먼저 입력해주세요.'); return; }
             if(code === ADMIN_PASSWORD) { database.ref('users/' + deviceId).set({ name: name, status: 'approved', role: 'admin', timestamp: Date.now() }); } else { alert('관리자 비밀번호가 일치하지 않습니다.'); }
+        }
+
+        // 🌟 [핵심] 센터별 데이터베이스 경로 분리 함수
+        function getDbPath(path) {
+            const prefix = (currentCenter === 'forest') ? 'forest_' : '';
+            return prefix + path;
         }
 
         // === 관리자 멤버 관리 로직 ===
@@ -881,7 +937,7 @@
         function closeProfileEditModal() { document.getElementById('profile-edit-modal').classList.remove('active'); }
         function updateTrainerProfile() { const newName = document.getElementById('edit-trainer-name').value.trim(); if(!newName) return; database.ref('users/' + deviceId).update({ name: newName }).then(() => { closeProfileEditModal(); }); }
 
-        // === 메인 동기화 ===
+        // === 메인 동기화 (분리된 DB 경로 호출) ===
         function startAppSync() {
             if(isAdmin) {
                 database.ref('users').on('value', snap => {
@@ -891,7 +947,7 @@
                     if(document.getElementById('admin-approve-modal').classList.contains('active')) renderAdminList();
                 });
             }
-            database.ref('animals').on('value', (snapshot) => {
+            database.ref(getDbPath('animals')).on('value', (snapshot) => {
                 const data = snapshot.val(); animals = [];
                 if (data) { Object.keys(data).forEach(key => animals.push(data[key])); animals.sort((a, b) => b.id - a.id); }
                 renderFilters();
@@ -902,8 +958,8 @@
                 if(!document.getElementById('behavior-panel').classList.contains('translate-x-full') && !isTutorialActive) { const activeId = document.getElementById('pp-animal-id').value; const activeAni = animals.find(a => String(a.id) === String(activeId)); if(activeAni) renderBehaviorHistory(activeAni); }
                 if(!document.getElementById('history-panel').classList.contains('translate-x-full') && !isTutorialActive) { const activeId = document.getElementById('hp-animal-id').value; const activeAni = animals.find(a => String(a.id) === String(activeId)); if(activeAni) renderHistory(activeAni); }
             });
-            database.ref('schedules').on('value', (snapshot) => { schedules = snapshot.val() || {}; if (!document.getElementById('view-schedule').classList.contains('hidden')) renderCalendar(); });
-            database.ref('events').on('value', (snapshot) => { 
+            database.ref(getDbPath('schedules')).on('value', (snapshot) => { schedules = snapshot.val() || {}; if (!document.getElementById('view-schedule').classList.contains('hidden')) renderCalendar(); });
+            database.ref(getDbPath('events')).on('value', (snapshot) => { 
                 const data = snapshot.val(); eventsList = [];
                 if(data) { Object.keys(data).forEach(k => eventsList.push({...data[k], id: k})); eventsList.sort((a, b) => new Date(a.date) - new Date(b.date)); }
                 if (!document.getElementById('view-events').classList.contains('hidden')) renderEvents();
@@ -986,7 +1042,7 @@
                 med_am: document.getElementById('in-med-am').checked, med_pm: document.getElementById('in-med-pm').checked, med_days: medDays
             };
             
-            database.ref('animals/' + targetId).set(saveObj).then(() => { resetRegForm(); openModal('success', '등록 성공! ✨', `${name}의 정보가 저장되었습니다.`); showView('list'); }).catch((error) => { console.error("Firebase 저장 오류:", error); openModal('error', '등록 실패', '네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'); }).finally(() => { submitBtn.disabled = false; submitBtn.innerText = originalBtnText; submitBtn.classList.remove('opacity-70', 'cursor-not-allowed'); });
+            database.ref(getDbPath('animals/') + targetId).set(saveObj).then(() => { resetRegForm(); openModal('success', '등록 성공! ✨', `${name}의 정보가 저장되었습니다.`); showView('list'); }).catch((error) => { console.error("Firebase 저장 오류:", error); openModal('error', '등록 실패', '네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'); }).finally(() => { submitBtn.disabled = false; submitBtn.innerText = originalBtnText; submitBtn.classList.remove('opacity-70', 'cursor-not-allowed'); });
         }
 
         function openEditPanel() {
@@ -1043,7 +1099,7 @@
                 med_am: document.getElementById('edit-med-am').checked, med_pm: document.getElementById('edit-med-pm').checked, med_days: medDays
             };
             if(existingAni) { if(existingAni.daily_logs) saveObj.daily_logs = existingAni.daily_logs; if(existingAni.behavior_logs) saveObj.behavior_logs = existingAni.behavior_logs; if(!currentEditPhotoBase64 && existingAni.photo) saveObj.photo = existingAni.photo; }
-            database.ref('animals/' + targetId).set(saveObj).then(() => { closeEditPanel(); openModal('success', '수정 완료!', `${name}의 정보가 업데이트되었습니다.`); });
+            database.ref(getDbPath('animals/') + targetId).set(saveObj).then(() => { closeEditPanel(); openModal('success', '수정 완료!', `${name}의 정보가 업데이트되었습니다.`); });
         }
 
         // === 필터 및 리스트 (스크롤 및 메뉴 버그 완벽 개선) ===
@@ -1414,8 +1470,8 @@
         function saveSchedule() {
             const dateKey = document.getElementById('sp-date-key').value; const am = document.getElementById('sch-am').value.trim(); const pm = document.getElementById('sch-pm').value.trim(); const off = document.getElementById('sch-off').value.trim(); const half = document.getElementById('sch-half').value.trim();
             const scheduleData = { am, pm, off, half, updatedBy: currentTrainerName, updatedAt: Date.now() };
-            if(!am && !pm && !off && !half) { database.ref('schedules/' + dateKey).remove().then(() => { closeSchedulePanel(); openModal('success', '삭제 완료', '해당 날짜의 근무표가 초기화되었습니다.'); }); } 
-            else { database.ref('schedules/' + dateKey).set(scheduleData).then(() => { closeSchedulePanel(); openModal('success', '저장 완료!', '근무표가 공유되었습니다.'); }); }
+            if(!am && !pm && !off && !half) { database.ref(getDbPath('schedules/') + dateKey).remove().then(() => { closeSchedulePanel(); openModal('success', '삭제 완료', '해당 날짜의 근무표가 초기화되었습니다.'); }); } 
+            else { database.ref(getDbPath('schedules/') + dateKey).set(scheduleData).then(() => { closeSchedulePanel(); openModal('success', '저장 완료!', '근무표가 공유되었습니다.'); }); }
         }
 
         // === 행사 및 일정 로직 (VIEW 4) ===
@@ -1439,7 +1495,7 @@
             if(!date || !title) { openModal('error', '입력 오류', '일자와 행사명은 필수 입력 항목입니다.'); return; }
             const targetId = editingEventId ? editingEventId : Date.now();
             const eventData = { date: date, time: time || '시간 미정', title: title, desc: desc, createdBy: currentTrainerName, timestamp: Date.now() };
-            database.ref('events/' + targetId).update(eventData).then(() => { closeEventPanel(); openModal('success', editingEventId ? '수정 완료' : '일정 등록 완료', '센터 행사가 성공적으로 저장되었습니다.'); });
+            database.ref(getDbPath('events/') + targetId).update(eventData).then(() => { closeEventPanel(); openModal('success', editingEventId ? '수정 완료' : '일정 등록 완료', '센터 행사가 성공적으로 저장되었습니다.'); });
         }
         function renderEvents() {
             const container = document.getElementById('event-container'); const today = new Date(); today.setHours(0,0,0,0);
@@ -1472,7 +1528,7 @@
                 </div>`;
             }).join('');
         }
-        function askDeleteEvent(event, eventId) { event.stopPropagation(); openModal('confirm', '일정 삭제', '이 일정을 삭제하시겠습니까?', () => { database.ref('events/' + eventId).remove(); }); }
+        function askDeleteEvent(event, eventId) { event.stopPropagation(); openModal('confirm', '일정 삭제', '이 일정을 삭제하시겠습니까?', () => { database.ref(getDbPath('events/') + eventId).remove(); }); }
 
         // === 프로필 뷰 ===
         function openProfilePanel(id) {
@@ -1518,7 +1574,7 @@
             } else { healthContainer.classList.add('hidden'); }
             document.getElementById('pp-memo').innerText = ani.memo || '메모가 없습니다.';
         }
-        function askDeleteAnimal() { const id = document.getElementById('pp-animal-id').value; openModal('confirm', '아이 정보 영구 삭제', '이 동물의 프로필과 모든 기록이 완전히 삭제됩니다. 진행할까요?', () => { database.ref('animals/' + id).remove(); closeProfilePanel(); }); }
+        function askDeleteAnimal() { const id = document.getElementById('pp-animal-id').value; openModal('confirm', '아이 정보 영구 삭제', '이 동물의 프로필과 모든 기록이 완전히 삭제됩니다. 진행할까요?', () => { database.ref(getDbPath('animals/') + id).remove(); closeProfilePanel(); }); }
 
         // === 행동 분석(DSCC) ===
         function openBehaviorFromProfile() { 
@@ -1547,19 +1603,11 @@
             
             const targetLogId = editingBehaviorLogId ? editingBehaviorLogId : Date.now();
             let logData = { target: target, a: a, b: b, c: c, grade: grade, memo: memo };
-            
-            if(!editingBehaviorLogId) {
-                const now = new Date(); const dateStr = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`;
-                logData.timestamp = Date.now();
-                logData.trainer_name = currentTrainerName;
-                logData.date_str = dateStr;
-            }
+            if(!editingBehaviorLogId) { const now = new Date(); const dateStr = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`; logData.timestamp = Date.now(); logData.trainer_name = currentTrainerName; logData.date_str = dateStr; }
 
-            database.ref('animals/' + id + '/behavior_logs/' + targetLogId).update(logData).then(() => {
-                openModal('success', editingBehaviorLogId ? '훈련 기록 수정' : '훈련 기록 추가', editingBehaviorLogId ? '행동 분석 기록이 성공적으로 수정되었습니다.' : '새로운 행동 분석 기록이 추가되었습니다.');
-                editingBehaviorLogId = null;
-                document.getElementById('bh-panel-title').innerText = '새 훈련 기록 추가';
-                document.getElementById('bh-save-btn').innerText = '훈련 기록 추가하기';
+            database.ref(getDbPath(`animals/${id}/behavior_logs/`) + targetLogId).update(logData).then(() => {
+                openModal('success', editingBehaviorLogId ? '훈련 기록 수정' : '훈련 기록 추가', editingBehaviorLogId ? '행동 분석 기록이 수정되었습니다.' : '새로운 분석 기록이 추가되었습니다.');
+                editingBehaviorLogId = null; document.getElementById('bh-panel-title').innerText = '새 훈련 기록 추가'; document.getElementById('bh-save-btn').innerText = '훈련 기록 추가하기';
                 document.getElementById('bh-target').value = ''; document.getElementById('bh-a').value = ''; document.getElementById('bh-b').value = ''; document.getElementById('bh-c').value = ''; document.getElementById('bh-memo').value = ''; setGrade(3);
             });
         }
@@ -1616,7 +1664,7 @@
         function askDeleteBehaviorLog(event, animalId, logId) {
             event.stopPropagation(); 
             openModal('confirm', '훈련 기록 삭제', '이 행동 분석 기록을 완전히 삭제하시겠습니까?', () => { 
-                database.ref('animals/' + animalId + '/behavior_logs/' + logId).remove().then(() => {
+                database.ref(getDbPath(`animals/${animalId}/behavior_logs/`) + logId).remove().then(() => {
                     if(editingBehaviorLogId === logId) {
                         editingBehaviorLogId = null;
                         document.getElementById('bh-panel-title').innerText = '새 훈련 기록 추가';
@@ -1691,7 +1739,7 @@
                 return `<div class="mb-4"><button onclick="toggleAccordion('${accId}')" class="w-full flex justify-between items-center bg-pink-100 text-pink-600 px-4 py-3 rounded-2xl font-black shadow-sm active:scale-95 transition-all"><span>📅 ${date}</span><span class="text-xs bg-white px-2 py-1 rounded-lg text-pink-400">${logs.length}건 기록 ▼</span></button><div id="${accId}" class="${isOpen ? '' : 'hidden'} mt-3 pl-2 border-l-2 border-pink-100">${logsHtml}</div></div>`;
             }).join('');
         }
-        function askDeleteLog(event, animalId, logId) { event.stopPropagation(); openModal('confirm', '기록을 삭제할까요?', '해당 시간의 일과 기록이 영구적으로 삭제됩니다.', () => { database.ref('animals/' + animalId + '/daily_logs/' + logId).remove(); }); }
+        function askDeleteLog(event, animalId, logId) { event.stopPropagation(); openModal('confirm', '기록을 삭제할까요?', '해당 시간의 일과 기록이 영구적으로 삭제됩니다.', () => { database.ref(getDbPath(`animals/${animalId}/daily_logs/`) + logId).remove(); }); }
 
         // === 일과 기록 작성/수정 ===
         function setToggleState(selector, text, isPartial = false) { document.querySelectorAll(selector).forEach(btn => { if(isPartial ? btn.innerText.includes(text) : btn.innerText === text) { btn.classList.remove('btn-inactive'); btn.classList.add('btn-active'); } }); }
@@ -1751,18 +1799,12 @@
 
             if(medTime) logData.med = { time: medTime }; else logData.med = null;
             if(walkTime || walkDuration || walkCond) logData.walk = { time: walkTime || '-', duration: walkDuration || '-', condition: walkCond || '-' }; else logData.walk = null; 
-            
-            if(ani.meal_type !== '자율배식' && (mealTime || mealAmount || mealStatus)) {
-                logData.meal = { time: mealTime || '-', amount: mealAmount || '-', status: mealStatus || '-' };
-            } else { logData.meal = null; }
-            
+            if(ani.meal_type !== '자율배식' && (mealTime || mealAmount || mealStatus)) { logData.meal = { time: mealTime || '-', amount: mealAmount || '-', status: mealStatus || '-' }; } else { logData.meal = null; }
             if(pottyTypes.length > 0 || pottyMemo) logData.potty = { type: pottyTypes.join(', ') || '-', memo: pottyMemo || '특이사항 없음' }; else logData.potty = null;
             if(dailyMemo) logData.daily_memo = dailyMemo; else logData.daily_memo = null;
 
             const targetLogId = editingLogId ? editingLogId : Date.now();
-            database.ref('animals/' + id + '/daily_logs/' + targetLogId).update(logData).then(() => {
-                closeRecordPanel(); if(editingLogId) openModal('success', '수정 완료!', '기록이 성공적으로 수정되었습니다.'); else openModal('success', '기록 완료!', `작성하신 항목이 저장되었습니다.`);
-            });
+            database.ref(getDbPath(`animals/${id}/daily_logs/`) + targetLogId).update(logData).then(() => { closeRecordPanel(); if(editingLogId) openModal('success', '수정 완료!', '기록이 성공적으로 수정되었습니다.'); else openModal('success', '기록 완료!', `작성하신 항목이 저장되었습니다.`); });
         }
 
         function editLog(event, animalId, logId) {
