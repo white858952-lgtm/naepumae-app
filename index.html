@@ -76,7 +76,7 @@
         .status-done { background-color: #dcfce7; color: #059669; }
         .status-none { background-color: #f3f4f6; color: #9ca3af; }
 
-        /* 🌳 숲센터 전용 테마 CSS (코드 추가를 최소화하기 위한 마법!) 🌳 */
+        /* 🌳 숲센터 전용 테마 CSS 🌳 */
         .forest-theme { background-color: #f0fdf4 !important; }
         .forest-theme .pink-gradient { background: linear-gradient(135deg, #10b981 0%, #34d399 100%) !important; }
         .forest-theme .text-\[\#ff69b4\] { color: #10b981 !important; }
@@ -166,9 +166,12 @@
             <h3 class="text-xl font-black mb-2 text-gray-800">내 정보 관리</h3>
             <input type="text" id="edit-trainer-name" class="w-full p-3 border border-pink-100 rounded-xl outline-none bg-gray-50 text-center font-black text-sm focus:border-pink-400 mb-3">
             <button onclick="updateTrainerProfile()" class="w-full py-3.5 pink-gradient text-white font-black rounded-xl shadow-md active:scale-95 transition-transform mb-4">이름 수정 저장</button>
+            
+            <button onclick="toggleCenterInApp()" id="inapp-center-toggle-btn" class="w-full py-3 mb-4 bg-green-50 text-green-600 font-black rounded-xl shadow-sm border border-green-100 transition-all active:scale-95">🌳 숲센터로 이동하기</button>
+
             <div class="grid grid-cols-2 gap-2 pt-4 border-t border-gray-100">
                 <button onclick="replayTutorial()" class="py-3 bg-indigo-50 text-indigo-600 font-bold text-[11px] rounded-xl active:scale-95 border border-indigo-100">💡 튜토리얼 다시보기</button>
-                <button onclick="logoutApp()" class="py-3 bg-red-50 text-red-500 font-bold text-[11px] rounded-xl active:scale-95 border border-red-100">🔒 로그아웃</button>
+                <button onclick="logoutApp()" class="py-3 bg-red-50 text-red-500 font-bold text-[11px] rounded-xl active:scale-95 border border-red-100">🔒 기기 로그아웃</button>
             </div>
         </div>
     </div>
@@ -317,7 +320,6 @@
                         <option value="제한급여" selected>제한급여 (아침/저녁)</option>
                         <option value="자율배식">자율배식 (항상 완료)</option>
                     </select>
-                    
                     <select id="in-status" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-600 text-sm font-bold shadow-sm">
                         <option value="" disabled selected>보호 상태</option><option value="보호 중 🏡">보호 중 (입양 대기)</option><option value="임시보호 🏨">임시보호 (위탁)</option><option value="입양 대기 💝">입양 대기 (확정)</option><option value="입양 완료 🎊">입양 완료 (종료)</option>
                     </select>
@@ -407,7 +409,6 @@
             </div>
             <input type="hidden" id="pp-animal-id" value="">
         </div>
-
         <div id="edit-panel" class="slide-panel fixed inset-0 bg-gray-50 z-[130] transform translate-x-full flex flex-col h-full overflow-hidden">
             <div class="px-5 py-4 bg-white border-b border-pink-100 flex justify-between items-center shadow-sm sticky top-0 z-10 pt-[max(env(safe-area-inset-top),16px)]">
                 <button onclick="closeEditPanel()" class="text-gray-400 text-3xl font-black active:scale-90 transition-transform">&lsaquo;</button>
@@ -445,6 +446,7 @@
                         <select id="edit-meal-type" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-500 text-sm font-bold"><option value="제한급여" selected>제한급여 (아침/저녁)</option><option value="자율배식">자율배식 (항상 완료)</option></select>
                         
                         <select id="edit-status" class="col-span-1 p-4 border border-pink-100 rounded-2xl outline-none bg-white text-gray-600 text-sm font-bold shadow-sm"><option value="" disabled selected>보호 상태</option><option value="보호 중 🏡">보호 중 (입양 대기 전)</option><option value="임시보호 🏨">임시보호 (호텔링/위탁)</option><option value="입양 대기 💝">입양 대기 (확정 완료)</option><option value="입양 완료 🎊">입양 완료 (종료)</option></select>
+
                         <div class="col-span-2 mt-2">
                             <p class="text-xs font-bold text-gray-400 mb-2 px-1">기본 성격 (여러 개 선택 가능)</p>
                             <div class="flex flex-wrap gap-2">
@@ -647,15 +649,47 @@
         </div>
 
     <script>
-        // 전역 이벤트 리스너 (커스텀 드롭다운 닫기 용도)
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.filter-dropdown-menu') && !e.target.closest('button[onclick*="toggleFilterDropdown"]')) {
                 document.querySelectorAll('.filter-dropdown-menu').forEach(el => el.classList.add('hidden'));
             }
         });
 
-        // 🌟 [추가됨] 센터 선택(채널 스위치) 상태 관리
+        // 🌟 [추가됨] 앱 내부에서 센터 전환하는 함수 🌟
         let currentCenter = localStorage.getItem('naepumae_center_type') || 'main';
+
+        function toggleCenterInApp() {
+            // 현재 상태와 반대로 스위치
+            const newType = (currentCenter === 'main') ? 'forest' : 'main';
+            selectCenterType(newType); // 디자인 및 로컬스토리지 변경
+            
+            // 모달 창 내부의 버튼 텍스트 변경
+            const toggleBtn = document.getElementById('inapp-center-toggle-btn');
+            if(newType === 'forest') {
+                toggleBtn.innerText = '🏢 본점 센터로 이동하기';
+                toggleBtn.className = 'w-full py-3 mb-4 bg-pink-50 text-pink-600 font-black rounded-xl shadow-sm border border-pink-100 transition-all active:scale-95';
+            } else {
+                toggleBtn.innerText = '🌳 숲센터로 이동하기';
+                toggleBtn.className = 'w-full py-3 mb-4 bg-green-50 text-green-600 font-black rounded-xl shadow-sm border border-green-100 transition-all active:scale-95';
+            }
+            
+            // 모달 닫기
+            closeProfileEditModal();
+            
+            // DB 리스너를 해제하고 새로운 경로로 다시 연결 (새로고침 효과)
+            if(isAdmin) { database.ref('users').off(); }
+            database.ref(getDbPath('animals')).off();
+            database.ref(getDbPath('schedules')).off();
+            database.ref(getDbPath('events')).off();
+            
+            // 화면 초기화 후 새로운 데이터 동기화
+            document.getElementById('task-container').innerHTML = '<div class="text-center py-20 text-gray-400 font-bold">데이터를 불러오는 중입니다... ⏳</div>';
+            startAppSync();
+            
+            // 완료 알림
+            const centerName = newType === 'forest' ? '🌳 숲센터' : '🏢 본점 센터';
+            setTimeout(() => { openModal('success', '이동 완료', `${centerName} 데이터로 전환되었습니다.`); }, 300);
+        }
 
         function selectCenterType(type) {
             currentCenter = type;
@@ -663,19 +697,32 @@
             
             const btnMain = document.getElementById('type-btn-main');
             const btnForest = document.getElementById('type-btn-forest');
+            const toggleBtn = document.getElementById('inapp-center-toggle-btn');
             
             if (type === 'forest') {
-                btnForest.className = 'flex-1 py-3 rounded-xl font-black text-sm transition-all bg-white text-green-500 shadow-sm';
-                btnMain.className = 'flex-1 py-3 rounded-xl font-black text-sm transition-all text-gray-400 bg-gray-100';
+                if(btnForest) {
+                    btnForest.className = 'flex-1 py-3 rounded-xl font-black text-sm transition-all bg-white text-green-500 shadow-sm';
+                    btnMain.className = 'flex-1 py-3 rounded-xl font-black text-sm transition-all text-gray-400 bg-gray-100';
+                }
                 document.body.classList.add('forest-theme');
                 document.getElementById('main-title-text').innerText = '숲센터';
                 document.getElementById('main-subtitle-text').innerText = '자연과 함께하는 동물보호소';
+                if(toggleBtn) {
+                    toggleBtn.innerText = '🏢 본점 센터로 이동하기';
+                    toggleBtn.className = 'w-full py-3 mb-4 bg-pink-50 text-pink-600 font-black rounded-xl shadow-sm border border-pink-100 transition-all active:scale-95';
+                }
             } else {
-                btnMain.className = 'flex-1 py-3 rounded-xl font-black text-sm transition-all bg-white text-pink-500 shadow-sm';
-                btnForest.className = 'flex-1 py-3 rounded-xl font-black text-sm transition-all text-gray-400 bg-gray-100';
+                if(btnMain) {
+                    btnMain.className = 'flex-1 py-3 rounded-xl font-black text-sm transition-all bg-white text-pink-500 shadow-sm';
+                    btnForest.className = 'flex-1 py-3 rounded-xl font-black text-sm transition-all text-gray-400 bg-gray-100';
+                }
                 document.body.classList.remove('forest-theme');
                 document.getElementById('main-title-text').innerText = '내품에 센터';
                 document.getElementById('main-subtitle-text').innerText = '반려동물과 행복한 서대문';
+                if(toggleBtn) {
+                    toggleBtn.innerText = '🌳 숲센터로 이동하기';
+                    toggleBtn.className = 'w-full py-3 mb-4 bg-green-50 text-green-600 font-black rounded-xl shadow-sm border border-green-100 transition-all active:scale-95';
+                }
             }
         }
 
@@ -699,7 +746,6 @@
         firebase.initializeApp(firebaseConfig); const database = firebase.database();
         let isAppStarted = false; 
 
-        // === 디자인 통일: 배지 컬러 헬퍼 함수 ===
         function getGroupBadgeHtml(groupName, isSmall = false) {
             if (!groupName || groupName === '미정') return '';
             let bgClass = 'bg-gray-100 text-gray-500 border-gray-200';
@@ -758,7 +804,7 @@
         function replayTutorial() { closeProfileEditModal(); startTutorial(); }
         
         function logoutApp() {
-            openModal('confirm', '로그아웃', '정말 로그아웃 하시겠습니까?\n다시 접속 권한을 얻으셔야 할 수도 있습니다.', () => {
+            openModal('confirm', '기기 로그아웃', '정말 기기에서 로그아웃 하시겠습니까?\n단순한 센터 이동은 [정보 관리] 메뉴의 센터 전환 버튼을 이용해 주세요.\n\n로그아웃 시 접속 권한을 다시 승인받아야 합니다.', () => {
                 localStorage.removeItem('naepumae_device_id'); localStorage.removeItem('naepumae_trainer_name'); localStorage.removeItem('naepumae_trainer_id');
                 location.reload(); 
             });
@@ -870,10 +916,8 @@
             showView('list'); window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
-        // === 인증 및 권한 ===
         function checkAuth() {
-            selectCenterType(currentCenter); // 로딩 시 선택된 센터 UI/테마 동기화
-            
+            selectCenterType(currentCenter); 
             if(!deviceId) { deviceId = 'dev_' + Date.now() + Math.random().toString(36).substr(2); localStorage.setItem('naepumae_device_id', deviceId); document.getElementById('onboarding-panel').classList.remove('hidden'); } 
             else {
                 database.ref('users/' + deviceId).on('value', snap => {
@@ -905,7 +949,6 @@
             return prefix + path;
         }
 
-        // === 관리자 멤버 관리 로직 ===
         let allUsersData = null; let adminCurrentTab = 'pending';
         function openAdminApproveModal() { document.getElementById('admin-approve-modal').classList.add('active'); document.getElementById('admin-req-badge').classList.add('hidden'); renderAdminList(); }
         function closeAdminApproveModal() { document.getElementById('admin-approve-modal').classList.remove('active'); }
@@ -937,7 +980,6 @@
         function closeProfileEditModal() { document.getElementById('profile-edit-modal').classList.remove('active'); }
         function updateTrainerProfile() { const newName = document.getElementById('edit-trainer-name').value.trim(); if(!newName) return; database.ref('users/' + deviceId).update({ name: newName }).then(() => { closeProfileEditModal(); }); }
 
-        // === 메인 동기화 (분리된 DB 경로 호출) ===
         function startAppSync() {
             if(isAdmin) {
                 database.ref('users').on('value', snap => {
@@ -966,7 +1008,6 @@
             });
         }
 
-        // === 네비게이션 제어 ===
         function showView(view) {
             ['reg', 'list', 'schedule', 'events', 'dashboard'].forEach(v => {
                 document.getElementById('view-'+v).classList.toggle('hidden', view !== v);
@@ -1102,29 +1143,19 @@
             database.ref(getDbPath('animals/') + targetId).set(saveObj).then(() => { closeEditPanel(); openModal('success', '수정 완료!', `${name}의 정보가 업데이트되었습니다.`); });
         }
 
-        // === 필터 및 리스트 (스크롤 및 메뉴 버그 완벽 개선) ===
         function toggleFilterDropdown(event, id, btn) {
             if(event) event.stopPropagation();
             const menu = document.getElementById(id);
             const isCurrentlyHidden = menu.classList.contains('hidden');
             
-            // 다른 켜져있는 메뉴 닫기
             document.querySelectorAll('.filter-dropdown-menu').forEach(el => el.classList.add('hidden'));
             
             if (isCurrentlyHidden) {
-                // 버튼의 현재 위치 계산
                 const rect = btn.getBoundingClientRect();
-                
-                // top 위치는 버튼 바로 아래 (스크롤 위치 반영 안함 - fixed 기준이므로)
                 menu.style.top = (rect.bottom + 8) + 'px';
-                
-                // 모바일 환경 등에서 메뉴가 화면 우측을 넘어가지 않도록 좌표 조정
                 let leftPos = rect.left;
-                if (leftPos + 150 > window.innerWidth) { 
-                    leftPos = window.innerWidth - 160;
-                }
+                if (leftPos + 150 > window.innerWidth) { leftPos = window.innerWidth - 160; }
                 menu.style.left = Math.max(10, leftPos) + 'px';
-                
                 menu.classList.remove('hidden');
             }
         }
@@ -1155,7 +1186,6 @@
             else if (currentFilter === 'grC_S') groupLabel = 'C(소형)';
             else if (currentFilter === 'grAlone') groupLabel = '단독 활동';
 
-            // 버튼 영역 렌더링 (순수 스크롤 영역)
             container.innerHTML = `
                 <button onclick="setFilter('all')" class="${btnBase} ${currentFilter === 'all' ? btnActive : btnInactive}">전체보기</button>
                 <button onclick="setFilter('dog')" class="${btnBase} ${currentFilter === 'dog' ? btnActive : btnInactive}">개 🐶</button>
@@ -1170,7 +1200,6 @@
                 </button>
             `;
 
-            // 메뉴 영역 렌더링 (스크롤 영역 밖의 최상단 fixed 레이어)
             if(menusContainer) {
                 menusContainer.innerHTML = `
                     <div id="drop-status" class="filter-dropdown-menu hidden fixed z-[100] w-32 bg-white rounded-2xl shadow-xl border border-pink-100 py-2 animate-fade-in origin-top-left">
@@ -1209,11 +1238,9 @@
             const filteredAnimals = animals.filter(a => {
                 const isAdoptedDone = a.status && a.status.includes('입양 완료');
 
-                // 입양완료 탭을 직접 누른 경우만 '입양 완료' 아이들을 보여줍니다.
                 if (currentFilter === 'adopted_done') {
                     if (!isAdoptedDone) return false;
                 } else {
-                    // 그 외 전체보기, 개, 고양이, 다른 보호형태 등에서는 입양완료 아이를 완벽히 숨깁니다.
                     if (isAdoptedDone) return false;
 
                     if (currentFilter === 'dog' && a.type !== '개') return false; 
@@ -1271,7 +1298,6 @@
             });
         }
 
-        // === 대시보드 (업무 담당자 표시 추가) ===
         function setDashTab(tab) {
             currentDashTab = tab;
             document.getElementById('btn-dash-animal').className = tab === 'animal' ? 'flex-1 py-2 text-xs font-black rounded-lg bg-white shadow-sm text-pink-600 transition-all' : 'flex-1 py-2 text-xs font-black rounded-lg text-pink-400 opacity-70 transition-all';
@@ -1295,7 +1321,6 @@
             let taskPending = []; let taskDone = [];
 
             animals.forEach(a => {
-                // 입양 완료된 아이는 대시보드(투데이)에서 완벽히 제외합니다.
                 if (a.status && a.status.includes('입양 완료')) return;
 
                 let walks = { '오전': false, '오후': false, '저녁': false }; 
@@ -1446,7 +1471,6 @@
             }
         }
 
-        // === 캘린더 로직 (VIEW 3) ===
         function renderCalendar() {
             const year = currentDate.getFullYear(); const month = currentDate.getMonth(); document.getElementById('cal-month-title').innerText = `${year}년 ${month + 1}월`;
             const firstDay = new Date(year, month, 1).getDay(); const lastDate = new Date(year, month + 1, 0).getDate(); const calDays = document.getElementById('cal-days'); calDays.innerHTML = '';
@@ -1474,7 +1498,6 @@
             else { database.ref(getDbPath('schedules/') + dateKey).set(scheduleData).then(() => { closeSchedulePanel(); openModal('success', '저장 완료!', '근무표가 공유되었습니다.'); }); }
         }
 
-        // === 행사 및 일정 로직 (VIEW 4) ===
         function openEventPanel(eventId = null) { 
             if(eventId) {
                 const ev = eventsList.find(e => e.id === eventId);
@@ -1530,7 +1553,6 @@
         }
         function askDeleteEvent(event, eventId) { event.stopPropagation(); openModal('confirm', '일정 삭제', '이 일정을 삭제하시겠습니까?', () => { database.ref(getDbPath('events/') + eventId).remove(); }); }
 
-        // === 프로필 뷰 ===
         function openProfilePanel(id) {
             const ani = animals.find(a => String(a.id) === String(id)); if(!ani) return; document.getElementById('pp-animal-id').value = id;
             populateProfilePanel(ani); document.getElementById('profile-panel').classList.remove('translate-x-full');
@@ -1576,7 +1598,6 @@
         }
         function askDeleteAnimal() { const id = document.getElementById('pp-animal-id').value; openModal('confirm', '아이 정보 영구 삭제', '이 동물의 프로필과 모든 기록이 완전히 삭제됩니다. 진행할까요?', () => { database.ref(getDbPath('animals/') + id).remove(); closeProfilePanel(); }); }
 
-        // === 행동 분석(DSCC) ===
         function openBehaviorFromProfile() { 
             const id = document.getElementById('pp-animal-id').value; openBehaviorPanel(id); 
         }
@@ -1675,7 +1696,6 @@
             }); 
         }
 
-        // === 과거 기록 열람 ===
         function openHistoryFromProfile() { 
             const id = document.getElementById('pp-animal-id').value; openHistoryPanel(null, id); 
         }
@@ -1741,7 +1761,6 @@
         }
         function askDeleteLog(event, animalId, logId) { event.stopPropagation(); openModal('confirm', '기록을 삭제할까요?', '해당 시간의 일과 기록이 영구적으로 삭제됩니다.', () => { database.ref(getDbPath(`animals/${animalId}/daily_logs/`) + logId).remove(); }); }
 
-        // === 일과 기록 작성/수정 ===
         function setToggleState(selector, text, isPartial = false) { document.querySelectorAll(selector).forEach(btn => { if(isPartial ? btn.innerText.includes(text) : btn.innerText === text) { btn.classList.remove('btn-inactive'); btn.classList.add('btn-active'); } }); }
         function forceMultiState(id, isActive) { const btn = document.getElementById(id); if(isActive) { btn.classList.remove('btn-inactive'); btn.classList.add('btn-active'); } }
         function toggleSelect(clickedBtn, groupClass) { const wasActive = clickedBtn.classList.contains('btn-active'); document.querySelectorAll(`.${groupClass}-btn`).forEach(btn => { btn.classList.remove('btn-active'); btn.classList.add('btn-inactive'); }); if (!wasActive) { clickedBtn.classList.remove('btn-inactive'); clickedBtn.classList.add('btn-active'); } }
