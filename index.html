@@ -770,7 +770,7 @@
         async function getAndSaveToken() {
             try {
                 // VAPID 키는 파트너님의 Firebase 콘솔에서 생성한 값을 사용합니다.
-                const currentToken = await messaging.getToken({ vapidKey: 'BMvXmU4-mB7VzR3L_Y9O9mE_t_X_X_X_X' }); 
+                const currentToken = await messaging.getToken({ vapidKey: 'BIfxpB8bQx8Q6X8GmgzrBQjFMzVZdum7Q9RhW1wqWPRMI0MTcjbzsIvxjfv988Spg67tBJvos9GXyakdpysEbmI' }); 
                 if (currentToken) {
                     saveFcmToken(currentToken);
                 } else {
