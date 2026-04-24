@@ -2004,12 +2004,12 @@
                         clearTimeout(tutScrollTimer);
                     }
 
-                    // 4. 스크롤이 멈추고 500ms(0.5초)가 지나면 원래 상태로 복구
+                    // 4. 스크롤이 멈추고 300ms(0.3초)가 지나면 원래 상태로 복구
                     tutScrollTimer = setTimeout(() => {
                         tooltip.style.opacity = '1';
                         overlay.style.backgroundColor = ''; // 인라인 스타일 제거
                         overlay.classList.add('bg-black/25'); // 어두운 배경 클래스 복구
-                    }, 500);
+                    }, 300);
                 }
             }
         }, true);
