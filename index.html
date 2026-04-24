@@ -186,6 +186,13 @@
                     <div class="flex items-center justify-between"><span class="text-xs font-bold text-gray-600">💊 투약 완료</span><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="noti-med" class="sr-only peer noti-detail-toggle" onchange="toggleDetailedNoti('med', this)"><div class="w-7 h-4 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-pink-400"></div></label></div>
                     <div class="flex items-center justify-between"><span class="text-xs font-bold text-gray-600">💩 배변 기록</span><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="noti-potty" class="sr-only peer noti-detail-toggle" onchange="toggleDetailedNoti('potty', this)"><div class="w-7 h-4 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-pink-400"></div></label></div>
                     <div class="flex items-center justify-between"><span class="text-xs font-bold text-gray-600">🧠 훈련/행동 분석</span><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="noti-behavior" class="sr-only peer noti-detail-toggle" onchange="toggleDetailedNoti('behavior', this)"><div class="w-7 h-4 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-pink-400"></div></label></div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-gray-600">📢 행사/일정 알림</span>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="noti-event" class="sr-only peer noti-detail-toggle" onchange="toggleDetailedNoti('event', this)">
+                            <div class="w-7 h-4 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-pink-400"></div>
+                        </label>
+                    </div>
                 </div>
             </div>
 
@@ -786,13 +793,26 @@
         }
 
         // [FCM 기능 추가] 권한 요청 및 FCM 토큰 저장 함수 (Insert)
+        // 🌟 [목표 2] 마스터 스위치 연동 (UX 개선)
         function toggleFcmPermission(toggle) {
+            const detailToggles = document.querySelectorAll('.noti-detail-toggle');
+            
             if(toggle.checked) {
                 Notification.requestPermission().then((permission) => {
                     if (permission === 'granted' && messaging) {
                         messaging.getToken({ vapidKey: 'BIfxpB8bQx8Q6X8GmgzrBQjFMzVZdum7Q9RhW1wqWPRMI0MTcjbzsIvxjfv988Spg67tBJvos9GXyakdpysEbmI' }).then((currentToken) => {
                             if (currentToken) {
                                 database.ref('users/' + deviceId).update({ fcmToken: currentToken, fcmEnabled: true });
+                                
+                                // 마스터 ON -> 세부 알림 UI 모두 ON 및 DB 업데이트
+                                let updates = {};
+                                detailToggles.forEach(t => {
+                                    t.checked = true;
+                                    const type = t.id.replace('noti-', '');
+                                    updates[type] = true;
+                                });
+                                database.ref(`users/${deviceId}/noti_prefs`).update(updates);
+                                
                                 console.log('FCM 토큰 발급 및 저장 완료:', currentToken);
                             }
                         }).catch((err) => {
@@ -806,6 +826,15 @@
                 });
             } else {
                 database.ref('users/' + deviceId).update({ fcmEnabled: false });
+                
+                // 마스터 OFF -> 세부 알림 UI 모두 OFF 및 DB 업데이트
+                let updates = {};
+                detailToggles.forEach(t => {
+                    t.checked = false;
+                    const type = t.id.replace('noti-', '');
+                    updates[type] = false;
+                });
+                database.ref(`users/${deviceId}/noti_prefs`).update(updates);
             }
         }
         // [FCM 기능 추가 끝]
@@ -1047,21 +1076,32 @@
         function openProfileEditModal() { 
             document.getElementById('edit-trainer-name').value = currentTrainerName; 
             
-            // 🌟 [FCM 세부 알림 연동]
+            // 🌟 [목표 1] 모달 열 때 상태 동기화
+        function openProfileEditModal() { 
+            document.getElementById('edit-trainer-name').value = currentTrainerName; 
+            
             database.ref('users/' + deviceId).once('value').then(snap => {
                 const userData = snap.val() || {};
                 const fcmToggle = document.getElementById('fcm-toggle');
                 if(fcmToggle) fcmToggle.checked = userData.fcmEnabled || false;
                 
-                // 상세 설정값 연동 (값이 없으면 기본적으로 켜짐(true)으로 설정)
-                const prefs = userData.noti_prefs || { new_animal: true, walk: true, meal: true, med: true, potty: true, behavior: true };
+                // 상세 설정값 연동 (값이 없으면 빈 객체)
+                const prefs = userData.noti_prefs || {};
+                
+                // 모든 세부 토글을 돌면서 DB 상태 맵핑
                 document.querySelectorAll('.noti-detail-toggle').forEach(toggle => {
                     const type = toggle.id.replace('noti-', '');
+                    // DB 값이 명시적으로 false일 때만 끄고, 그 외(true이거나 데이터가 없을 때)는 켬
                     toggle.checked = prefs[type] !== false; 
                 });
             });
             
             document.getElementById('profile-edit-modal').classList.add('active'); 
+        }
+
+        // 🌟 [목표 1] 세부 알림 토글 클릭 시 DB 즉시 업데이트
+        function toggleDetailedNoti(type, toggle) {
+            database.ref(`users/${deviceId}/noti_prefs/${type}`).set(toggle.checked);
         }
         function closeProfileEditModal() { document.getElementById('profile-edit-modal').classList.remove('active'); }
         function updateTrainerProfile() { const newName = document.getElementById('edit-trainer-name').value.trim(); if(!newName) return; database.ref('users/' + deviceId).update({ name: newName }).then(() => { closeProfileEditModal(); }); }
