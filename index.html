@@ -928,11 +928,12 @@
                 if(targetEl) {
                     targetEl.classList.add('tut-target-active');
                     tutClickHandler = (e) => {
-                        const tooltip = document.getElementById('tutorial-tooltip'); if (tooltip.contains(e.target)) return; 
-                        if (targetEl.contains(e.target) || targetEl === e.target) {
-                            document.removeEventListener('click', tutClickHandler, true); tutClickHandler = null; setTimeout(nextTutorial, 150);
-                        } else { e.stopPropagation(); e.preventDefault(); }
-                    };
+                    const tooltip = document.getElementById('tutorial-tooltip'); if (tooltip.contains(e.target)) return; 
+                    if (targetEl.contains(e.target) || targetEl === e.target) {
+                        e.stopPropagation(); e.preventDefault(); // 🌟 실제 앱 클릭 동작을 차단하여 이중실행 방지!
+                        document.removeEventListener('click', tutClickHandler, true); tutClickHandler = null; nextTutorial();
+                    } else { e.stopPropagation(); e.preventDefault(); }
+                };
                     document.addEventListener('click', tutClickHandler, true);
                 }
                 nextBtn.classList.add('hidden');
@@ -958,7 +959,8 @@
         function nextTutorial() {
             const tooltip = document.getElementById('tutorial-tooltip'); const pointer = document.getElementById('tut-pointer');
             tooltip.classList.add('opacity-0'); pointer.classList.add('hidden');
-            setTimeout(() => { currentTutStep++; if(currentTutStep >= tutorialSteps.length) { skipTutorial(); } else { applyTutorialState(tutorialSteps[currentTutStep]); } }, 300);
+            // 🌟 CSS 애니메이션(500ms)이 완전히 끝나서 투명해진 뒤에 다음 스텝 실행
+            setTimeout(() => { currentTutStep++; if(currentTutStep >= tutorialSteps.length) { skipTutorial(); } else { applyTutorialState(tutorialSteps[currentTutStep]); } }, 500);
         }
 
         function skipTutorial() {
