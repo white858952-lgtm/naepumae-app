@@ -1073,10 +1073,7 @@
         function approveUser(uid) { database.ref('users/' + uid).update({ status: 'approved' }); }
         function rejectUser(uid) { database.ref('users/' + uid).remove(); }
         
-        function openProfileEditModal() { 
-            document.getElementById('edit-trainer-name').value = currentTrainerName; 
-            
-            // 🌟 [목표 1] 모달 열 때 상태 동기화
+        // 🌟 [목표 1] 모달 열 때 상태 동기화
         function openProfileEditModal() { 
             document.getElementById('edit-trainer-name').value = currentTrainerName; 
             
@@ -1085,17 +1082,12 @@
                 const fcmToggle = document.getElementById('fcm-toggle');
                 if(fcmToggle) fcmToggle.checked = userData.fcmEnabled || false;
                 
-                // 상세 설정값 연동 (값이 없으면 빈 객체)
                 const prefs = userData.noti_prefs || {};
-                
-                // 모든 세부 토글을 돌면서 DB 상태 맵핑
                 document.querySelectorAll('.noti-detail-toggle').forEach(toggle => {
                     const type = toggle.id.replace('noti-', '');
-                    // DB 값이 명시적으로 false일 때만 끄고, 그 외(true이거나 데이터가 없을 때)는 켬
                     toggle.checked = prefs[type] !== false; 
                 });
             });
-            
             document.getElementById('profile-edit-modal').classList.add('active'); 
         }
 
@@ -1218,10 +1210,7 @@
                     center: currentCenter,
                     timestamp: Date.now()
                 });
-// 🌟 [추가됨] 세부 알림 토글 저장 함수
-        function toggleDetailedNoti(type, toggle) {
-            database.ref(`users/${deviceId}/noti_prefs/${type}`).set(toggle.checked);
-        }
+
                 resetRegForm(); openModal('success', '등록 성공! ✨', `${name}의 정보가 저장되었습니다.`); showView('list'); 
             }).catch((error) => { console.error("Firebase 저장 오류:", error); openModal('error', '등록 실패', '네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'); }).finally(() => { submitBtn.disabled = false; submitBtn.innerText = originalBtnText; submitBtn.classList.remove('opacity-70', 'cursor-not-allowed'); });
         }
