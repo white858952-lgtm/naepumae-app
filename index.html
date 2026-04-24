@@ -99,7 +99,7 @@
     
     <div id="tutorial-overlay" class="fixed inset-0 bg-black/25 z-[10000] hidden transition-opacity duration-300 ease-in-out pointer-events-none">
         <div id="tut-pointer" class="fixed z-[10003] hidden text-5xl animate-bounce drop-shadow-lg transition-all duration-300">👇</div>
-        <div id="tutorial-tooltip" class="fixed left-1/2 transform -translate-x-1/2 bg-white rounded-3xl p-5 shadow-2xl w-[85%] max-w-[300px] transition-all duration-500 ease-in-out opacity-0 border border-pink-100 pointer-events-auto flex flex-col z-[10005]">
+        <div id="tutorial-tooltip" class="fixed left-1/2 transform -translate-x-1/2 bg-white rounded-3xl p-5 shadow-2xl w-[85%] max-w-[300px] transition-all duration-200 ease-in-out opacity-0 border border-pink-100 pointer-events-auto flex flex-col z-[10005]">
             <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-pink-500 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-md whitespace-nowrap" id="tut-step-counter">1/24</div>
             <div class="flex items-center gap-2 mb-2 mt-1">
                 <div class="text-2xl" id="tut-icon">💡</div>
@@ -952,7 +952,7 @@
             if(currentTutStep > 0) {
                 const tooltip = document.getElementById('tutorial-tooltip'); const pointer = document.getElementById('tut-pointer');
                 tooltip.classList.add('opacity-0'); pointer.classList.add('hidden');
-                setTimeout(() => { currentTutStep--; applyTutorialState(tutorialSteps[currentTutStep]); }, 300);
+                setTimeout(() => { currentTutStep--; applyTutorialState(tutorialSteps[currentTutStep]); }, 200);
             }
         }
         function forceNextTutorial() { nextTutorial(); }
@@ -960,7 +960,7 @@
             const tooltip = document.getElementById('tutorial-tooltip'); const pointer = document.getElementById('tut-pointer');
             tooltip.classList.add('opacity-0'); pointer.classList.add('hidden');
             // 🌟 CSS 애니메이션(500ms)이 완전히 끝나서 투명해진 뒤에 다음 스텝 실행
-            setTimeout(() => { currentTutStep++; if(currentTutStep >= tutorialSteps.length) { skipTutorial(); } else { applyTutorialState(tutorialSteps[currentTutStep]); } }, 500);
+            setTimeout(() => { currentTutStep++; if(currentTutStep >= tutorialSteps.length) { skipTutorial(); } else { applyTutorialState(tutorialSteps[currentTutStep]); } }, 200);
         }
 
         function skipTutorial() {
