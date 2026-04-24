@@ -886,7 +886,7 @@
                 }
             }
             window.scrollTo(0,0); document.getElementById('record-panel-content').scrollTop = 0; document.getElementById('behavior-panel-content').scrollTop = 0;
-            setTimeout(() => { renderTutorialStepUI(step); }, 100);
+            setTimeout(() => { renderTutorialStepUI(step); }, 350);
         }
 
         function updateTooltipPosition(targetId, forceBottom = false) {
@@ -1977,6 +1977,40 @@
             } else { btns.innerHTML = `<button onclick="closeModal()" class="w-full py-4 pink-gradient text-white font-black rounded-2xl shadow-md">확인</button>`; }
         }
         function closeModal() { document.getElementById('custom-modal').classList.remove('active'); }
+
+        // 🌟 [추가됨] 튜토리얼 스크롤 감지 및 UI 투명화 로직
+        let tutScrollTimer = null;
+
+        // 패널 내부(div)의 스크롤을 감지하기 위해 캡처링 단계(true)에서 이벤트 캐치
+        window.addEventListener('scroll', (e) => {
+            // 1. 튜토리얼 중이고, 해당 스텝이 스크롤을 요구하는 스텝일 때만 동작
+            if (isTutorialActive && tutorialSteps[currentTutStep] && tutorialSteps[currentTutStep].scroll) {
+                
+                const tooltip = document.getElementById('tutorial-tooltip');
+                const overlay = document.getElementById('tutorial-overlay');
+
+                if (tooltip && overlay) {
+                    // 2. 스크롤 발생 즉시: 툴팁을 거의 투명하게(0.1) 변경
+                    tooltip.style.opacity = '0.1';
+                    
+                    // 3. 스크롤 발생 즉시: 오버레이의 어두운 배경 제거 (화면 밝아짐)
+                    overlay.classList.remove('bg-black/25');
+                    overlay.style.backgroundColor = 'transparent';
+
+                    // 이전 타이머가 있다면 취소 (스크롤 중에는 계속 취소됨)
+                    if (tutScrollTimer !== null) {
+                        clearTimeout(tutScrollTimer);
+                    }
+
+                    // 4. 스크롤이 멈추고 500ms(0.5초)가 지나면 원래 상태로 복구
+                    tutScrollTimer = setTimeout(() => {
+                        tooltip.style.opacity = '1';
+                        overlay.style.backgroundColor = ''; // 인라인 스타일 제거
+                        overlay.classList.add('bg-black/25'); // 어두운 배경 클래스 복구
+                    }, 500);
+                }
+            }
+        }, true);
     </script>
 </body>
 </html>
