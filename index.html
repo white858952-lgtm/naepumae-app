@@ -1683,11 +1683,27 @@ if (currentFilter === 'adopt' && !(a.status && a.status.includes('입양 대기'
         }
         function setGrade(level) { document.querySelectorAll('.grade-btn').forEach(b => b.classList.remove('grade-active')); document.querySelector(`.g${level}`).classList.add('grade-active'); document.getElementById('bh-grade').value = level; }
         function formatABC(a, b) {
-            if(!a || !b) return ""; let fa = a.trim(); let fb = b.trim();
-            if(fa.endsWith('는다')) fa = fa.slice(0, -2) + '으면'; else if(fa.endsWith('ㄴ다')) fa = fa.slice(0, -2) + '면'; else if(fa.endsWith('다')) fa = fa.slice(0, -1) + '면'; else if(!fa.endsWith('면') && !fa.endsWith('때')) fa += '상황에서';
-            if(fb.endsWith('는다')) fb = fb.slice(0, -2) + '는 경향이 있습니다.'; else if(fb.endsWith('ㄴ다')) fb = fb.slice(0, -2) + '는 경향이 있습니다.'; else if(fb.endsWith('다')) fb = fb.slice(0, -1) + '는 경향이 있습니다.'; else if(!fb.endsWith('경향이 있습니다.')) fb += '는 경향이 있습니다.';
-            return `<span class="text-indigo-500">${fa}</span> <span class="text-indigo-800">${fb}</span>`;
-        }
+            if(!a && !b) return ""; 
+            
+            let fa = a ? a.trim() : ""; 
+            let fb = b ? b.trim() : "";
+
+            if(fa) {
+                if(fa.endsWith('는다')) fa = fa.slice(0, -2) + '으면'; 
+                else if(fa.endsWith('ㄴ다')) fa = fa.slice(0, -2) + '면'; 
+                else if(fa.endsWith('다')) fa = fa.slice(0, -1) + '면'; 
+                else if(!fa.endsWith('면') && !fa.endsWith('때')) fa += ' 상황에서';
+            }
+
+            if(fb) {
+                if(fb.endsWith('는다')) fb = fb.slice(0, -2) + '는 경향이 있습니다.'; 
+                else if(fb.endsWith('ㄴ다')) fb = fb.slice(0, -2) + '는 경향이 있습니다.'; 
+                else if(fb.endsWith('다')) fb = fb.slice(0, -1) + '는 경향이 있습니다.'; 
+                else if(!fb.endsWith('경향이 있습니다.')) fb += '는 경향이 있습니다.';
+            }
+
+            return `<span class="text-indigo-500">${fa}</span> <span class="text-indigo-800">${fb}</span>`;
+        }
         function openBehaviorPanel(id) {
             const ani = animals.find(a => String(a.id) === String(id)); if(!ani) return;
             editingBehaviorLogId = null;
