@@ -296,12 +296,19 @@
         </div>
 
         <div id="view-events" class="hidden space-y-4 mt-2">
-            <div class="flex justify-between items-center px-2 mb-2">
-                <h2 class="text-lg font-black text-gray-800">📢 센터 주요 일정</h2>
-                <button onclick="openEventPanel()" class="bg-pink-50 text-pink-500 text-xs font-bold px-3 py-2 rounded-xl active:scale-95 shadow-sm border border-pink-100">+ 일정 추가</button>
-            </div>
-            
-            <div class="card" id="event-cal-card">
+    <div class="flex justify-between items-center px-2 mb-2">
+        <h2 class="text-lg font-black text-gray-800">📢 센터 주요 일정</h2>
+        <button onclick="openEventPanel()" class="bg-pink-50 text-pink-500 text-xs font-bold px-3 py-2 rounded-xl active:scale-95 shadow-sm border border-pink-100">+ 일정 추가</button>
+    </div>
+
+    <div class="px-2 mb-4" id="event-tabs-container">
+        <div class="flex bg-indigo-50 p-1 rounded-xl shadow-inner border border-indigo-100">
+            <button onclick="setEventTab('calendar')" id="btn-event-cal" class="flex-1 py-2 text-xs font-black rounded-lg bg-white shadow-sm text-indigo-600 transition-all">📅 달력으로 보기</button>
+            <button onclick="setEventTab('list')" id="btn-event-list" class="flex-1 py-2 text-xs font-black rounded-lg text-indigo-400 opacity-70 transition-all">📋 목록으로 보기</button>
+        </div>
+    </div>
+    
+    <div class="card border-indigo-100 bg-indigo-50/30" id="event-cal-card">
                 <div class="flex justify-between items-center mb-6">
                     <button onclick="changeEventMonth(-1)" class="text-gray-400 text-2xl font-black p-2 active:scale-90">&lsaquo;</button>
                     <h2 id="event-cal-month-title" class="text-xl font-black text-gray-800">2026년 4월</h2>
@@ -1660,9 +1667,8 @@
                 
                 // 해당 날짜에 일정이 있는지 체크하여 핑크색 점 표시
                 const hasEvent = eventsList.some(ev => ev.date === dateString);
-                const dotHtml = hasEvent ? '<div class="cal-dot"></div>' : '';
-                
-                if (currentEventFilterDate === dateString) classes += ' ring-2 ring-pink-400 ring-offset-2';
+const dotHtml = hasEvent ? '<div class="cal-dot" style="background-color: #6366f1;"></div>' : ''; // 인디고 점
+if (currentEventFilterDate === dateString) classes += ' ring-2 ring-indigo-400 ring-offset-2 bg-indigo-100'; // 인디고 테두리 및 배경
                 calDays.innerHTML += `<div class="${classes}" onclick="filterEvents('${dateString}')">${i}${dotHtml}</div>`;
             }
         }
@@ -1702,8 +1708,24 @@
             const eventData = { date: date, time: time || '시간 미정', title: title, desc: desc, createdBy: currentTrainerName, timestamp: Date.now() };
             database.ref(getDbPath('events/') + targetId).update(eventData).then(() => { closeEventPanel(); openModal('success', editingEventId ? '수정 완료' : '일정 등록 완료', '센터 행사가 성공적으로 저장되었습니다.'); });
         }
-        let currentEventFilterDate = null;
-        function filterEvents(dateString) {
+        let currentEventTab = 'calendar';
+function setEventTab(tab) {
+    currentEventTab = tab;
+    document.getElementById('btn-event-cal').className = tab === 'calendar' ? 'flex-1 py-2 text-xs font-black rounded-lg bg-white shadow-sm text-indigo-600 transition-all' : 'flex-1 py-2 text-xs font-black rounded-lg text-indigo-400 opacity-70 transition-all';
+    document.getElementById('btn-event-list').className = tab === 'list' ? 'flex-1 py-2 text-xs font-black rounded-lg bg-white shadow-sm text-indigo-600 transition-all' : 'flex-1 py-2 text-xs font-black rounded-lg text-indigo-400 opacity-70 transition-all';
+    
+    if(tab === 'list') {
+        document.getElementById('event-cal-card').classList.add('hidden');
+        currentEventFilterDate = null; // 필터 초기화
+    } else {
+        document.getElementById('event-cal-card').classList.remove('hidden');
+    }
+    renderEventCalendar();
+    renderEvents();
+}
+
+let currentEventFilterDate = null;
+function filterEvents(dateString) {
             currentEventFilterDate = (currentEventFilterDate === dateString) ? null : dateString;
             renderEventCalendar();
             renderEvents();
@@ -1980,13 +2002,17 @@
         function setPottyMemo(text) { document.getElementById('potty-memo').value = text; }
         
         function clearFormFields() {
-            // 🌟 투약 버튼 및 모든 선택 버튼 상태 잔상 완벽 제거 (먹통 버그 해결)
-            document.querySelectorAll('.med-time-btn').forEach(b => { b.classList.remove('btn-active'); b.classList.add('btn-inactive'); });
-            ['walk-time', 'walk-cond', 'meal-time', 'meal-status'].forEach(cls => { document.querySelectorAll(`.${cls}-btn`).forEach(b => { b.classList.remove('btn-active'); b.classList.add('btn-inactive'); }); });
-            ['walk-time', 'walk-cond', 'meal-time', 'meal-status'].forEach(cls => { document.querySelectorAll(`.${cls}-btn`).forEach(b => { b.classList.remove('btn-active'); b.classList.add('btn-inactive'); }); });
-            document.getElementById('potty-type-feces').className = 'potty-type-btn flex-1 py-3 rounded-2xl border btn-inactive'; document.getElementById('potty-type-urine').className = 'potty-type-btn flex-1 py-3 rounded-2xl border btn-inactive';
-            document.getElementById('walk-duration').value = ''; document.getElementById('meal-amount').value = ''; document.getElementById('potty-memo').value = ''; document.getElementById('daily-memo').value = '';
-        }
+    // 🌟 모든 상태 버튼을 확실하게 비활성화
+    document.querySelectorAll('.med-time-btn, .walk-time-btn, .walk-cond-btn, .meal-time-btn, .meal-status-btn, .potty-type-btn').forEach(b => {
+        b.classList.remove('btn-active', 'bg-pink-100', 'text-pink-600', 'border-pink-300');
+        b.classList.add('btn-inactive', 'bg-white', 'text-gray-500', 'border-gray-200');
+    });
+    // 🌟 모든 텍스트 입력창 초기화
+    document.getElementById('walk-duration').value = ''; 
+    document.getElementById('meal-amount').value = ''; 
+    document.getElementById('potty-memo').value = ''; 
+    document.getElementById('daily-memo').value = '';
+}
         function resetRecordForm() { editingLogId = null; editingLogOriginalData = null; document.getElementById('record-action-text').innerText = '기록'; clearFormFields(); }
 
         function openRecordFromProfile() { 
