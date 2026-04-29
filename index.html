@@ -296,19 +296,15 @@
         </div>
 
         <div id="view-events" class="hidden space-y-4 mt-2">
-    <div class="flex justify-between items-center px-2 mb-2">
-        <h2 class="text-lg font-black text-gray-800">📢 센터 주요 일정</h2>
-        <button onclick="openEventPanel()" class="bg-pink-50 text-pink-500 text-xs font-bold px-3 py-2 rounded-xl active:scale-95 shadow-sm border border-pink-100">+ 일정 추가</button>
-    </div>
-
-    <div class="px-2 mb-4" id="event-tabs-container">
-        <div class="flex bg-indigo-50 p-1 rounded-xl shadow-inner border border-indigo-100">
-            <button onclick="setEventTab('calendar')" id="btn-event-cal" class="flex-1 py-2 text-xs font-black rounded-lg bg-white shadow-sm text-indigo-600 transition-all">📅 달력으로 보기</button>
-            <button onclick="setEventTab('list')" id="btn-event-list" class="flex-1 py-2 text-xs font-black rounded-lg text-indigo-400 opacity-70 transition-all">📋 목록으로 보기</button>
-        </div>
-    </div>
-    
-    <div class="card border-indigo-100 bg-indigo-50/30" id="event-cal-card">
+            <div class="flex justify-between items-center px-2 mb-2 gap-2">
+                <div class="flex bg-indigo-50 p-1 rounded-xl shadow-inner border border-indigo-100 flex-1">
+                    <button onclick="setEventTab('calendar')" id="btn-event-cal" class="flex-1 py-2 text-xs font-black rounded-lg bg-white shadow-sm text-indigo-600 transition-all">📅 달력</button>
+                    <button onclick="setEventTab('list')" id="btn-event-list" class="flex-1 py-2 text-xs font-black rounded-lg text-indigo-400 opacity-70 transition-all">📋 목록</button>
+                </div>
+                <button onclick="openEventPanel()" class="bg-indigo-500 text-white text-[11px] font-black px-4 py-2.5 rounded-xl active:scale-95 shadow-md whitespace-nowrap">+ 일정 추가</button>
+            </div>
+            
+            <div class="card border-indigo-100 bg-indigo-50/30" id="event-cal-card">
                 <div class="flex justify-between items-center mb-6">
                     <button onclick="changeEventMonth(-1)" class="text-gray-400 text-2xl font-black p-2 active:scale-90">&lsaquo;</button>
                     <h2 id="event-cal-month-title" class="text-xl font-black text-gray-800">2026년 4월</h2>
@@ -644,8 +640,8 @@
                 <section class="border border-green-100 p-4 rounded-2xl bg-green-50/30 shadow-sm" id="rp-med-section">
                     <h3 class="text-lg font-black text-green-700 mb-3">💊 복약 체크</h3>
                     <div class="flex gap-2" id="rp-med-buttons">
-                        <button type="button" id="btn-med-am" onclick="toggleMulti(this)" class="med-time-btn hidden flex-1 py-3 rounded-xl border btn-inactive text-sm font-bold active:scale-95">아침 약 완료</button>
-                        <button type="button" id="btn-med-pm" onclick="toggleMulti(this)" class="med-time-btn hidden flex-1 py-3 rounded-xl border btn-inactive text-sm font-bold active:scale-95">저녁 약 완료</button>
+                        <button type="button" id="btn-med-am" onclick="toggleMulti(this)" class="med-time-btn hidden flex-1 py-3 rounded-xl border btn-inactive text-sm font-bold active:scale-95">아침 약</button>
+                        <button type="button" id="btn-med-pm" onclick="toggleMulti(this)" class="med-time-btn hidden flex-1 py-3 rounded-xl border btn-inactive text-sm font-bold active:scale-95">저녁 약</button>
                     </div>
                 </section>
 
@@ -1160,7 +1156,7 @@
                 const navBtn = document.getElementById('nav-'+v);
                 if(navBtn) { navBtn.classList.toggle('opacity-40', view !== v); navBtn.classList.toggle('opacity-100', view === v); }
             });
-            if(view === 'list') renderTasks(); else if(view === 'dashboard') renderDashboard(); else if(view === 'schedule') renderCalendar(); else if(view === 'events') { renderEvents(); renderEventCalendar(); } else if(view === 'reg') resetRegForm();
+            if(view === 'list') renderTasks(); else if(view === 'dashboard') renderDashboard(); else if(view === 'schedule') renderCalendar(); else if(view === 'events') { setEventTab('calendar'); } else if(view === 'reg') resetRegForm();
             }
 
         let currentPhotoBase64 = null; let currentEditPhotoBase64 = null;
@@ -1490,8 +1486,8 @@
                 let walkTrainers = { '오전': '', '오후': '', '저녁': '' };
                 let meals = { '아침': false, '저녁': false }; 
                 let mealTrainers = { '아침': '', '저녁': '' };
-                let meds = { '아침 약 완료': false, '저녁 약 완료': false }; 
-                let medTrainers = { '아침 약 완료': '', '저녁 약 완료': '' };
+                let meds = { '아침 약': false, '저녁 약': false }; 
+                let medTrainers = { '아침 약': '', '저녁 약': '' };
                 
                 let hasFeces = false; let hasUrine = false;
                 const medDays = a.med_days ? a.med_days : '월,화,수,목,금,토,일';
@@ -1504,7 +1500,10 @@
                                 if(log.walk.condition === '나쁨') { alertsHtml += `<div class="bg-red-50 border border-red-100 p-3 rounded-xl mb-2 flex items-start gap-2 cursor-pointer active:scale-[0.98]" onclick="openProfilePanel('${a.id}')"><span class="text-lg">🚨</span><div><p class="text-xs font-black text-red-600">${a.name} <span class="font-bold text-gray-500">산책 컨디션 나쁨</span></p></div></div>`; alertCount++; } 
                             }
                             if(log.meal && log.meal.time !== '-') { meals[log.meal.time] = true; mealTrainers[log.meal.time] = log.trainer_name; }
-                            if(log.med && log.med.time !== '-') { meds[log.med.time] = true; medTrainers[log.med.time] = log.trainer_name; } 
+                            if(log.med && log.med.time !== '-') {
+                                if(log.med.time.includes('아침')) { meds['아침 약'] = true; medTrainers['아침 약'] = log.trainer_name; }
+                                if(log.med.time.includes('저녁')) { meds['저녁 약'] = true; medTrainers['저녁 약'] = log.trainer_name; }
+                            } 
                             if(log.potty) {
                                 if(log.potty.type.includes('대변')) hasFeces = true; if(log.potty.type.includes('소변')) hasUrine = true;
                                 if(log.potty.memo && log.potty.memo !== '특이사항 없음' && log.potty.memo !== '정상 (양호)') { alertsHtml += `<div class="bg-orange-50 border border-orange-100 p-3 rounded-xl mb-2 flex items-start gap-2 cursor-pointer active:scale-[0.98]" onclick="openProfilePanel('${a.id}')"><span class="text-lg">💩</span><div><p class="text-xs font-black text-orange-600">${a.name} <span class="font-bold text-gray-500">${log.potty.memo}</span></p></div></div>`; alertCount++; }
@@ -1514,7 +1513,7 @@
                     });
                 }
                 
-                if(a.med_am && !meds['아침 약 완료'] && now.getHours() >= 13 && medDays.includes(todayName)) { 
+                if(a.med_am && !meds['아침 약'] && now.getHours() >= 13 && medDays.includes(todayName)) { 
                     alertsHtml += `<div class="bg-indigo-50 border border-indigo-100 p-3 rounded-xl mb-2 flex items-start gap-2 cursor-pointer active:scale-[0.98]" onclick="openProfilePanel('${a.id}')"><span class="text-lg">💊</span><div><p class="text-xs font-black text-indigo-600">${a.name} <span class="font-bold text-gray-500">아침 약 투여 미확인</span></p></div></div>`; alertCount++; 
                 }
 
@@ -1553,14 +1552,14 @@
                 }
                 else if(currentDashTask === 'med') { 
                     if((a.med_am || a.med_pm) && medDays.includes(todayName)) { 
-                        isTaskTarget = true; isTaskDone = (!a.med_am || meds['아침 약 완료']) && (!a.med_pm || meds['저녁 약 완료']);
+                        isTaskTarget = true; isTaskDone = (!a.med_am || meds['아침 약']) && (!a.med_pm || meds['저녁 약']);
                         let badgeParts = [];
                         if(a.med_am) {
-                            if(meds['아침 약 완료']) badgeParts.push(`<div class="flex-1 bg-indigo-50 text-indigo-600 rounded px-1 py-0.5 text-center"><span class="block text-[9px] font-black">아침</span><span class="block text-[8px] font-bold opacity-80 truncate" title="${medTrainers['아침 약 완료']}">${medTrainers['아침 약 완료']}</span></div>`);
+                            if(meds['아침 약']) badgeParts.push(`<div class="flex-1 bg-indigo-50 text-indigo-600 rounded px-1 py-0.5 text-center"><span class="block text-[9px] font-black">아침</span><span class="block text-[8px] font-bold opacity-80 truncate" title="${medTrainers['아침 약']}">${medTrainers['아침 약']}</span></div>`);
                             else badgeParts.push(`<div class="flex-1 bg-gray-100 text-gray-400 rounded px-1 py-0.5 text-center"><span class="block text-[9px] font-black mt-1">아침</span></div>`);
                         }
                         if(a.med_pm) {
-                            if(meds['저녁 약 완료']) badgeParts.push(`<div class="flex-1 bg-indigo-50 text-indigo-600 rounded px-1 py-0.5 text-center"><span class="block text-[9px] font-black">저녁</span><span class="block text-[8px] font-bold opacity-80 truncate" title="${medTrainers['저녁 약 완료']}">${medTrainers['저녁 약 완료']}</span></div>`);
+                            if(meds['저녁 약']) badgeParts.push(`<div class="flex-1 bg-indigo-50 text-indigo-600 rounded px-1 py-0.5 text-center"><span class="block text-[9px] font-black">저녁</span><span class="block text-[8px] font-bold opacity-80 truncate" title="${medTrainers['저녁 약']}">${medTrainers['저녁 약']}</span></div>`);
                             else badgeParts.push(`<div class="flex-1 bg-gray-100 text-gray-400 rounded px-1 py-0.5 text-center"><span class="block text-[9px] font-black mt-1">저녁</span></div>`);
                         }
                         subBadgeHtml = `<div class="flex gap-1 w-full justify-center">${badgeParts.join('')}</div>`;
@@ -1580,7 +1579,7 @@
                 let medHtml = '';
                 if((a.med_am || a.med_pm) && medDays.includes(todayName)) {
                     medHtml = `<div class="flex items-center w-full mt-1.5"><span class="text-xs mr-1">💊</span>`;
-                    if(a.med_am) medHtml += ` ${getBadge(meds['아침 약 완료'], '아침약')}`; if(a.med_pm) medHtml += ` ${getBadge(meds['저녁 약 완료'], '저녁약')}`; medHtml += `</div>`;
+                    if(a.med_am) medHtml += ` ${getBadge(meds['아침 약'], '아침약')}`; if(a.med_pm) medHtml += ` ${getBadge(meds['저녁 약'], '저녁약')}`; medHtml += `</div>`;
                 }
 
                 listHtml += `
@@ -1709,24 +1708,30 @@ if (currentEventFilterDate === dateString) classes += ' ring-2 ring-indigo-400 r
             database.ref(getDbPath('events/') + targetId).update(eventData).then(() => { closeEventPanel(); openModal('success', editingEventId ? '수정 완료' : '일정 등록 완료', '센터 행사가 성공적으로 저장되었습니다.'); });
         }
         let currentEventTab = 'calendar';
-function setEventTab(tab) {
-    currentEventTab = tab;
-    document.getElementById('btn-event-cal').className = tab === 'calendar' ? 'flex-1 py-2 text-xs font-black rounded-lg bg-white shadow-sm text-indigo-600 transition-all' : 'flex-1 py-2 text-xs font-black rounded-lg text-indigo-400 opacity-70 transition-all';
-    document.getElementById('btn-event-list').className = tab === 'list' ? 'flex-1 py-2 text-xs font-black rounded-lg bg-white shadow-sm text-indigo-600 transition-all' : 'flex-1 py-2 text-xs font-black rounded-lg text-indigo-400 opacity-70 transition-all';
-    
-    if(tab === 'list') {
-        document.getElementById('event-cal-card').classList.add('hidden');
-        currentEventFilterDate = null; // 필터 초기화
-    } else {
-        document.getElementById('event-cal-card').classList.remove('hidden');
-    }
-    renderEventCalendar();
-    renderEvents();
-}
+        function setEventTab(tab) {
+            currentEventTab = tab;
+            document.getElementById('btn-event-cal').className = tab === 'calendar' ? 'flex-1 py-2 text-xs font-black rounded-lg bg-white shadow-sm text-indigo-600 transition-all' : 'flex-1 py-2 text-xs font-black rounded-lg text-indigo-400 opacity-70 transition-all';
+            document.getElementById('btn-event-list').className = tab === 'list' ? 'flex-1 py-2 text-xs font-black rounded-lg bg-white shadow-sm text-indigo-600 transition-all' : 'flex-1 py-2 text-xs font-black rounded-lg text-indigo-400 opacity-70 transition-all';
+            
+            if(tab === 'list') {
+                document.getElementById('event-cal-card').classList.add('hidden');
+                currentEventFilterDate = null; // 필터 초기화
+            } else {
+                document.getElementById('event-cal-card').classList.remove('hidden');
+                // 🌟 달력 뷰 최초 진입 시, 오늘 날짜로 자동 세팅
+                if(!currentEventFilterDate) {
+                    const today = new Date();
+                    currentEventFilterDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                }
+            }
+            renderEventCalendar();
+            renderEvents();
+        }
 
 let currentEventFilterDate = null;
-function filterEvents(dateString) {
-            currentEventFilterDate = (currentEventFilterDate === dateString) ? null : dateString;
+        function filterEvents(dateString) {
+            // 🌟 달력 모드에서는 해당 날짜 고정 (한 번 더 눌렀을 때 전체보기로 풀리는 것 방지)
+            currentEventFilterDate = dateString;
             renderEventCalendar();
             renderEvents();
         }
@@ -2108,7 +2113,10 @@ function filterEvents(dateString) {
             document.getElementById('rp-header-info').innerHTML = `${photoHtml}<div class="flex flex-col"><span class="font-black text-gray-800 text-lg leading-tight">${ani.name}</span><span class="text-[10px] text-pink-400 font-bold">일과 기록 수정</span></div>`;
             document.getElementById('record-action-text').innerText = '수정'; clearFormFields(); 
 
-            if(log.med && log.med.time !== '-') setToggleState('.med-time-btn', log.med.time);
+            if(log.med && log.med.time !== '-') {
+                if(log.med.time.includes('아침')) forceMultiState('btn-med-am', true);
+                if(log.med.time.includes('저녁')) forceMultiState('btn-med-pm', true);
+            }
             if(log.walk) { if(log.walk.time !== '-') setToggleState('.walk-time-btn', log.walk.time); if(log.walk.duration !== '-') document.getElementById('walk-duration').value = log.walk.duration; if(log.walk.condition !== '-') setToggleState('.walk-cond-btn', log.walk.condition, true); }
             if(log.meal && ani.meal_type !== '자율배식') { if(log.meal.time !== '-') setToggleState('.meal-time-btn', log.meal.time); if(log.meal.amount !== '-') document.getElementById('meal-amount').value = log.meal.amount; if(log.meal.status !== '-') setToggleState('.meal-status-btn', log.meal.status); }
             if(log.potty) { if(log.potty.type && log.potty.type !== '-') { if(log.potty.type.includes('대변')) forceMultiState('potty-type-feces', true); if(log.potty.type.includes('소변')) forceMultiState('potty-type-urine', true); } if(log.potty.memo && log.potty.memo !== '특이사항 없음') document.getElementById('potty-memo').value = log.potty.memo; }
