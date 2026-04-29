@@ -300,6 +300,25 @@
                 <h2 class="text-lg font-black text-gray-800">📢 센터 주요 일정</h2>
                 <button onclick="openEventPanel()" class="bg-pink-50 text-pink-500 text-xs font-bold px-3 py-2 rounded-xl active:scale-95 shadow-sm border border-pink-100">+ 일정 추가</button>
             </div>
+            
+            <div class="card" id="event-cal-card">
+                <div class="flex justify-between items-center mb-6">
+                    <button onclick="changeEventMonth(-1)" class="text-gray-400 text-2xl font-black p-2 active:scale-90">&lsaquo;</button>
+                    <h2 id="event-cal-month-title" class="text-xl font-black text-gray-800">2026년 4월</h2>
+                    <button onclick="changeEventMonth(1)" class="text-gray-400 text-2xl font-black p-2 active:scale-90">&rsaquo;</button>
+                </div>
+                <div class="cal-grid mb-2">
+                    <div class="text-xs font-black text-red-400">일</div>
+                    <div class="text-xs font-black text-gray-400">월</div>
+                    <div class="text-xs font-black text-gray-400">화</div>
+                    <div class="text-xs font-black text-gray-400">수</div>
+                    <div class="text-xs font-black text-gray-400">목</div>
+                    <div class="text-xs font-black text-gray-400">금</div>
+                    <div class="text-xs font-black text-blue-400">토</div>
+                </div>
+                <div id="event-cal-days" class="cal-grid"></div>
+            </div>
+
             <div id="event-container" class="space-y-4 px-1 pb-10"></div>
         </div>
 
@@ -1121,7 +1140,8 @@
             database.ref(getDbPath('events')).on('value', (snapshot) => { 
                 const data = snapshot.val(); eventsList = [];
                 if(data) { Object.keys(data).forEach(k => eventsList.push({...data[k], id: k})); eventsList.sort((a, b) => new Date(a.date) - new Date(b.date)); }
-                if (!document.getElementById('view-events').classList.contains('hidden')) renderEvents();
+                // 🌟 행사 캘린더 렌더링 호출 추가
+                if (!document.getElementById('view-events').classList.contains('hidden')) { renderEvents(); renderEventCalendar(); }
             });
         }
 
@@ -1132,8 +1152,8 @@
                 const navBtn = document.getElementById('nav-'+v);
                 if(navBtn) { navBtn.classList.toggle('opacity-40', view !== v); navBtn.classList.toggle('opacity-100', view === v); }
             });
-            if(view === 'list') renderTasks(); else if(view === 'dashboard') renderDashboard(); else if(view === 'schedule') renderCalendar(); else if(view === 'events') renderEvents(); else if(view === 'reg') resetRegForm();
-        }
+            if(view === 'list') renderTasks(); else if(view === 'dashboard') renderDashboard(); else if(view === 'schedule') renderCalendar(); else if(view === 'events') { renderEvents(); renderEventCalendar(); } else if(view === 'reg') resetRegForm();
+            }
 
         let currentPhotoBase64 = null; let currentEditPhotoBase64 = null;
         function handleFileSelect(event, mode='in') {
@@ -1175,7 +1195,8 @@
             ['in-name', 'in-type', 'in-gender', 'in-age', 'in-health-memo', 'in-med-info', 'in-memo', 'in-size', 'in-group'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ""; });
             updateBreeds('in'); document.getElementById('in-status').value = ""; document.getElementById('in-med-am').checked = false; document.getElementById('in-med-pm').checked = false; document.getElementById('in-meal-type').value = '제한급여';
             document.querySelectorAll('.in-per-btn').forEach(btn => { btn.classList.remove('btn-active', 'bg-pink-100', 'text-pink-600', 'border-pink-300'); btn.classList.add('btn-inactive', 'bg-white', 'text-gray-500', 'border-gray-200'); });
-            document.querySelectorAll('.in-med-day-btn').forEach(btn => { if(!btn.classList.contains('med-day-active')) toggleMedDay(btn); }); removePhoto(null, 'in'); 
+            // 🌟 신규 등록 시 모든 투약 요일 기본 OFF 처리 (! 제거)
+            document.querySelectorAll('.in-med-day-btn').forEach(btn => { if(btn.classList.contains('med-day-active')) toggleMedDay(btn); }); removePhoto(null, 'in'); 
         }
 
         function saveNewAnimal() {
@@ -1241,7 +1262,8 @@
                 else { btn.classList.remove('btn-active', 'bg-pink-100', 'text-pink-600', 'border-pink-300'); btn.classList.add('btn-inactive', 'bg-white', 'text-gray-500', 'border-gray-200'); }
             });
 
-            const savedMedDays = ani.med_days ? ani.med_days.split(',') : ['월','화','수','목','금','토','일'];
+            // 🌟 정보 수정 창을 열 때 기존 값이 없으면 모두 OFF (빈 배열) 처리
+            const savedMedDays = ani.med_days ? ani.med_days.split(',') : [];
             document.querySelectorAll('.edit-med-day-btn').forEach(btn => {
                 const isActive = btn.classList.contains('med-day-active'); const shouldBeActive = savedMedDays.includes(btn.innerText); if (isActive !== shouldBeActive) { toggleMedDay(btn); }
             });
@@ -1618,6 +1640,31 @@
             }
         }
         function changeMonth(delta) { currentDate.setMonth(currentDate.getMonth() + delta); renderCalendar(); }
+
+        // 🌟 행사 전용 캘린더 렌더링 로직
+        let currentEventDate = new Date();
+        function renderEventCalendar() {
+            const year = currentEventDate.getFullYear(); const month = currentEventDate.getMonth(); 
+            document.getElementById('event-cal-month-title').innerText = `${year}년 ${month + 1}월`;
+            const firstDay = new Date(year, month, 1).getDay(); 
+            const lastDate = new Date(year, month + 1, 0).getDate(); 
+            const calDays = document.getElementById('event-cal-days'); calDays.innerHTML = '';
+            const today = new Date(); const isCurrentMonth = (today.getFullYear() === year && today.getMonth() === month);
+            
+            for (let i = 0; i < firstDay; i++) calDays.innerHTML += `<div class="cal-day empty"></div>`;
+            for (let i = 1; i <= lastDate; i++) {
+                const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`; 
+                let classes = 'cal-day'; if (isCurrentMonth && today.getDate() === i) classes += ' today';
+                const dayOfWeek = new Date(year, month, i).getDay(); if (dayOfWeek === 0) classes += ' sun'; if (dayOfWeek === 6) classes += ' sat';
+                
+                // 해당 날짜에 일정이 있는지 체크하여 핑크색 점 표시
+                const hasEvent = eventsList.some(ev => ev.date === dateString);
+                const dotHtml = hasEvent ? '<div class="cal-dot"></div>' : '';
+                
+                calDays.innerHTML += `<div class="${classes}">${i}${dotHtml}</div>`;
+            }
+        }
+        function changeEventMonth(delta) { currentEventDate.setMonth(currentEventDate.getMonth() + delta); renderEventCalendar(); }
         function openSchedulePanel(dateString) {
             const dateObj = new Date(dateString); document.getElementById('sp-date-title').innerText = `${dateObj.getMonth() + 1}월 ${dateObj.getDate()}일 근무표`; document.getElementById('sp-date-key').value = dateString;
             const dayData = schedules[dateString] || { am: '', pm: '', off: '', half: '' }; document.getElementById('sch-am').value = dayData.am || ''; document.getElementById('sch-pm').value = dayData.pm || ''; document.getElementById('sch-off').value = dayData.off || ''; document.getElementById('sch-half').value = dayData.half || '';
@@ -1923,7 +1970,9 @@
         function setPottyMemo(text) { document.getElementById('potty-memo').value = text; }
         
         function clearFormFields() {
+            // 🌟 투약 버튼 및 모든 선택 버튼 상태 잔상 완벽 제거 (먹통 버그 해결)
             document.querySelectorAll('.med-time-btn').forEach(b => { b.classList.remove('btn-active'); b.classList.add('btn-inactive'); });
+            ['walk-time', 'walk-cond', 'meal-time', 'meal-status'].forEach(cls => { document.querySelectorAll(`.${cls}-btn`).forEach(b => { b.classList.remove('btn-active'); b.classList.add('btn-inactive'); }); });
             ['walk-time', 'walk-cond', 'meal-time', 'meal-status'].forEach(cls => { document.querySelectorAll(`.${cls}-btn`).forEach(b => { b.classList.remove('btn-active'); b.classList.add('btn-inactive'); }); });
             document.getElementById('potty-type-feces').className = 'potty-type-btn flex-1 py-3 rounded-2xl border btn-inactive'; document.getElementById('potty-type-urine').className = 'potty-type-btn flex-1 py-3 rounded-2xl border btn-inactive';
             document.getElementById('walk-duration').value = ''; document.getElementById('meal-amount').value = ''; document.getElementById('potty-memo').value = ''; document.getElementById('daily-memo').value = '';
