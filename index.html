@@ -1125,7 +1125,8 @@
             });
         }
 
-        function showView(view) {
+                function showView(view) {
+            window.scrollTo({top: 0, behavior: 'smooth'}); // 🌟 스크롤 최상단 이동 추가
             ['reg', 'list', 'schedule', 'events', 'dashboard'].forEach(v => {
                 document.getElementById('view-'+v).classList.toggle('hidden', view !== v);
                 const navBtn = document.getElementById('nav-'+v);
