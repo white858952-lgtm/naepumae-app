@@ -637,8 +637,8 @@
                 <section class="border border-green-100 p-4 rounded-2xl bg-green-50/30 shadow-sm" id="rp-med-section">
                     <h3 class="text-lg font-black text-green-700 mb-3">💊 복약 체크</h3>
                     <div class="flex gap-2" id="rp-med-buttons">
-                        <button type="button" id="btn-med-am" onclick="toggleSelect(this, 'med-time')" class="med-time-btn hidden flex-1 py-3 rounded-xl border border-gray-200 bg-white text-gray-500 text-sm font-bold active:scale-95">아침 약 완료</button>
-                        <button type="button" id="btn-med-pm" onclick="toggleSelect(this, 'med-time')" class="med-time-btn hidden flex-1 py-3 rounded-xl border border-gray-200 bg-white text-gray-500 text-sm font-bold active:scale-95">저녁 약 완료</button>
+                        <button type="button" id="btn-med-am" onclick="toggleMulti(this)" class="med-time-btn hidden flex-1 py-3 rounded-xl border btn-inactive text-sm font-bold active:scale-95">아침 약 완료</button>
+                        <button type="button" id="btn-med-pm" onclick="toggleMulti(this)" class="med-time-btn hidden flex-1 py-3 rounded-xl border btn-inactive text-sm font-bold active:scale-95">저녁 약 완료</button>
                     </div>
                 </section>
 
@@ -1146,7 +1146,8 @@
         }
 
                 function showView(view) {
-            window.scrollTo({top: 0, behavior: 'smooth'}); // 🌟 스크롤 최상단 이동 추가
+            window.scrollTo(0, 0); 
+            document.querySelectorAll('.overflow-y-auto').forEach(el => el.scrollTop = 0);
             ['reg', 'list', 'schedule', 'events', 'dashboard'].forEach(v => {
                 document.getElementById('view-'+v).classList.toggle('hidden', view !== v);
                 const navBtn = document.getElementById('nav-'+v);
@@ -1661,7 +1662,8 @@
                 const hasEvent = eventsList.some(ev => ev.date === dateString);
                 const dotHtml = hasEvent ? '<div class="cal-dot"></div>' : '';
                 
-                calDays.innerHTML += `<div class="${classes}">${i}${dotHtml}</div>`;
+                if (currentEventFilterDate === dateString) classes += ' ring-2 ring-pink-400 ring-offset-2';
+                calDays.innerHTML += `<div class="${classes}" onclick="filterEvents('${dateString}')">${i}${dotHtml}</div>`;
             }
         }
         function changeEventMonth(delta) { currentEventDate.setMonth(currentEventDate.getMonth() + delta); renderEventCalendar(); }
@@ -1700,6 +1702,12 @@
             const eventData = { date: date, time: time || '시간 미정', title: title, desc: desc, createdBy: currentTrainerName, timestamp: Date.now() };
             database.ref(getDbPath('events/') + targetId).update(eventData).then(() => { closeEventPanel(); openModal('success', editingEventId ? '수정 완료' : '일정 등록 완료', '센터 행사가 성공적으로 저장되었습니다.'); });
         }
+        let currentEventFilterDate = null;
+        function filterEvents(dateString) {
+            currentEventFilterDate = (currentEventFilterDate === dateString) ? null : dateString;
+            renderEventCalendar();
+            renderEvents();
+        }
         function renderEvents() {
             const container = document.getElementById('event-container'); const today = new Date(); today.setHours(0,0,0,0);
             if(eventsList.length === 0) { 
@@ -1713,7 +1721,9 @@
                 }
                 container.innerHTML = `<div class="text-center py-20 text-gray-400 font-bold">등록된 행사 및 일정이 없습니다.</div>`; return; 
             }
-            container.innerHTML = eventsList.map(ev => {
+            const filteredEvents = currentEventFilterDate ? eventsList.filter(ev => ev.date === currentEventFilterDate) : eventsList;
+            if(filteredEvents.length === 0) { container.innerHTML = `<div class="text-center py-10 text-gray-400 font-bold">선택한 날짜에 등록된 행사가 없습니다.</div>`; return; }
+            container.innerHTML = filteredEvents.map(ev => {
                 const evDate = new Date(ev.date); const isPast = evDate < today; const days = ['일', '월', '화', '수', '목', '금', '토']; const dayName = days[evDate.getDay()]; const dateStr = `${evDate.getMonth()+1}/${evDate.getDate()}(${dayName})`;
                 return `
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-pink-100 relative ${isPast ? 'opacity-50' : ''}">
@@ -2006,7 +2016,7 @@
             const id = document.getElementById('rp-animal-id').value; if(!id) return;
             const ani = animals.find(a => String(a.id) === String(id)); if(!ani) return;
 
-            const medTimeBtn = document.querySelector('.med-time-btn.btn-active'); const medTime = medTimeBtn ? medTimeBtn.innerText : null;
+            const medTimeBtns = Array.from(document.querySelectorAll('.med-time-btn.btn-active')).map(b => b.innerText); const medTime = medTimeBtns.length > 0 ? medTimeBtns.join(', ') : null;
             const walkTimeBtn = document.querySelector('.walk-time-btn.btn-active'); const walkTime = walkTimeBtn ? walkTimeBtn.innerText : null;
             const walkDuration = document.getElementById('walk-duration').value.trim(); const walkCondBtn = document.querySelector('.walk-cond-btn.btn-active'); const walkCond = walkCondBtn ? walkCondBtn.innerText.split(' ')[1] : null;
             const mealTimeBtn = document.querySelector('.meal-time-btn.btn-active'); const mealTime = mealTimeBtn ? mealTimeBtn.innerText : null;
