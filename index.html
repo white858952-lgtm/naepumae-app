@@ -810,6 +810,14 @@
         let messaging;
         try { 
             messaging = firebase.messaging(); 
+            
+            // 🌟 [안드로이드/iOS 공통] 앱 화면을 보고 있을 때(포그라운드) 알림 수신 로직
+            messaging.onMessage((payload) => {
+                console.log('앱 포그라운드 알림 수신:', payload);
+                // 화면 상단에 커스텀 모달창으로 알림 내용 띄우기
+                openModal('success', payload.notification.title, payload.notification.body);
+            });
+            
         } catch(e) { 
             console.log("FCM 기능을 지원하지 않는 환경입니다.", e); 
         }
