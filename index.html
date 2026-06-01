@@ -2067,8 +2067,16 @@ let currentEventFilterDate = null;
     // 🌟 산책 시간 버튼 및 숨김 필드 완벽 초기화 (데이터 잔존 버그 픽스)
     const startBtn = document.getElementById('walk-start-btn');
     const endBtn = document.getElementById('walk-end-btn');
-    if (startBtn) { startBtn.innerText = '시작 시간'; startBtn.classList.remove('text-pink-500'); startBtn.classList.add('text-gray-400'); }
-    if (endBtn) { endBtn.innerText = '종료 시간'; endBtn.classList.remove('text-pink-500'); endBtn.classList.add('text-gray-400'); }
+    if (startBtn) { 
+        startBtn.innerText = '시작 시간'; 
+        startBtn.classList.remove('text-pink-500', 'bg-pink-50', 'font-black', 'border-pink-300'); 
+        startBtn.classList.add('text-gray-400', 'bg-gray-50', 'font-bold', 'border-pink-100'); 
+    }
+    if (endBtn) { 
+        endBtn.innerText = '종료 시간'; 
+        endBtn.classList.remove('text-pink-500', 'bg-pink-50', 'font-black', 'border-pink-300'); 
+        endBtn.classList.add('text-gray-400', 'bg-gray-50', 'font-bold', 'border-pink-100'); 
+    }
     const walkStart = document.getElementById('walk-start'); if (walkStart) walkStart.value = '';
     const walkEnd = document.getElementById('walk-end'); if (walkEnd) walkEnd.value = '';
 
@@ -2311,8 +2319,8 @@ let currentEventFilterDate = null;
             if(hiddenInput) hiddenInput.value = '';
             if(btn) {
                 btn.innerText = type === 'start' ? '시작 시간' : '종료 시간';
-                btn.classList.remove('text-pink-500');
-                btn.classList.add('text-gray-400');
+                btn.classList.remove('text-pink-500', 'bg-pink-50', 'font-black', 'border-pink-300');
+                btn.classList.add('text-gray-400', 'bg-gray-50', 'font-bold', 'border-pink-100');
             }
             closeCustomTimePicker();
         }
@@ -2330,8 +2338,8 @@ let currentEventFilterDate = null;
             const btn = document.getElementById(`walk-${type}-btn`);
             if (btn) {
                 btn.innerText = timeStr;
-                btn.classList.remove('text-gray-400');
-                btn.classList.add('text-pink-600', 'bg-pink-50', 'border-pink-300');
+                btn.classList.remove('text-gray-400', 'bg-gray-50', 'font-bold', 'border-pink-100');
+                btn.classList.add('text-pink-500', 'bg-pink-50', 'font-black', 'border-pink-300');
             }
             closeCustomTimePicker();
         }
