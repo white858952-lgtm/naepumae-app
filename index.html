@@ -224,7 +224,7 @@
             <div class="relative flex justify-center items-center gap-2 mb-6 h-[120px] bg-white rounded-2xl border border-pink-100 overflow-hidden shadow-inner">
                 <div class="absolute inset-x-0 top-1/2 transform -translate-y-1/2 h-[40px] bg-pink-50/50 border-y border-pink-200 pointer-events-none z-0"></div>
                 
-                <div id="tp-hour-scroll" class="h-full w-20 overflow-y-auto snap-y snap-mandatory hide-scrollbar relative z-10" onscroll="updateActiveTime('hour')">
+                <div id="tp-hour-scroll" class="h-full w-20 overflow-y-auto overflow-x-hidden touch-pan-y snap-y snap-mandatory hide-scrollbar relative z-10" onscroll="updateActiveTime('hour')">
                     <div class="h-[40px] shrink-0 pointer-events-none"></div>
                     <div id="tp-hour-list"></div>
                     <div class="h-[40px] shrink-0 pointer-events-none"></div>
@@ -232,7 +232,7 @@
                 
                 <span class="text-xl font-black text-pink-300 z-10">:</span>
                 
-                <div id="tp-minute-scroll" class="h-full w-20 overflow-y-auto snap-y snap-mandatory hide-scrollbar relative z-10" onscroll="updateActiveTime('minute')">
+                <div id="tp-minute-scroll" class="h-full w-20 overflow-y-auto overflow-x-hidden touch-pan-y snap-y snap-mandatory hide-scrollbar relative z-10" onscroll="updateActiveTime('minute')">
                     <div class="h-[40px] shrink-0 pointer-events-none"></div>
                     <div id="tp-minute-list"></div>
                     <div class="h-[40px] shrink-0 pointer-events-none"></div>
