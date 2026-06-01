@@ -33,6 +33,9 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
+        /* 추가: 시간 입력창 네이티브 시계 아이콘 핑크톤 테마 적용 */
+        input[type="time"]::-webkit-calendar-picker-indicator { cursor: pointer; opacity: 0.6; filter: invert(0.5) sepia(1) saturate(3) hue-rotate(290deg); }
+
         .slide-panel { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .btn-active { background-color: #fbcfe8; color: #db2777; border-color: #f472b6; font-weight: 900; }
         .btn-inactive { background-color: #f9fafb; color: #9ca3af; border-color: #e5e7eb; }
@@ -653,9 +656,9 @@
                         <button type="button" onclick="toggleSelect(this, 'walk-time')" class="walk-time-btn flex-1 py-2 rounded-xl border btn-inactive">저녁</button>
                     </div>
                     <div class="flex items-center gap-2 mb-3">
-                        <input type="time" id="walk-start" class="flex-1 p-4 border border-pink-100 rounded-2xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300">
-                        <span class="text-gray-400 font-black">~</span>
-                        <input type="time" id="walk-end" class="flex-1 p-4 border border-pink-100 rounded-2xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300">
+                        <input type="time" id="walk-start" class="flex-1 p-3 border border-pink-100 rounded-xl outline-none bg-gray-50 text-sm font-bold text-gray-700 focus:border-pink-300 focus:bg-white transition-colors text-center appearance-none">
+                        <span class="text-pink-300 font-black">~</span>
+                        <input type="time" id="walk-end" class="flex-1 p-3 border border-pink-100 rounded-xl outline-none bg-gray-50 text-sm font-bold text-gray-700 focus:border-pink-300 focus:bg-white transition-colors text-center appearance-none">
                     </div>
                     <p class="text-xs font-bold text-gray-500 mb-2">산책 간 아이의 컨디션</p>
                     <div class="flex gap-2">
