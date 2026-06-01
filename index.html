@@ -239,7 +239,10 @@
                 </div>
             </div>
             
-            <button type="button" onclick="confirmCustomTime()" class="w-full py-4 pink-gradient text-white font-black rounded-2xl shadow-md active:scale-95 transition-transform">선택 완료</button>
+            <div class="flex gap-2">
+                <button type="button" onclick="clearCustomTime()" class="w-1/3 py-4 bg-gray-100 text-gray-500 font-black rounded-2xl shadow-sm active:scale-95 transition-transform">지우기</button>
+                <button type="button" onclick="confirmCustomTime()" class="w-2/3 py-4 pink-gradient text-white font-black rounded-2xl shadow-md active:scale-95 transition-transform">선택 완료</button>
+            </div>
             <input type="hidden" id="tp-target-type" value="">
         </div>
     </div>
@@ -2060,8 +2063,17 @@ let currentEventFilterDate = null;
         b.classList.remove('btn-active', 'bg-pink-100', 'text-pink-600', 'border-pink-300');
         b.classList.add('btn-inactive', 'bg-white', 'text-gray-500', 'border-gray-200');
     });
+    
+    // 🌟 산책 시간 버튼 및 숨김 필드 완벽 초기화 (데이터 잔존 버그 픽스)
+    const startBtn = document.getElementById('walk-start-btn');
+    const endBtn = document.getElementById('walk-end-btn');
+    if (startBtn) { startBtn.innerText = '시작 시간'; startBtn.classList.remove('text-pink-500'); startBtn.classList.add('text-gray-400'); }
+    if (endBtn) { endBtn.innerText = '종료 시간'; endBtn.classList.remove('text-pink-500'); endBtn.classList.add('text-gray-400'); }
+    const walkStart = document.getElementById('walk-start'); if (walkStart) walkStart.value = '';
+    const walkEnd = document.getElementById('walk-end'); if (walkEnd) walkEnd.value = '';
+
     // 🌟 모든 텍스트 입력창 초기화
-    document.getElementById('walk-start').value = ''; 
+    const walkDuration = document.getElementById('walk-duration'); if (walkDuration) walkDuration.value = '';
     document.getElementById('walk-end').value = ''; 
     document.getElementById('meal-amount').value = ''; 
     document.getElementById('potty-memo').value = ''; 
@@ -2290,6 +2302,20 @@ let currentEventFilterDate = null;
         }
 
         function closeCustomTimePicker() { document.getElementById('time-picker-modal').classList.remove('active'); }
+
+        function clearCustomTime() {
+            const type = document.getElementById('tp-target-type').value;
+            const hiddenInput = document.getElementById(`walk-${type}`);
+            const btn = document.getElementById(`walk-${type}-btn`);
+            
+            if(hiddenInput) hiddenInput.value = '';
+            if(btn) {
+                btn.innerText = type === 'start' ? '시작 시간' : '종료 시간';
+                btn.classList.remove('text-pink-500');
+                btn.classList.add('text-gray-400');
+            }
+            closeCustomTimePicker();
+        }
 
         function confirmCustomTime() {
             const type = document.getElementById('tp-target-type').value;
