@@ -221,10 +221,22 @@
             <div class="text-4xl mb-2">⏰</div>
             <h3 id="time-picker-title" class="text-lg font-black mb-4 text-gray-800">시간 선택</h3>
             
-            <div class="flex justify-center items-center gap-3 mb-6">
-                <select id="tp-hour" class="p-3 border border-pink-100 rounded-xl bg-pink-50 text-pink-600 font-black text-lg outline-none appearance-none text-center w-20 shadow-sm"></select>
-                <span class="text-xl font-black text-gray-400">:</span>
-                <select id="tp-minute" class="p-3 border border-pink-100 rounded-xl bg-pink-50 text-pink-600 font-black text-lg outline-none appearance-none text-center w-20 shadow-sm"></select>
+            <div class="relative flex justify-center items-center gap-2 mb-6 h-[120px] bg-white rounded-2xl border border-pink-100 overflow-hidden shadow-inner">
+                <div class="absolute inset-x-0 top-1/2 transform -translate-y-1/2 h-[40px] bg-pink-50/50 border-y border-pink-200 pointer-events-none z-0"></div>
+                
+                <div id="tp-hour-scroll" class="h-full w-20 overflow-y-auto snap-y snap-mandatory hide-scrollbar relative z-10" onscroll="updateActiveTime('hour')">
+                    <div class="h-[40px] shrink-0 pointer-events-none"></div>
+                    <div id="tp-hour-list"></div>
+                    <div class="h-[40px] shrink-0 pointer-events-none"></div>
+                </div>
+                
+                <span class="text-xl font-black text-pink-300 z-10">:</span>
+                
+                <div id="tp-minute-scroll" class="h-full w-20 overflow-y-auto snap-y snap-mandatory hide-scrollbar relative z-10" onscroll="updateActiveTime('minute')">
+                    <div class="h-[40px] shrink-0 pointer-events-none"></div>
+                    <div id="tp-minute-list"></div>
+                    <div class="h-[40px] shrink-0 pointer-events-none"></div>
+                </div>
             </div>
             
             <button type="button" onclick="confirmCustomTime()" class="w-full py-4 pink-gradient text-white font-black rounded-2xl shadow-md active:scale-95 transition-transform">선택 완료</button>
@@ -2227,12 +2239,32 @@ let currentEventFilterDate = null;
             }
         }, true);
 
-        // 커스텀 시간 선택기 옵션 초기화
-        const hourSelect = document.getElementById('tp-hour');
-        const minSelect = document.getElementById('tp-minute');
-        if(hourSelect && minSelect) {
-            for(let i=0; i<24; i++) { hourSelect.innerHTML += `<option value="${String(i).padStart(2, '0')}">${String(i).padStart(2, '0')}</option>`; }
-            for(let i=0; i<60; i+=5) { minSelect.innerHTML += `<option value="${String(i).padStart(2, '0')}">${String(i).padStart(2, '0')}</option>`; }
+        // 커스텀 시간 다이얼 휠 초기화
+        const hourList = document.getElementById('tp-hour-list');
+        const minList = document.getElementById('tp-minute-list');
+        if(hourList && minList) {
+            hourList.innerHTML = ''; minList.innerHTML = '';
+            for(let i=0; i<24; i++) { hourList.innerHTML += `<div class="time-item-hour h-[40px] snap-center flex items-center justify-center text-lg font-black text-gray-300 transition-all cursor-pointer" onclick="scrollToTime('hour', ${i})">${String(i).padStart(2, '0')}</div>`; }
+            for(let i=0; i<60; i++) { minList.innerHTML += `<div class="time-item-minute h-[40px] snap-center flex items-center justify-center text-lg font-black text-gray-300 transition-all cursor-pointer" onclick="scrollToTime('minute', ${i})">${String(i).padStart(2, '0')}</div>`; }
+        }
+
+        function updateActiveTime(type) {
+            const container = document.getElementById(`tp-${type}-scroll`);
+            if(!container) return;
+            const index = Math.round(container.scrollTop / 40);
+            const items = document.querySelectorAll(`.time-item-${type}`);
+            items.forEach((item, i) => {
+                if(i === index) {
+                    item.classList.remove('text-gray-300'); item.classList.add('text-pink-600', 'text-xl', 'scale-110');
+                } else {
+                    item.classList.remove('text-pink-600', 'text-xl', 'scale-110'); item.classList.add('text-gray-300');
+                }
+            });
+        }
+
+        function scrollToTime(type, index) {
+            const container = document.getElementById(`tp-${type}-scroll`);
+            container.scrollTo({ top: index * 40, behavior: 'smooth' });
         }
 
         function openCustomTimePicker(type) {
@@ -2240,21 +2272,32 @@ let currentEventFilterDate = null;
             document.getElementById('time-picker-title').innerText = type === 'start' ? '시작 시간 선택' : '종료 시간 선택';
             
             const existingVal = document.getElementById(`walk-${type}`).value;
+            let h = new Date().getHours(), m = 0;
             if(existingVal) {
                 const parts = existingVal.split(':');
-                if(parts.length === 2) { hourSelect.value = parts[0]; minSelect.value = parts[1]; }
-            } else {
-                const now = new Date(); hourSelect.value = String(now.getHours()).padStart(2, '0'); minSelect.value = '00';
+                if(parts.length === 2) { h = parseInt(parts[0]); m = parseInt(parts[1]); }
             }
+            
             document.getElementById('time-picker-modal').classList.add('active');
+            
+            // 모달 애니메이션이 끝난 후 스크롤 위치 세팅을 위해 setTimeout 적용
+            setTimeout(() => {
+                const hourCont = document.getElementById('tp-hour-scroll');
+                const minCont = document.getElementById('tp-minute-scroll');
+                hourCont.scrollTop = h * 40; minCont.scrollTop = m * 40;
+                updateActiveTime('hour'); updateActiveTime('minute');
+            }, 50);
         }
 
         function closeCustomTimePicker() { document.getElementById('time-picker-modal').classList.remove('active'); }
 
         function confirmCustomTime() {
             const type = document.getElementById('tp-target-type').value;
-            const h = document.getElementById('tp-hour').value;
-            const m = document.getElementById('tp-minute').value;
+            const hIdx = Math.round(document.getElementById('tp-hour-scroll').scrollTop / 40);
+            const mIdx = Math.round(document.getElementById('tp-minute-scroll').scrollTop / 40);
+            
+            const h = String(hIdx).padStart(2, '0');
+            const m = String(mIdx).padStart(2, '0');
             const timeStr = `${h}:${m}`;
             
             document.getElementById(`walk-${type}`).value = timeStr;
@@ -2262,7 +2305,7 @@ let currentEventFilterDate = null;
             if (btn) {
                 btn.innerText = timeStr;
                 btn.classList.remove('text-gray-400');
-                btn.classList.add('text-pink-600', 'bg-pink-50', 'border-pink-300'); // 값이 입력되었음을 시각적으로 표시
+                btn.classList.add('text-pink-600', 'bg-pink-50', 'border-pink-300');
             }
             closeCustomTimePicker();
         }
