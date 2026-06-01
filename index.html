@@ -215,6 +215,23 @@
         </div>
     </div>
 
+    <div id="time-picker-modal" class="modal-bg z-[10000]">
+        <div class="bg-white w-[85%] max-w-sm rounded-[35px] p-6 text-center shadow-2xl relative">
+            <button type="button" onclick="closeCustomTimePicker()" class="absolute top-4 right-5 text-2xl text-gray-400 hover:text-gray-600">&times;</button>
+            <div class="text-4xl mb-2">⏰</div>
+            <h3 id="time-picker-title" class="text-lg font-black mb-4 text-gray-800">시간 선택</h3>
+            
+            <div class="flex justify-center items-center gap-3 mb-6">
+                <select id="tp-hour" class="p-3 border border-pink-100 rounded-xl bg-pink-50 text-pink-600 font-black text-lg outline-none appearance-none text-center w-20 shadow-sm"></select>
+                <span class="text-xl font-black text-gray-400">:</span>
+                <select id="tp-minute" class="p-3 border border-pink-100 rounded-xl bg-pink-50 text-pink-600 font-black text-lg outline-none appearance-none text-center w-20 shadow-sm"></select>
+            </div>
+            
+            <button type="button" onclick="confirmCustomTime()" class="w-full py-4 pink-gradient text-white font-black rounded-2xl shadow-md active:scale-95 transition-transform">선택 완료</button>
+            <input type="hidden" id="tp-target-type" value="">
+        </div>
+    </div>
+
     <div class="content-area hidden" id="main-content">
         <header class="pt-[max(env(safe-area-inset-top),24px)] pb-6 flex justify-between items-center relative z-20">
             <button id="btn-admin-manage" onclick="openAdminApproveModal()" class="hidden flex items-center gap-1 bg-gray-800 text-white px-3 py-1.5 rounded-full shadow-sm active:scale-95 transition-transform z-10">
@@ -656,9 +673,11 @@
                         <button type="button" onclick="toggleSelect(this, 'walk-time')" class="walk-time-btn flex-1 py-2 rounded-xl border btn-inactive">저녁</button>
                     </div>
                     <div class="flex items-center gap-2 mb-3">
-                        <input type="time" id="walk-start" class="flex-1 p-3 border border-pink-100 rounded-xl outline-none bg-gray-50 text-sm font-bold text-gray-700 focus:border-pink-300 focus:bg-white transition-colors text-center appearance-none">
+                        <button type="button" id="walk-start-btn" onclick="openCustomTimePicker('start')" class="flex-1 p-3 border border-pink-100 rounded-xl outline-none bg-gray-50 text-sm font-bold text-gray-400 focus:border-pink-300 transition-colors text-center active:scale-95">시작 시간</button>
                         <span class="text-pink-300 font-black">~</span>
-                        <input type="time" id="walk-end" class="flex-1 p-3 border border-pink-100 rounded-xl outline-none bg-gray-50 text-sm font-bold text-gray-700 focus:border-pink-300 focus:bg-white transition-colors text-center appearance-none">
+                        <button type="button" id="walk-end-btn" onclick="openCustomTimePicker('end')" class="flex-1 p-3 border border-pink-100 rounded-xl outline-none bg-gray-50 text-sm font-bold text-gray-400 focus:border-pink-300 transition-colors text-center active:scale-95">종료 시간</button>
+                        <input type="hidden" id="walk-start" value="">
+                        <input type="hidden" id="walk-end" value="">
                     </div>
                     <p class="text-xs font-bold text-gray-500 mb-2">산책 간 아이의 컨디션</p>
                     <div class="flex gap-2">
@@ -2207,6 +2226,46 @@ let currentEventFilterDate = null;
                 }
             }
         }, true);
+
+        // 커스텀 시간 선택기 옵션 초기화
+        const hourSelect = document.getElementById('tp-hour');
+        const minSelect = document.getElementById('tp-minute');
+        if(hourSelect && minSelect) {
+            for(let i=0; i<24; i++) { hourSelect.innerHTML += `<option value="${String(i).padStart(2, '0')}">${String(i).padStart(2, '0')}</option>`; }
+            for(let i=0; i<60; i+=5) { minSelect.innerHTML += `<option value="${String(i).padStart(2, '0')}">${String(i).padStart(2, '0')}</option>`; }
+        }
+
+        function openCustomTimePicker(type) {
+            document.getElementById('tp-target-type').value = type;
+            document.getElementById('time-picker-title').innerText = type === 'start' ? '시작 시간 선택' : '종료 시간 선택';
+            
+            const existingVal = document.getElementById(`walk-${type}`).value;
+            if(existingVal) {
+                const parts = existingVal.split(':');
+                if(parts.length === 2) { hourSelect.value = parts[0]; minSelect.value = parts[1]; }
+            } else {
+                const now = new Date(); hourSelect.value = String(now.getHours()).padStart(2, '0'); minSelect.value = '00';
+            }
+            document.getElementById('time-picker-modal').classList.add('active');
+        }
+
+        function closeCustomTimePicker() { document.getElementById('time-picker-modal').classList.remove('active'); }
+
+        function confirmCustomTime() {
+            const type = document.getElementById('tp-target-type').value;
+            const h = document.getElementById('tp-hour').value;
+            const m = document.getElementById('tp-minute').value;
+            const timeStr = `${h}:${m}`;
+            
+            document.getElementById(`walk-${type}`).value = timeStr;
+            const btn = document.getElementById(`walk-${type}-btn`);
+            if (btn) {
+                btn.innerText = timeStr;
+                btn.classList.remove('text-gray-400');
+                btn.classList.add('text-pink-600', 'bg-pink-50', 'border-pink-300'); // 값이 입력되었음을 시각적으로 표시
+            }
+            closeCustomTimePicker();
+        }
     </script>
 </body>
 </html>
