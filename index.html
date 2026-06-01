@@ -652,7 +652,11 @@
                         <button type="button" onclick="toggleSelect(this, 'walk-time')" class="walk-time-btn flex-1 py-2 rounded-xl border btn-inactive">오후</button>
                         <button type="button" onclick="toggleSelect(this, 'walk-time')" class="walk-time-btn flex-1 py-2 rounded-xl border btn-inactive">저녁</button>
                     </div>
-                    <input type="text" id="walk-duration" placeholder="산책 시간 (예: 45분, 10:00~10:45)" class="w-full p-4 border border-pink-100 rounded-2xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300 mb-3">
+                    <div class="flex items-center gap-2 mb-3">
+                        <input type="time" id="walk-start" class="flex-1 p-4 border border-pink-100 rounded-2xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300">
+                        <span class="text-gray-400 font-black">~</span>
+                        <input type="time" id="walk-end" class="flex-1 p-4 border border-pink-100 rounded-2xl outline-none bg-gray-50 text-sm font-bold focus:border-pink-300">
+                    </div>
                     <p class="text-xs font-bold text-gray-500 mb-2">산책 간 아이의 컨디션</p>
                     <div class="flex gap-2">
                         <button type="button" onclick="toggleSelect(this, 'walk-cond')" class="walk-cond-btn flex-1 py-3 rounded-2xl border btn-inactive text-xl">🟢 좋음</button>
@@ -1504,10 +1508,13 @@
                     Object.values(a.daily_logs).forEach(log => {
                         if(log.date_str === todayStr) {
                             if(log.walk) { 
-                                if(log.walk.time !== '-') { walks[log.walk.time] = true; walkTrainers[log.walk.time] = log.trainer_name; }
+                                if(log.walk.time !== '-') { walks[log.walk.time] = log.walk.duration !== '-' ? log.walk.duration : '완료'; walkTrainers[log.walk.time] = log.trainer_name; }
                                 if(log.walk.condition === '나쁨') { alertsHtml += `<div class="bg-red-50 border border-red-100 p-3 rounded-xl mb-2 flex items-start gap-2 cursor-pointer active:scale-[0.98]" onclick="openProfilePanel('${a.id}')"><span class="text-lg">🚨</span><div><p class="text-xs font-black text-red-600">${a.name} <span class="font-bold text-gray-500">산책 컨디션 나쁨</span></p></div></div>`; alertCount++; } 
                             }
-                            if(log.meal && log.meal.time !== '-') { meals[log.meal.time] = true; mealTrainers[log.meal.time] = log.trainer_name; }
+                            if(log.meal && log.meal.time !== '-') { 
+                                meals[log.meal.time] = log.meal.status || '완료'; mealTrainers[log.meal.time] = log.trainer_name; 
+                                if(log.meal.status && log.meal.status !== '완식') { alertsHtml += `<div class="bg-orange-50 border border-orange-100 p-3 rounded-xl mb-2 flex items-start gap-2 cursor-pointer active:scale-[0.98]" onclick="openProfilePanel('${a.id}')"><span class="text-lg">🥣</span><div><p class="text-xs font-black text-orange-600">${a.name} <span class="font-bold text-gray-500">식사: ${log.meal.status}</span></p></div></div>`; alertCount++; }
+                            }
                             if(log.med && log.med.time !== '-') {
                                 if(log.med.time.includes('아침')) { meds['아침 약'] = true; medTrainers['아침 약'] = log.trainer_name; }
                                 if(log.med.time.includes('저녁')) { meds['저녁 약'] = true; medTrainers['저녁 약'] = log.trainer_name; }
@@ -1532,9 +1539,9 @@
                     if(isDog) { 
                         isTaskTarget = true; isTaskDone = walks['오전'] || walks['오후'] || walks['저녁'];
                         let badgeParts = []; 
-                        if(walks['오전']) badgeParts.push(`<div class="bg-green-50 text-green-600 rounded px-1 py-0.5 w-full text-center"><span class="block text-[9px] font-black">오전</span><span class="block text-[8px] font-bold opacity-80 truncate" title="${walkTrainers['오전']}">${walkTrainers['오전']}</span></div>`);
-                        if(walks['오후']) badgeParts.push(`<div class="bg-green-50 text-green-600 rounded px-1 py-0.5 w-full text-center"><span class="block text-[9px] font-black">오후</span><span class="block text-[8px] font-bold opacity-80 truncate" title="${walkTrainers['오후']}">${walkTrainers['오후']}</span></div>`);
-                        if(walks['저녁']) badgeParts.push(`<div class="bg-green-50 text-green-600 rounded px-1 py-0.5 w-full text-center"><span class="block text-[9px] font-black">저녁</span><span class="block text-[8px] font-bold opacity-80 truncate" title="${walkTrainers['저녁']}">${walkTrainers['저녁']}</span></div>`);
+                        if(walks['오전']) badgeParts.push(`<div class="bg-green-50 text-green-600 rounded px-1 py-0.5 w-full text-center"><span class="block text-[9px] font-black truncate" title="${walks['오전']}">오전(${walks['오전']})</span><span class="block text-[8px] font-bold opacity-80 truncate" title="${walkTrainers['오전']}">${walkTrainers['오전']}</span></div>`);
+                        if(walks['오후']) badgeParts.push(`<div class="bg-green-50 text-green-600 rounded px-1 py-0.5 w-full text-center"><span class="block text-[9px] font-black truncate" title="${walks['오후']}">오후(${walks['오후']})</span><span class="block text-[8px] font-bold opacity-80 truncate" title="${walkTrainers['오후']}">${walkTrainers['오후']}</span></div>`);
+                        if(walks['저녁']) badgeParts.push(`<div class="bg-green-50 text-green-600 rounded px-1 py-0.5 w-full text-center"><span class="block text-[9px] font-black truncate" title="${walks['저녁']}">저녁(${walks['저녁']})</span><span class="block text-[8px] font-bold opacity-80 truncate" title="${walkTrainers['저녁']}">${walkTrainers['저녁']}</span></div>`);
                         
                         if(badgeParts.length > 0) subBadgeHtml = `<div class="flex flex-col gap-1 w-full">${badgeParts.join('')}</div>`; 
                         else subBadgeHtml = `<span class="px-1.5 py-0.5 bg-red-50 text-red-500 rounded text-[8px] font-black w-full text-center inline-block">미완료</span>`;
@@ -1549,10 +1556,10 @@
                     else { 
                         isTaskDone = meals['아침'] && meals['저녁']; 
                         let badgeParts = [];
-                        if(meals['아침']) badgeParts.push(`<div class="flex-1 bg-green-50 text-green-600 rounded px-1 py-0.5 text-center"><span class="block text-[9px] font-black">아침</span><span class="block text-[8px] font-bold opacity-80 truncate" title="${mealTrainers['아침']}">${mealTrainers['아침']}</span></div>`);
+                        if(meals['아침']) badgeParts.push(`<div class="flex-1 bg-green-50 text-green-600 rounded px-1 py-0.5 text-center w-full"><span class="block text-[9px] font-black truncate" title="${meals['아침']}">아침(${meals['아침']})</span><span class="block text-[8px] font-bold opacity-80 truncate" title="${mealTrainers['아침']}">${mealTrainers['아침']}</span></div>`);
                         else badgeParts.push(`<div class="flex-1 bg-gray-100 text-gray-400 rounded px-1 py-0.5 text-center"><span class="block text-[9px] font-black mt-1">아침</span></div>`);
 
-                        if(meals['저녁']) badgeParts.push(`<div class="flex-1 bg-green-50 text-green-600 rounded px-1 py-0.5 text-center"><span class="block text-[9px] font-black">저녁</span><span class="block text-[8px] font-bold opacity-80 truncate" title="${mealTrainers['저녁']}">${mealTrainers['저녁']}</span></div>`);
+                        if(meals['저녁']) badgeParts.push(`<div class="flex-1 bg-green-50 text-green-600 rounded px-1 py-0.5 text-center w-full"><span class="block text-[9px] font-black truncate" title="${meals['저녁']}">저녁(${meals['저녁']})</span><span class="block text-[8px] font-bold opacity-80 truncate" title="${mealTrainers['저녁']}">${mealTrainers['저녁']}</span></div>`);
                         else badgeParts.push(`<div class="flex-1 bg-gray-100 text-gray-400 rounded px-1 py-0.5 text-center"><span class="block text-[9px] font-black mt-1">저녁</span></div>`);
 
                         subBadgeHtml = `<div class="flex gap-1 w-full justify-center">${badgeParts.join('')}</div>`; 
@@ -1582,8 +1589,7 @@
 
                 let mealHtml = '';
                 if(a.meal_type === '자율배식') { mealHtml = `<div class="flex items-center w-full mt-1.5"><span class="text-xs mr-1">🥣</span> ${getBadge(true, '자율배식')}</div>`; } 
-                else { mealHtml = `<div class="flex items-center w-full mt-1.5"><span class="text-xs mr-1">🥣</span> ${getBadge(meals['아침'], '아침밥')} ${getBadge(meals['저녁'], '저녁밥')}</div>`; }
-
+                else { mealHtml = `<div class="flex items-center w-full mt-1.5"><span class="text-xs mr-1">🥣</span> ${getBadge(meals['아침'], meals['아침'] ? '아침밥('+meals['아침']+')' : '아침밥')} ${getBadge(meals['저녁'], meals['저녁'] ? '저녁밥('+meals['저녁']+')' : '저녁밥')}</div>`; }
                 let medHtml = '';
                 if((a.med_am || a.med_pm) && medDays.includes(todayName)) {
                     medHtml = `<div class="flex items-center w-full mt-1.5"><span class="text-xs mr-1">💊</span>`;
@@ -1596,7 +1602,7 @@
                         <div class="flex-1 min-w-0">
                             <h4 class="font-black text-gray-800 text-sm mb-1.5 truncate flex items-center">${a.name} <span class="ml-1">${groupBadge}</span></h4>
                             <div class="flex flex-wrap items-center">
-                                <div class="flex items-center w-full mt-0.5"><span class="text-xs mr-1">🐕</span> ${getBadge(walks['오전'], '오전')} ${getBadge(walks['오후'], '오후')} ${getBadge(walks['저녁'], '저녁')}</div>
+                                <div class="flex items-center w-full mt-0.5"><span class="text-xs mr-1">🐕</span> ${getBadge(walks['오전'], walks['오전'] ? '오전('+walks['오전']+')' : '오전')} ${getBadge(walks['오후'], walks['오후'] ? '오후('+walks['오후']+')' : '오후')} ${getBadge(walks['저녁'], walks['저녁'] ? '저녁('+walks['저녁']+')' : '저녁')}</div>
                                 ${mealHtml}
                                 <div class="flex items-center w-full mt-1.5"><span class="text-xs mr-1">💩</span> ${getBadge(hasFeces, '대변')} ${getBadge(hasUrine, '소변')}</div>
                                 ${medHtml}
@@ -2021,7 +2027,8 @@ let currentEventFilterDate = null;
         b.classList.add('btn-inactive', 'bg-white', 'text-gray-500', 'border-gray-200');
     });
     // 🌟 모든 텍스트 입력창 초기화
-    document.getElementById('walk-duration').value = ''; 
+    document.getElementById('walk-start').value = ''; 
+    document.getElementById('walk-end').value = ''; 
     document.getElementById('meal-amount').value = ''; 
     document.getElementById('potty-memo').value = ''; 
     document.getElementById('daily-memo').value = '';
@@ -2057,7 +2064,12 @@ let currentEventFilterDate = null;
 
             const medTimeBtns = Array.from(document.querySelectorAll('.med-time-btn.btn-active')).map(b => b.innerText); const medTime = medTimeBtns.length > 0 ? medTimeBtns.join(', ') : null;
             const walkTimeBtn = document.querySelector('.walk-time-btn.btn-active'); const walkTime = walkTimeBtn ? walkTimeBtn.innerText : null;
-            const walkDuration = document.getElementById('walk-duration').value.trim(); const walkCondBtn = document.querySelector('.walk-cond-btn.btn-active'); const walkCond = walkCondBtn ? walkCondBtn.innerText.split(' ')[1] : null;
+            const walkStart = document.getElementById('walk-start').value; const walkEnd = document.getElementById('walk-end').value;
+            let walkDuration = '';
+            if (walkStart && walkEnd) walkDuration = walkStart + ' ~ ' + walkEnd;
+            else if (walkStart) walkDuration = walkStart + ' 시작';
+            else if (walkEnd) walkDuration = walkEnd + ' 종료';
+            const walkCondBtn = document.querySelector('.walk-cond-btn.btn-active'); const walkCond = walkCondBtn ? walkCondBtn.innerText.split(' ')[1] : null;
             const mealTimeBtn = document.querySelector('.meal-time-btn.btn-active'); const mealTime = mealTimeBtn ? mealTimeBtn.innerText : null;
             const mealAmount = document.getElementById('meal-amount').value.trim(); const mealStatusBtn = document.querySelector('.meal-status-btn.btn-active'); const mealStatus = mealStatusBtn ? mealStatusBtn.innerText : null;
             const pottyTypes = []; if(document.getElementById('potty-type-feces').classList.contains('btn-active')) pottyTypes.push("대변"); if(document.getElementById('potty-type-urine').classList.contains('btn-active')) pottyTypes.push("소변");
@@ -2125,7 +2137,23 @@ let currentEventFilterDate = null;
                 if(log.med.time.includes('아침')) forceMultiState('btn-med-am', true);
                 if(log.med.time.includes('저녁')) forceMultiState('btn-med-pm', true);
             }
-            if(log.walk) { if(log.walk.time !== '-') setToggleState('.walk-time-btn', log.walk.time); if(log.walk.duration !== '-') document.getElementById('walk-duration').value = log.walk.duration; if(log.walk.condition !== '-') setToggleState('.walk-cond-btn', log.walk.condition, true); }
+            if(log.walk) { 
+                if(log.walk.time !== '-') setToggleState('.walk-time-btn', log.walk.time); 
+                if(log.walk.duration !== '-') {
+                    if (log.walk.duration.includes('~')) {
+                        const times = log.walk.duration.split('~');
+                        document.getElementById('walk-start').value = times[0].trim();
+                        document.getElementById('walk-end').value = times[1].trim();
+                    } else if (log.walk.duration.includes('시작')) {
+                        document.getElementById('walk-start').value = log.walk.duration.replace(' 시작', '').trim();
+                    } else if (log.walk.duration.includes('종료')) {
+                        document.getElementById('walk-end').value = log.walk.duration.replace(' 종료', '').trim();
+                    } else {
+                        document.getElementById('walk-start').value = ''; document.getElementById('walk-end').value = '';
+                    }
+                }
+                if(log.walk.condition !== '-') setToggleState('.walk-cond-btn', log.walk.condition, true); 
+            }
             if(log.meal && ani.meal_type !== '자율배식') { if(log.meal.time !== '-') setToggleState('.meal-time-btn', log.meal.time); if(log.meal.amount !== '-') document.getElementById('meal-amount').value = log.meal.amount; if(log.meal.status !== '-') setToggleState('.meal-status-btn', log.meal.status); }
             if(log.potty) { if(log.potty.type && log.potty.type !== '-') { if(log.potty.type.includes('대변')) forceMultiState('potty-type-feces', true); if(log.potty.type.includes('소변')) forceMultiState('potty-type-urine', true); } if(log.potty.memo && log.potty.memo !== '특이사항 없음') document.getElementById('potty-memo').value = log.potty.memo; }
             if(log.daily_memo) { document.getElementById('daily-memo').value = log.daily_memo; }
