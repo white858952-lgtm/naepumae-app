@@ -1592,12 +1592,6 @@
                         </div>`;
                     alertCount += currentAnimalAlerts.length;
                 }
-                    });
-                }
-                
-                if(a.med_am && !meds['아침 약'] && now.getHours() >= 13 && medDays.includes(todayName)) { 
-                    alertsHtml += `<div class="bg-indigo-50 border border-indigo-100 p-3 rounded-xl mb-2 flex items-start gap-2 cursor-pointer active:scale-[0.98]" onclick="openProfilePanel('${a.id}')"><span class="text-lg">💊</span><div><p class="text-xs font-black text-indigo-600">${a.name} <span class="font-bold text-gray-500">아침 약 투여 미확인</span></p></div></div>`; alertCount++; 
-                }
 
                 let isTaskTarget = false; let isTaskDone = false;
                 const isDog = (a.type !== '고양이'); let subBadgeHtml = '';
