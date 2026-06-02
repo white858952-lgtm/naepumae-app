@@ -1619,16 +1619,16 @@
                         subBadgeHtml = `<span class="px-1.5 py-0.5 bg-yellow-50 text-yellow-600 border border-yellow-100 rounded text-[8px] font-black w-full text-center inline-block">자율배식</span>`; 
                     } 
                     else { 
-                        isTaskDone = meals['아침'] && meals['저녁']; 
-                        let badgeParts = [];
-                        if(meals['아침']) badgeParts.push(`<div class="flex-1 bg-green-50 text-green-600 rounded px-1 py-0.5 text-center w-full"><span class="block text-[9px] font-black truncate" title="${meals['아침']}">아침(${meals['아침']})</span><span class="block text-[8px] font-bold opacity-80 truncate" title="${mealTrainers['아침']}">${mealTrainers['아침']}</span></div>`);
-                        else badgeParts.push(`<div class="flex-1 bg-gray-100 text-gray-400 rounded px-1 py-0.5 text-center"><span class="block text-[9px] font-black mt-1">아침</span></div>`);
+                                    isTaskDone = meals['아침'] && meals['저녁']; 
+                                    let badgeParts = [];
+                                    if(meals['아침']) badgeParts.push(`<div class="bg-green-50 text-green-600 rounded px-1 py-0.5 w-full text-center"><span class="block text-[9px] font-black truncate" title="${meals['아침']}">아침(${meals['아침']})</span><span class="block text-[8px] font-bold opacity-80 truncate" title="${mealTrainers['아침']}">${mealTrainers['아침']}</span></div>`);
+                                    else badgeParts.push(`<div class="bg-gray-100 text-gray-400 rounded px-1 py-0.5 w-full text-center"><span class="block text-[9px] font-black mt-1">아침</span></div>`);
 
-                        if(meals['저녁']) badgeParts.push(`<div class="flex-1 bg-green-50 text-green-600 rounded px-1 py-0.5 text-center w-full"><span class="block text-[9px] font-black truncate" title="${meals['저녁']}">저녁(${meals['저녁']})</span><span class="block text-[8px] font-bold opacity-80 truncate" title="${mealTrainers['저녁']}">${mealTrainers['저녁']}</span></div>`);
-                        else badgeParts.push(`<div class="flex-1 bg-gray-100 text-gray-400 rounded px-1 py-0.5 text-center"><span class="block text-[9px] font-black mt-1">저녁</span></div>`);
+                                    if(meals['저녁']) badgeParts.push(`<div class="bg-green-50 text-green-600 rounded px-1 py-0.5 w-full text-center"><span class="block text-[9px] font-black truncate" title="${meals['저녁']}">저녁(${meals['저녁']})</span><span class="block text-[8px] font-bold opacity-80 truncate" title="${mealTrainers['저녁']}">${mealTrainers['저녁']}</span></div>`);
+                                    else badgeParts.push(`<div class="bg-gray-100 text-gray-400 rounded px-1 py-0.5 w-full text-center"><span class="block text-[9px] font-black mt-1">저녁</span></div>`);
 
-                        subBadgeHtml = `<div class="flex gap-1 w-full justify-center">${badgeParts.join('')}</div>`; 
-                    }
+                                    subBadgeHtml = `<div class="flex flex-col gap-1 w-full justify-center">${badgeParts.join('')}</div>`; 
+                                }
                 }
                 else if(currentDashTask === 'med') { 
                     if((a.med_am || a.med_pm) && medDays.includes(todayName)) { 
