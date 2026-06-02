@@ -1541,16 +1541,22 @@
                 let hasFeces = false; let hasUrine = false;
                 const medDays = a.med_days ? a.med_days : '월,화,수,목,금,토,일';
 
+                // 해당 동물의 오늘 자 특이사항들을 임시로 담을 배열
+                let currentAnimalAlerts = [];
+
                 if(a.daily_logs) {
                     Object.values(a.daily_logs).forEach(log => {
                         if(log.date_str === todayStr) {
                             if(log.walk) { 
-                                if(log.walk.time !== '-') { walks[log.walk.time] = log.walk.duration !== '-' ? log.walk.duration : '완료'; walkTrainers[log.walk.time] = log.trainer_name; }
-                                if(log.walk.condition === '나쁨') { alertsHtml += `<div class="bg-red-50 border border-red-100 p-3 rounded-xl mb-2 flex items-start gap-2 cursor-pointer active:scale-[0.98]" onclick="openProfilePanel('${a.id}')"><span class="text-lg">🚨</span><div><p class="text-xs font-black text-red-600">${a.name} <span class="font-bold text-gray-500">산책 컨디션 나쁨</span></p></div></div>`; alertCount++; } 
+                                if(log.walk.time !== '-') { walks[log.walk.time] = true; walkTrainers[log.walk.time] = log.trainer_name; }
+                                if(log.walk.condition === '나쁨') { currentAnimalAlerts.push(`🐕 산책 컨디션 나쁨 (${log.walk.time})`); } 
                             }
                             if(log.meal && log.meal.time !== '-') { 
-                                meals[log.meal.time] = log.meal.status || '완료'; mealTrainers[log.meal.time] = log.trainer_name; 
-                                if(log.meal.status && log.meal.status !== '완식') { alertsHtml += `<div class="bg-orange-50 border border-orange-100 p-3 rounded-xl mb-2 flex items-start gap-2 cursor-pointer active:scale-[0.98]" onclick="openProfilePanel('${a.id}')"><span class="text-lg">🥣</span><div><p class="text-xs font-black text-orange-600">${a.name} <span class="font-bold text-gray-500">식사: ${log.meal.status}</span></p></div></div>`; alertCount++; }
+                                meals[log.meal.time] = true; mealTrainers[log.meal.time] = log.trainer_name;
+                                // 급여 특이사항 체크 (완식이 아닌 경우 시간대 포함하여 저장)
+                                if(log.meal.status && log.meal.status !== '완식') {
+                                    currentAnimalAlerts.push(`🥣 ${log.meal.time}밥 ${log.meal.status}`);
+                                }
                             }
                             if(log.med && log.med.time !== '-') {
                                 if(log.med.time.includes('아침')) { meds['아침 약'] = true; medTrainers['아침 약'] = log.trainer_name; }
@@ -1558,10 +1564,34 @@
                             } 
                             if(log.potty) {
                                 if(log.potty.type.includes('대변')) hasFeces = true; if(log.potty.type.includes('소변')) hasUrine = true;
-                                if(log.potty.memo && log.potty.memo !== '특이사항 없음' && log.potty.memo !== '정상 (양호)') { alertsHtml += `<div class="bg-orange-50 border border-orange-100 p-3 rounded-xl mb-2 flex items-start gap-2 cursor-pointer active:scale-[0.98]" onclick="openProfilePanel('${a.id}')"><span class="text-lg">💩</span><div><p class="text-xs font-black text-orange-600">${a.name} <span class="font-bold text-gray-500">${log.potty.memo}</span></p></div></div>`; alertCount++; }
+                                if(log.potty.memo && log.potty.memo !== '특이사항 없음' && log.potty.memo !== '정상 (양호)') { currentAnimalAlerts.push(`💩 배변 이상: ${log.potty.memo}`); }
                             }
-                            if(log.daily_memo) { alertsHtml += `<div class="bg-blue-50 border border-blue-100 p-3 rounded-xl mb-2 flex items-start gap-2 cursor-pointer active:scale-[0.98]" onclick="openProfilePanel('${a.id}')"><span class="text-lg">📝</span><div><p class="text-xs font-black text-blue-600">${a.name} <span class="font-bold text-gray-500">특이사항 보고됨</span></p><p class="text-[10px] text-gray-600 truncate mt-1 line-clamp-2">${log.daily_memo}</p></div></div>`; alertCount++; }
+                            if(log.daily_memo) { currentAnimalAlerts.push(`📝 특이사항 메모: ${log.daily_memo}`); }
                         }
+                    });
+                }
+                
+                // 투약 미확인 체크 후 배열에 푸시
+                if(a.med_am && !meds['아침 약'] && now.getHours() >= 13 && medDays.includes(todayName)) { 
+                    currentAnimalAlerts.push(`💊 아침 약 투여 미확인`);
+                }
+                if(a.med_pm && !meds['저녁 약'] && now.getHours() >= 20 && medDays.includes(todayName)) { 
+                    currentAnimalAlerts.push(`💊 저녁 약 투여 미확인`);
+                }
+
+                // 모아진 특이사항이 있다면 하나의 카드로 묶어서 대시보드에 추가
+                if(currentAnimalAlerts.length > 0) {
+                    let alertsListHtml = currentAnimalAlerts.map(alert => `<p class="text-xs font-bold text-gray-600 mb-1 flex items-center gap-1">└ ${alert}</p>`).join('');
+                    alertsHtml += `
+                        <div class="bg-red-50/70 border border-red-100 p-4 rounded-2xl mb-3 shadow-sm cursor-pointer active:scale-[0.98] animate-fade-in" onclick="openProfilePanel('${a.id}')">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="bg-red-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded">🚨 알림</span>
+                                <strong class="text-sm font-black text-gray-800">${a.name}</strong>
+                            </div>
+                            <div class="pl-1">${alertsListHtml}</div>
+                        </div>`;
+                    alertCount += currentAnimalAlerts.length;
+                }
                     });
                 }
                 
