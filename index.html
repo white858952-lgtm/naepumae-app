@@ -1548,11 +1548,15 @@
                     Object.values(a.daily_logs).forEach(log => {
                         if(log.date_str === todayStr) {
                             if(log.walk) { 
-                                if(log.walk.time !== '-') { walks[log.walk.time] = true; walkTrainers[log.walk.time] = log.trainer_name; }
+                                if(log.walk.time !== '-') { 
+                                    walks[log.walk.time] = (log.walk.duration && log.walk.duration !== '-') ? log.walk.duration : '완료'; 
+                                    walkTrainers[log.walk.time] = log.trainer_name; 
+                                }
                                 if(log.walk.condition === '나쁨') { currentAnimalAlerts.push(`🐕 산책 컨디션 나쁨 (${log.walk.time})`); } 
                             }
                             if(log.meal && log.meal.time !== '-') { 
-                                meals[log.meal.time] = true; mealTrainers[log.meal.time] = log.trainer_name;
+                                meals[log.meal.time] = (log.meal.status && log.meal.status !== '-') ? log.meal.status : '완료'; 
+                                mealTrainers[log.meal.time] = log.trainer_name;
                                 // 급여 특이사항 체크 (완식이 아닌 경우 시간대 포함하여 저장)
                                 if(log.meal.status && log.meal.status !== '완식') {
                                     currentAnimalAlerts.push(`🥣 ${log.meal.time}밥 ${log.meal.status}`);
@@ -1672,8 +1676,21 @@
                     </div>`;
             });
 
-            if(alertCount > 0) { alertsContainer.innerHTML = `<h3 class="font-black text-red-500 mb-2 text-sm">🚨 오늘 발견된 특이사항 (${alertCount}건)</h3>` + alertsHtml; alertsContainer.classList.remove('hidden'); } 
-            else { alertsContainer.innerHTML = `<div class="bg-green-50 p-3 rounded-xl border border-green-100 text-center"><p class="text-xs font-bold text-green-600">오늘 보고된 특이사항이 없습니다. 모두 건강해요! 🌿</p></div>`; alertsContainer.classList.remove('hidden'); }
+            if(alertCount > 0) { 
+                alertsContainer.innerHTML = `
+                    <div class="mb-4">
+                        <button onclick="toggleAccordion('dash-alerts-list')" class="w-full flex justify-between items-center bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-2xl font-black shadow-sm active:scale-95 transition-all">
+                            <span class="flex items-center gap-1"><span class="text-lg">🚨</span> 오늘 발견된 특이사항</span>
+                            <span class="text-xs bg-white px-2 py-1 rounded-lg text-red-400 border border-red-100">${alertCount}건 확인 ▼</span>
+                        </button>
+                        <div id="dash-alerts-list" class="hidden mt-3">${alertsHtml}</div>
+                    </div>`; 
+                alertsContainer.classList.remove('hidden'); 
+            } 
+            else { 
+                alertsContainer.innerHTML = `<div class="bg-green-50 p-3 rounded-xl border border-green-100 text-center mb-4"><p class="text-xs font-bold text-green-600">오늘 보고된 특이사항이 없습니다. 모두 건강해요! 🌿</p></div>`; 
+                alertsContainer.classList.remove('hidden'); 
+            }
             
             if(currentDashTab === 'animal') {
                 if(!listHtml) listHtml = `<div class="text-center py-10 text-gray-400 font-bold">진행할 업무나 표시할 아이가 없습니다.</div>`; listContainer.innerHTML = listHtml;
