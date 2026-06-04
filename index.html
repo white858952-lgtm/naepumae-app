@@ -856,7 +856,25 @@
         
         let editingLogId = null; let editingLogOriginalData = null; let editingAnimalProfileId = null; let editingEventId = null; let editingBehaviorLogId = null;
         let currentSearchQuery = ''; let currentDashTab = 'animal'; let currentDashTask = 'walk';
+        let isQuickMealMode = false; let quickMealTime = '아침';
         let currentDate = new Date(); let schedules = {}; let eventsList = []; let animals = []; let currentFilter = 'all'; 
+
+        function toggleQuickMeal() { isQuickMealMode = !isQuickMealMode; renderDashboard(); }
+        function setQuickMealTime(time) { quickMealTime = time; renderDashboard(); }
+        
+        function quickLogMeal(animalId) {
+            const ani = animals.find(a => String(a.id) === String(animalId)); if(!ani) return;
+            const now = new Date();
+            const logData = {
+                trainer_name: currentTrainerName, timestamp: Date.now(),
+                date_str: `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`,
+                time_str: `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`,
+                meal: { time: quickMealTime, amount: '정량 (자율)', status: '완식' }
+            };
+            database.ref(getDbPath(`animals/${animalId}/daily_logs/`) + Date.now()).update(logData).then(() => {
+                database.ref('notifications').push({ type: "meal", title: "🥣 퀵 급여 완료", body: `${currentTrainerName}님이 '${ani.name}'의 ${quickMealTime} 급여(완식)를 처리했습니다.`, center: currentCenter, timestamp: Date.now() });
+            });
+        } 
 
         const dogBreeds = ['믹스견', '말티즈', '푸들', '포메라니안', '진돗개', '골든 리트리버', '비숑 프리제', '치와와', '시츄', '요크셔테리어', '스피츠', '직접 입력'];
         const catBreeds = ['코리안 숏헤어', '페르시안', '러시안 블루', '샴', '먼치킨', '랙돌', '스코티시 폴드', '브리티시 숏헤어', '직접 입력'];
@@ -1549,6 +1567,7 @@
                 if (a.status && a.status.includes('입양 완료')) return;
 
                 let walks = { '오전': false, '오후': false, '저녁': false }; 
+                let walkPlaces = { '오전': '', '오후': '', '저녁': '' };
                 let walkTrainers = { '오전': '', '오후': '', '저녁': '' };
                 let meals = { '아침': false, '저녁': false }; 
                 let mealTrainers = { '아침': '', '저녁': '' };
@@ -1567,6 +1586,7 @@
                             if(log.walk) { 
                                 if(log.walk.time !== '-') { 
                                     walks[log.walk.time] = (log.walk.duration && log.walk.duration !== '-') ? log.walk.duration : '완료'; 
+                                    walkPlaces[log.walk.time] = log.walk.place && log.walk.place !== '-' ? log.walk.place : '산책';
                                     walkTrainers[log.walk.time] = log.trainer_name; 
                                 }
                                 if(log.walk.condition === '나쁨') { currentAnimalAlerts.push(`🐕 산책 컨디션 나쁨 (${log.walk.time})`); } 
@@ -1625,9 +1645,9 @@
                     if(isDog) { 
                         isTaskTarget = true; isTaskDone = walks['오전'] || walks['오후'] || walks['저녁'];
                         let badgeParts = []; 
-                        if(walks['오전']) badgeParts.push(`<div class="bg-green-50 text-green-600 rounded px-1 py-0.5 w-full text-center"><span class="block text-[9px] font-black truncate" title="${walks['오전']}">오전(${walks['오전']})</span><span class="block text-[8px] font-bold opacity-80 truncate" title="${walkTrainers['오전']}">${walkTrainers['오전']}</span></div>`);
-                        if(walks['오후']) badgeParts.push(`<div class="bg-green-50 text-green-600 rounded px-1 py-0.5 w-full text-center"><span class="block text-[9px] font-black truncate" title="${walks['오후']}">오후(${walks['오후']})</span><span class="block text-[8px] font-bold opacity-80 truncate" title="${walkTrainers['오후']}">${walkTrainers['오후']}</span></div>`);
-                        if(walks['저녁']) badgeParts.push(`<div class="bg-green-50 text-green-600 rounded px-1 py-0.5 w-full text-center"><span class="block text-[9px] font-black truncate" title="${walks['저녁']}">저녁(${walks['저녁']})</span><span class="block text-[8px] font-bold opacity-80 truncate" title="${walkTrainers['저녁']}">${walkTrainers['저녁']}</span></div>`);
+                        if(walks['오전']) badgeParts.push(`<div class="bg-green-50 text-green-600 rounded px-1 py-0.5 w-full text-center flex flex-col gap-0.5"><span class="block text-[9px] font-black truncate" title="${walks['오전']}">오전(${walks['오전']})</span><span class="block text-[8px] font-bold opacity-90 truncate">${walkPlaces['오전']}</span><span class="block text-[8px] font-bold opacity-70 truncate">${walkTrainers['오전']}</span></div>`);
+                        if(walks['오후']) badgeParts.push(`<div class="bg-green-50 text-green-600 rounded px-1 py-0.5 w-full text-center flex flex-col gap-0.5"><span class="block text-[9px] font-black truncate" title="${walks['오후']}">오후(${walks['오후']})</span><span class="block text-[8px] font-bold opacity-90 truncate">${walkPlaces['오후']}</span><span class="block text-[8px] font-bold opacity-70 truncate">${walkTrainers['오후']}</span></div>`);
+                        if(walks['저녁']) badgeParts.push(`<div class="bg-green-50 text-green-600 rounded px-1 py-0.5 w-full text-center flex flex-col gap-0.5"><span class="block text-[9px] font-black truncate" title="${walks['저녁']}">저녁(${walks['저녁']})</span><span class="block text-[8px] font-bold opacity-90 truncate">${walkPlaces['저녁']}</span><span class="block text-[8px] font-bold opacity-70 truncate">${walkTrainers['저녁']}</span></div>`);
                         
                         if(badgeParts.length > 0) subBadgeHtml = `<div class="flex flex-col gap-1 w-full">${badgeParts.join('')}</div>`; 
                         else subBadgeHtml = `<span class="px-1.5 py-0.5 bg-red-50 text-red-500 rounded text-[8px] font-black w-full text-center inline-block">미완료</span>`;
@@ -1754,20 +1774,49 @@
                         <p class="text-[10px] text-gray-400 font-bold text-right">총 ${total}마리 중 ${taskDone.length}마리 완료</p>
                     </div>`;
                 
+                let quickModeHtml = '';
+                if(currentDashTask === 'meal') {
+                    quickModeHtml = `
+                        <div class="mb-4 bg-yellow-50 p-3 rounded-2xl border border-yellow-200 flex flex-col gap-2">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <span class="text-xs font-black text-yellow-700">⚡ 퀵 완식 모드</span>
+                                    <p class="text-[9px] font-bold text-yellow-600 mt-0.5">스위치를 켜고 대기 중인 얼굴을 누르면 즉시 완식 처리됩니다.</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" class="sr-only peer" onchange="toggleQuickMeal()" ${isQuickMealMode ? 'checked' : ''}>
+                                    <div class="w-9 h-5 bg-white border border-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-yellow-400 peer-checked:after:bg-white border-none shadow-inner"></div>
+                                </label>
+                            </div>
+                            ${isQuickMealMode ? `
+                            <div class="flex gap-2 mt-1">
+                                <button onclick="setQuickMealTime('아침')" class="flex-1 py-2 text-xs font-black rounded-xl border transition-all ${quickMealTime === '아침' ? 'bg-yellow-400 text-white border-yellow-500 shadow-md' : 'bg-white text-yellow-600 border-yellow-200'}">아침 완식 기록</button>
+                                <button onclick="setQuickMealTime('저녁')" class="flex-1 py-2 text-xs font-black rounded-xl border transition-all ${quickMealTime === '저녁' ? 'bg-yellow-400 text-white border-yellow-500 shadow-md' : 'bg-white text-yellow-600 border-yellow-200'}">저녁 완식 기록</button>
+                            </div>` : ''}
+                        </div>`;
+                }
+
                 const renderGrid = (list, type) => {
                     if(list.length === 0) return `<p class="text-xs text-gray-400 my-4 text-center w-full">해당하는 아이가 없습니다.</p>`;
                     return `<div class="grid grid-cols-4 sm:grid-cols-5 gap-y-5 gap-x-2 mt-3 w-full items-start">` + list.map(a => {
-                        const photo = a.photo ? `<div class="w-14 h-14 rounded-full bg-cover bg-center border-2 border-white shadow-sm mx-auto shrink-0" style="background-image: url(${a.photo})"></div>` : `<div class="w-14 h-14 rounded-full bg-pink-50 flex items-center justify-center text-xl border-2 border-white shadow-sm mx-auto shrink-0">🐾</div>`;
-                        return `<div class="flex flex-col items-center cursor-pointer active:scale-95 transition-transform w-full" onclick="${type === 'pending' ? `openRecordPanel('${a.id}')` : `openProfilePanel('${a.id}')`}">
+                        const photo = a.photo ? `<div class="w-14 h-14 rounded-full bg-cover bg-center border-2 border-white shadow-sm mx-auto shrink-0 ${isQuickMealMode && type === 'pending' ? 'ring-2 ring-yellow-400 ring-offset-2 animate-pulse' : ''}" style="background-image: url(${a.photo})"></div>` : `<div class="w-14 h-14 rounded-full bg-pink-50 flex items-center justify-center text-xl border-2 border-white shadow-sm mx-auto shrink-0 ${isQuickMealMode && type === 'pending' ? 'ring-2 ring-yellow-400 ring-offset-2 animate-pulse' : ''}">🐾</div>`;
+                        
+                        const onclickAction = (type === 'pending' && currentDashTask === 'meal' && isQuickMealMode) 
+                                              ? `quickLogMeal('${a.id}')` 
+                                              : (type === 'pending' ? `openRecordPanel('${a.id}')` : `openProfilePanel('${a.id}')`);
+                        
+                        return `<div class="flex flex-col items-center cursor-pointer active:scale-95 transition-transform w-full" onclick="${onclickAction}">
                             ${photo}
                             <span class="text-[10px] font-black text-gray-700 mt-1.5 mb-1 w-full text-center truncate px-1">${a.name}</span>
                             <div class="w-full px-1">${a._subBadgeHtml || ''}</div>
                         </div>`;
                     }).join('') + `</div>`;
                 };
+                
                 gridHtml += `
                     <div id="dash-grid-area">
-                        <div class="mb-6"><div class="flex items-center gap-2 mb-2"><div class="w-2 h-4 bg-red-400 rounded-full"></div><h3 class="text-sm font-black text-gray-800">대기 중 (${taskPending.length}) <span class="text-[10px] text-gray-400 font-normal ml-1">얼굴을 누르면 기록 창이 뜹니다.</span></h3></div>
+                        ${quickModeHtml}
+                        <div class="mb-6"><div class="flex items-center gap-2 mb-2"><div class="w-2 h-4 bg-red-400 rounded-full"></div><h3 class="text-sm font-black text-gray-800">대기 중 (${taskPending.length})</h3></div>
                         <div class="bg-red-50/30 p-4 rounded-2xl border border-red-50">${renderGrid(taskPending, 'pending')}</div></div>
                         <div><div class="flex items-center gap-2 mb-2"><div class="w-2 h-4 bg-green-400 rounded-full"></div><h3 class="text-sm font-black text-gray-800">완료 (${taskDone.length})</h3></div>
                         <div class="bg-green-50/30 p-4 rounded-2xl border border-green-50">${renderGrid(taskDone, 'done')}</div></div>
