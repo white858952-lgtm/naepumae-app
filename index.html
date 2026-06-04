@@ -1828,7 +1828,8 @@
                 const renderGrid = (list, type) => {
                     if(list.length === 0) return `<p class="text-xs text-gray-400 my-4 text-center w-full">해당하는 아이가 없습니다.</p>`;
                     return `<div class="grid grid-cols-4 sm:grid-cols-5 gap-y-5 gap-x-2 mt-3 w-full items-start">` + list.map(a => {
-                        const isSelected = quickSelectedAnimals.has(a.id);
+                        // 🌟 버그 수정: a.id가 숫자일 경우를 대비해 명시적으로 String으로 변환
+                        const isSelected = quickSelectedAnimals.has(String(a.id));
                         const photoStyle = (isQuickMealMode && type === 'pending') 
                             ? (isSelected ? 'ring-4 ring-green-400 ring-offset-2 scale-105 transition-all' : 'ring-2 ring-yellow-400 ring-offset-2 opacity-50 transition-all') 
                             : '';
