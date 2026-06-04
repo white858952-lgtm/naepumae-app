@@ -2258,33 +2258,35 @@ let currentEventFilterDate = null;
         function setPottyMemo(text) { document.getElementById('potty-memo').value = text; }
         
         function clearFormFields() {
-    // 🌟 모든 상태 버튼을 확실하게 비활성화
-    document.querySelectorAll('.med-time-btn, .walk-time-btn, .walk-place-btn, .walk-cond-btn, .meal-time-btn, .meal-status-btn, .potty-type-btn, .care-type-btn').forEach(b => {
-        b.classList.remove('btn-active', 'bg-pink-100', 'text-pink-600', 'border-pink-300');
-        b.classList.add('btn-inactive', 'bg-white', 'text-gray-500', 'border-gray-200');
-    });
-    
-    // 🌟 산책 시간 버튼 및 숨김 필드 완벽 초기화 (데이터 잔존 버그 픽스)
-    const startBtn = document.getElementById('walk-start-btn');
-    const endBtn = document.getElementById('walk-end-btn');
-    if (startBtn) { 
-        startBtn.innerText = '시작 시간'; 
-        startBtn.classList.remove('text-pink-500', 'bg-pink-50', 'font-black', 'border-pink-300'); 
-        startBtn.classList.add('text-gray-400', 'bg-gray-50', 'font-bold', 'border-pink-100'); 
-    }
-    if (endBtn) { 
-        endBtn.innerText = '종료 시간'; 
-        endBtn.classList.remove('text-pink-500', 'bg-pink-50', 'font-black', 'border-pink-300'); 
-        endBtn.classList.add('text-gray-400', 'bg-gray-50', 'font-bold', 'border-pink-100'); 
-    }
-    const walkStart = document.getElementById('walk-start'); if (walkStart) walkStart.value = '';
-    const walkEnd = document.getElementById('walk-end'); if (walkEnd) walkEnd.value = '';
+            // 🌟 모든 상태 버튼을 확실하게 비활성화
+            document.querySelectorAll('.med-time-btn, .walk-time-btn, .walk-place-btn, .walk-cond-btn, .meal-time-btn, .meal-status-btn, .potty-type-btn, .care-type-btn').forEach(b => {
+                b.classList.remove('btn-active', 'bg-pink-100', 'text-pink-600', 'border-pink-300');
+                b.classList.add('btn-inactive', 'bg-white', 'text-gray-500', 'border-gray-200');
+            });
+            
+            // 🌟 산책 시간 버튼 및 숨김 필드 완벽 초기화
+            const startBtn = document.getElementById('walk-start-btn');
+            const endBtn = document.getElementById('walk-end-btn');
+            if (startBtn) { 
+                startBtn.innerText = '시작 시간'; 
+                startBtn.classList.remove('text-pink-500', 'bg-pink-50', 'font-black', 'border-pink-300'); 
+                startBtn.classList.add('text-gray-400', 'bg-gray-50', 'font-bold', 'border-pink-100'); 
+            }
+            if (endBtn) { 
+                endBtn.innerText = '종료 시간'; 
+                endBtn.classList.remove('text-pink-500', 'bg-pink-50', 'font-black', 'border-pink-300'); 
+                endBtn.classList.add('text-gray-400', 'bg-gray-50', 'font-bold', 'border-pink-100'); 
+            }
+            
+            const walkStart = document.getElementById('walk-start'); if (walkStart) walkStart.value = '';
+            const walkEnd = document.getElementById('walk-end'); if (walkEnd) walkEnd.value = '';
 
-    // 🌟 텍스트 입력창 초기화
-    document.getElementById('meal-amount').value = ''; 
-    document.getElementById('potty-memo').value = ''; 
-    document.getElementById('daily-memo').value = '';
-}
+            // 🌟 텍스트 입력창 초기화
+            document.getElementById('meal-amount').value = ''; 
+            document.getElementById('potty-memo').value = ''; 
+            document.getElementById('daily-memo').value = '';
+        }
+        
         function resetRecordForm() { editingLogId = null; editingLogOriginalData = null; document.getElementById('record-action-text').innerText = '기록'; clearFormFields(); }
 
         function openRecordFromProfile() { 
