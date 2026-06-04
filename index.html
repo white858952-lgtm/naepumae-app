@@ -13,6 +13,7 @@
     <link rel="apple-touch-icon" href="https://i.postimg.cc/GhCRBzng/icon.png?v=2">
     
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js"></script>
     
@@ -905,7 +906,11 @@
         const catBreeds = ['코리안 숏헤어', '페르시안', '러시안 블루', '샴', '먼치킨', '랙돌', '스코티시 폴드', '브리티시 숏헤어', '직접 입력'];
 
         const firebaseConfig = { apiKey: "AIzaSyAitCQVYKsqytLzT_O9_k0lXT7bAsPhjLY", authDomain: "naepumae-center.firebaseapp.com", databaseURL: "https://naepumae-center-default-rtdb.firebaseio.com", projectId: "naepumae-center", storageBucket: "naepumae-center.firebasestorage.app", messagingSenderId: "591209155709", appId: "1:591209155709:web:348eb8e2aca66a355f7514" };
-        firebase.initializeApp(firebaseConfig); const database = firebase.database();
+        firebase.initializeApp(firebaseConfig); 
+        const auth = firebase.auth(); const database = firebase.database();
+        
+        // 악의적인 외부 접근을 막기 위한 앱 내부 전용 백그라운드 인증
+        auth.signInAnonymously().catch((error) => console.error("Firebase 보안 인증 실패:", error));
 
         // [FCM 기능 추가] Messaging 인스턴스 초기화 및 변수 세팅
         let messaging;
@@ -2214,9 +2219,10 @@ let currentEventFilterDate = null;
                 const logs = logsByDate[date].sort((a,b) => b.timestamp - a.timestamp); const accId = `acc-date-${index}`; const isOpen = index === 0; 
                 const logsHtml = logs.map(log => {
                     let content = '';
-                    if(log.walk) content += `<div class="flex items-start gap-2 mb-1"><span class="text-base">🐕</span> <p><strong class="text-gray-900">산책:</strong> ${log.walk.time} / ${log.walk.duration} / ${log.walk.condition}</p></div>`;
+                    if(log.walk) content += `<div class="flex items-start gap-2 mb-1"><span class="text-base">🐕</span> <p><strong class="text-gray-900">산책:</strong> ${log.walk.time} / ${log.walk.place || '-'} / ${log.walk.duration} / ${log.walk.condition}</p></div>`;
                     if(log.meal) content += `<div class="flex items-start gap-2 mb-1"><span class="text-base">🥣</span> <p><strong class="text-gray-900">급여:</strong> ${log.meal.time} / ${log.meal.amount} / ${log.meal.status}</p></div>`;
                     if(log.med) content += `<div class="flex items-start gap-2 mb-1"><span class="text-base">💊</span> <p><strong class="text-gray-900">복약:</strong> ${log.med.time}</p></div>`;
+                    if(log.care) content += `<div class="flex items-start gap-2 mb-1"><span class="text-base">✂️</span> <p><strong class="text-gray-900">관리:</strong> ${log.care}</p></div>`;
                     if(log.potty) content += `<div class="flex items-start gap-2 mb-1"><span class="text-base">💩</span> <p><strong class="text-gray-900">배변:</strong> ${log.potty.type} / ${log.potty.memo}</p></div>`;
                     if(log.daily_memo) content += `<div class="flex items-start gap-2 mb-1 mt-2 p-2 bg-blue-50/50 rounded-lg border border-blue-100"><span class="text-base">📝</span> <p class="text-gray-900 leading-tight">${log.daily_memo.replace(/\n/g, '<br>')}</p></div>`;
                     return `
