@@ -1258,6 +1258,7 @@
         }
 
                 function showView(view) {
+            isQuickMealMode = false; quickSelectedAnimals.clear(); // 🌟 메인 화면 전환 시 퀵 모드 초기화
             window.scrollTo(0, 0); 
             document.querySelectorAll('.overflow-y-auto').forEach(el => el.scrollTop = 0);
             ['reg', 'list', 'schedule', 'events', 'dashboard'].forEach(v => {
@@ -1568,6 +1569,7 @@
 
         function setDashTab(tab) {
             currentDashTab = tab;
+            isQuickMealMode = false; quickSelectedAnimals.clear(); // 🌟 상단 탭 전환 시 퀵 모드 초기화
             document.getElementById('btn-dash-animal').className = tab === 'animal' ? 'flex-1 py-2 text-xs font-black rounded-lg bg-white shadow-sm text-pink-600 transition-all' : 'flex-1 py-2 text-xs font-black rounded-lg text-pink-400 opacity-70 transition-all';
             document.getElementById('btn-dash-task').className = tab === 'task' ? 'flex-1 py-2 text-xs font-black rounded-lg bg-white shadow-sm text-pink-600 transition-all' : 'flex-1 py-2 text-xs font-black rounded-lg text-pink-400 opacity-70 transition-all';
             document.getElementById('dash-list-container').classList.toggle('hidden', tab !== 'animal');
@@ -1576,6 +1578,7 @@
         }
         function setDashTask(task) {
             currentDashTask = task; const tasks = ['walk', 'meal', 'med', 'care'];
+            isQuickMealMode = false; quickSelectedAnimals.clear(); // 🌟 업무 카테고리(산책, 투약 등) 전환 시 퀵 모드 초기화
             tasks.forEach(t => { const btn = document.getElementById(`task-${t}`); if(btn) { btn.className = t === task ? 'whitespace-nowrap px-5 py-2.5 rounded-full text-xs font-black bg-pink-500 text-white shadow-md transition-all' : 'whitespace-nowrap px-5 py-2.5 rounded-full text-xs font-black bg-white text-gray-400 transition-all'; } });
             renderDashboard();
         }
