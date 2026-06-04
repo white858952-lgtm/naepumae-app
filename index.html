@@ -2280,9 +2280,7 @@ let currentEventFilterDate = null;
     const walkStart = document.getElementById('walk-start'); if (walkStart) walkStart.value = '';
     const walkEnd = document.getElementById('walk-end'); if (walkEnd) walkEnd.value = '';
 
-    // 🌟 모든 텍스트 입력창 초기화
-    const walkDuration = document.getElementById('walk-duration'); if (walkDuration) walkDuration.value = '';
-    document.getElementById('walk-end').value = ''; 
+    // 🌟 텍스트 입력창 초기화
     document.getElementById('meal-amount').value = ''; 
     document.getElementById('potty-memo').value = ''; 
     document.getElementById('daily-memo').value = '';
@@ -2398,14 +2396,20 @@ let currentEventFilterDate = null;
                 if(log.walk.time !== '-') setToggleState('.walk-time-btn', log.walk.time); 
                 if(log.walk.place && log.walk.place !== '-') setToggleState('.walk-place-btn', log.walk.place); 
                 if(log.walk.duration !== '-') {
+                    const startBtn = document.getElementById('walk-start-btn');
+                    const endBtn = document.getElementById('walk-end-btn');
+                    const setBtnActive = (btn, val) => { if(btn) { btn.innerText = val; btn.classList.remove('text-gray-400', 'bg-gray-50', 'font-bold', 'border-pink-100'); btn.classList.add('text-pink-500', 'bg-pink-50', 'font-black', 'border-pink-300'); } };
+
                     if (log.walk.duration.includes('~')) {
                         const times = log.walk.duration.split('~');
-                        document.getElementById('walk-start').value = times[0].trim();
-                        document.getElementById('walk-end').value = times[1].trim();
+                        document.getElementById('walk-start').value = times[0].trim(); setBtnActive(startBtn, times[0].trim());
+                        document.getElementById('walk-end').value = times[1].trim(); setBtnActive(endBtn, times[1].trim());
                     } else if (log.walk.duration.includes('시작')) {
-                        document.getElementById('walk-start').value = log.walk.duration.replace(' 시작', '').trim();
+                        const val = log.walk.duration.replace(' 시작', '').trim();
+                        document.getElementById('walk-start').value = val; setBtnActive(startBtn, val);
                     } else if (log.walk.duration.includes('종료')) {
-                        document.getElementById('walk-end').value = log.walk.duration.replace(' 종료', '').trim();
+                        const val = log.walk.duration.replace(' 종료', '').trim();
+                        document.getElementById('walk-end').value = val; setBtnActive(endBtn, val);
                     } else {
                         document.getElementById('walk-start').value = ''; document.getElementById('walk-end').value = '';
                     }
