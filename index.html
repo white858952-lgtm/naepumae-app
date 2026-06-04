@@ -2212,7 +2212,6 @@ let currentEventFilterDate = null;
             const walkTimeBtn = document.querySelector('.walk-time-btn.btn-active'); const walkTime = walkTimeBtn ? walkTimeBtn.innerText : null;
             const walkStart = document.getElementById('walk-start').value; const walkEnd = document.getElementById('walk-end').value;
             let walkDuration = '';
-            let walkDuration = '';
             if (walkStart && walkEnd) walkDuration = walkStart + ' ~ ' + walkEnd;
             else if (walkStart) walkDuration = walkStart + ' 시작';
             else if (walkEnd) walkDuration = walkEnd + ' 종료';
