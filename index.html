@@ -857,22 +857,47 @@
         let editingLogId = null; let editingLogOriginalData = null; let editingAnimalProfileId = null; let editingEventId = null; let editingBehaviorLogId = null;
         let currentSearchQuery = ''; let currentDashTab = 'animal'; let currentDashTask = 'walk';
         let isQuickMealMode = false; let quickMealTime = '아침';
+        let quickSelectedAnimals = new Set();
         let currentDate = new Date(); let schedules = {}; let eventsList = []; let animals = []; let currentFilter = 'all'; 
 
-        function toggleQuickMeal() { isQuickMealMode = !isQuickMealMode; renderDashboard(); }
+        function toggleQuickMeal() { isQuickMealMode = !isQuickMealMode; quickSelectedAnimals.clear(); renderDashboard(); }
         function setQuickMealTime(time) { quickMealTime = time; renderDashboard(); }
-        
-        function quickLogMeal(animalId) {
-            const ani = animals.find(a => String(a.id) === String(animalId)); if(!ani) return;
+
+        function toggleQuickSelect(animalId) {
+            if (quickSelectedAnimals.has(animalId)) { quickSelectedAnimals.delete(animalId); }
+            else { quickSelectedAnimals.add(animalId); }
+            renderDashboard();
+        }
+
+        function saveQuickMeals() {
+            if(quickSelectedAnimals.size === 0) { openModal('error', '선택된 아이 없음', '급여를 완료 처리할 아이를 한 마리 이상 선택해주세요.'); return; }
+            
+            let promises = [];
             const now = new Date();
-            const logData = {
-                trainer_name: currentTrainerName, timestamp: Date.now(),
-                date_str: `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`,
-                time_str: `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`,
-                meal: { time: quickMealTime, amount: '정량 (자율)', status: '완식' }
-            };
-            database.ref(getDbPath(`animals/${animalId}/daily_logs/`) + Date.now()).update(logData).then(() => {
-                database.ref('notifications').push({ type: "meal", title: "🥣 퀵 급여 완료", body: `${currentTrainerName}님이 '${ani.name}'의 ${quickMealTime} 급여(완식)를 처리했습니다.`, center: currentCenter, timestamp: Date.now() });
+            const dateStr = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`;
+            const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+            
+            quickSelectedAnimals.forEach(animalId => {
+                const ani = animals.find(a => String(a.id) === String(animalId));
+                if(ani) {
+                    const logData = {
+                        trainer_name: currentTrainerName, timestamp: Date.now() + Math.floor(Math.random()*1000), // 고유 키 확보
+                        date_str: dateStr, time_str: timeStr,
+                        meal: { time: quickMealTime, amount: '정량 (일괄)', status: '완식' }
+                    };
+                    // 개별 동물의 경로에 업데이트 프로미스 생성
+                    promises.push(database.ref(getDbPath(`animals/${animalId}/daily_logs/`) + Date.now() + Math.floor(Math.random()*1000)).update(logData));
+                }
+            });
+            
+            Promise.all(promises).then(() => {
+                database.ref('notifications').push({ type: "meal", title: "🥣 퀵 급여 일괄 완료", body: `${currentTrainerName}님이 ${quickSelectedAnimals.size}마리의 ${quickMealTime} 급여(완식)를 일괄 처리했습니다.`, center: currentCenter, timestamp: Date.now() });
+                quickSelectedAnimals.clear();
+                toggleQuickMeal(); // 저장 후 퀵 모드 자동 종료
+                openModal('success', '일괄 저장 완료!', '선택한 아이들의 급여 기록이 안전하게 저장되었습니다.');
+            }).catch(error => {
+                console.error("일괄 저장 오류:", error);
+                openModal('error', '저장 오류', '일괄 저장 중 문제가 발생했습니다.');
             });
         } 
 
@@ -1789,24 +1814,39 @@
                                 </label>
                             </div>
                             ${isQuickMealMode ? `
-                            <div class="flex gap-2 mt-1">
-                                <button onclick="setQuickMealTime('아침')" class="flex-1 py-2 text-xs font-black rounded-xl border transition-all ${quickMealTime === '아침' ? 'bg-yellow-400 text-white border-yellow-500 shadow-md' : 'bg-white text-yellow-600 border-yellow-200'}">아침 완식 기록</button>
-                                <button onclick="setQuickMealTime('저녁')" class="flex-1 py-2 text-xs font-black rounded-xl border transition-all ${quickMealTime === '저녁' ? 'bg-yellow-400 text-white border-yellow-500 shadow-md' : 'bg-white text-yellow-600 border-yellow-200'}">저녁 완식 기록</button>
-                            </div>` : ''}
+                            <div class="flex gap-2 mt-1 mb-2">
+                                <button onclick="setQuickMealTime('아침')" class="flex-1 py-2 text-xs font-black rounded-xl border transition-all ${quickMealTime === '아침' ? 'bg-yellow-400 text-white border-yellow-500 shadow-md' : 'bg-white text-yellow-600 border-yellow-200'}">아침 완식 세팅</button>
+                                <button onclick="setQuickMealTime('저녁')" class="flex-1 py-2 text-xs font-black rounded-xl border transition-all ${quickMealTime === '저녁' ? 'bg-yellow-400 text-white border-yellow-500 shadow-md' : 'bg-white text-yellow-600 border-yellow-200'}">저녁 완식 세팅</button>
+                            </div>
+                            <button onclick="saveQuickMeals()" class="w-full py-3 bg-green-500 text-white font-black text-sm rounded-xl shadow-md active:scale-95 transition-transform flex items-center justify-center gap-2">
+                                <span>선택된 아이들 일괄 저장하기</span>
+                                <span class="bg-green-600 px-2 py-0.5 rounded-full text-xs">${quickSelectedAnimals.size}</span>
+                            </button>` : ''}
                         </div>`;
                 }
 
                 const renderGrid = (list, type) => {
                     if(list.length === 0) return `<p class="text-xs text-gray-400 my-4 text-center w-full">해당하는 아이가 없습니다.</p>`;
                     return `<div class="grid grid-cols-4 sm:grid-cols-5 gap-y-5 gap-x-2 mt-3 w-full items-start">` + list.map(a => {
-                        const photo = a.photo ? `<div class="w-14 h-14 rounded-full bg-cover bg-center border-2 border-white shadow-sm mx-auto shrink-0 ${isQuickMealMode && type === 'pending' ? 'ring-2 ring-yellow-400 ring-offset-2 animate-pulse' : ''}" style="background-image: url(${a.photo})"></div>` : `<div class="w-14 h-14 rounded-full bg-pink-50 flex items-center justify-center text-xl border-2 border-white shadow-sm mx-auto shrink-0 ${isQuickMealMode && type === 'pending' ? 'ring-2 ring-yellow-400 ring-offset-2 animate-pulse' : ''}">🐾</div>`;
+                        const isSelected = quickSelectedAnimals.has(a.id);
+                        const photoStyle = (isQuickMealMode && type === 'pending') 
+                            ? (isSelected ? 'ring-4 ring-green-400 ring-offset-2 scale-105 transition-all' : 'ring-2 ring-yellow-400 ring-offset-2 opacity-50 transition-all') 
+                            : '';
+                        const checkIcon = isSelected ? `<div class="absolute -top-1 -right-1 bg-green-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black border-2 border-white z-10 animate-fade-in shadow-sm">✓</div>` : '';
+
+                        const photoHtml = `<div class="relative w-14 mx-auto shrink-0">
+                            ${checkIcon}
+                            ${a.photo 
+                                ? `<div class="w-14 h-14 rounded-full bg-cover bg-center border-2 border-white shadow-sm ${photoStyle}" style="background-image: url(${a.photo})"></div>` 
+                                : `<div class="w-14 h-14 rounded-full bg-pink-50 flex items-center justify-center text-xl border-2 border-white shadow-sm ${photoStyle}">🐾</div>`}
+                        </div>`;
                         
                         const onclickAction = (type === 'pending' && currentDashTask === 'meal' && isQuickMealMode) 
-                                              ? `quickLogMeal('${a.id}')` 
+                                              ? `toggleQuickSelect('${a.id}')` 
                                               : (type === 'pending' ? `openRecordPanel('${a.id}')` : `openProfilePanel('${a.id}')`);
                         
                         return `<div class="flex flex-col items-center cursor-pointer active:scale-95 transition-transform w-full" onclick="${onclickAction}">
-                            ${photo}
+                            ${photoHtml}
                             <span class="text-[10px] font-black text-gray-700 mt-1.5 mb-1 w-full text-center truncate px-1">${a.name}</span>
                             <div class="w-full px-1">${a._subBadgeHtml || ''}</div>
                         </div>`;
