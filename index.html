@@ -2219,11 +2219,11 @@ let currentEventFilterDate = null;
             const walkPlaceBtn = document.querySelector('.walk-place-btn.btn-active'); const walkPlace = walkPlaceBtn ? walkPlaceBtn.innerText : '-';
             const careTypes = Array.from(document.querySelectorAll('.care-type-btn.btn-active')).map(b => b.innerText).join(', ');
             const mealTimeBtn = document.querySelector('.meal-time-btn.btn-active'); const mealTime = mealTimeBtn ? mealTimeBtn.innerText : null;
+            const mealAmount = document.getElementById('meal-amount').value.trim(); const mealStatusBtn = document.querySelector('.meal-status-btn.btn-active'); const mealStatus = mealStatusBtn ? mealStatusBtn.innerText : null;
             const pottyTypes = []; if(document.getElementById('potty-type-feces').classList.contains('btn-active')) pottyTypes.push("대변"); if(document.getElementById('potty-type-urine').classList.contains('btn-active')) pottyTypes.push("소변");
             const pottyMemo = document.getElementById('potty-memo').value.trim(); const dailyMemo = document.getElementById('daily-memo').value.trim();
 
-            if(!medTime && !walkTime && !walkDuration && !mealTime && !mealAmount && pottyTypes.length === 0 && !pottyMemo && !dailyMemo) { openModal('error', '빈 기록입니다', '최소 하나 이상의 항목을 작성해주세요.'); return; }
-
+            if(!medTime && !walkTime && !walkDuration && !mealTime && !mealAmount && pottyTypes.length === 0 && !pottyMemo && !dailyMemo && !careTypes) { openModal('error', '빈 기록입니다', '최소 하나 이상의 항목을 작성해주세요.'); return; }
             let logData = { trainer_name: currentTrainerName };
             if(editingLogId && editingLogOriginalData) { logData.timestamp = editingLogOriginalData.timestamp; logData.date_str = editingLogOriginalData.date_str; logData.time_str = editingLogOriginalData.time_str; } 
             else { const now = new Date(); logData.timestamp = Date.now(); logData.date_str = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`; logData.time_str = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`; }
